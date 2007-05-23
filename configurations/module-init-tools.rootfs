@@ -1,0 +1,2 @@
+CONFIGURE="$CONFIGURE --enable-zlib"
+COMMENT="hang on for a while"

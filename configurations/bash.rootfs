@@ -1,0 +1,4 @@
+CONFIGURE="$CONFIGURE --infodir=$ROOT/usr/share/info --without-bash-malloc --disable-nls"
+MAKEINSTALL=("make install"
+             "ln -s bash $ROOT/bin/sh")
+COMMENT="another two minutes"

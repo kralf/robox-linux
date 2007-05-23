@@ -1,0 +1,8 @@
+LDFLAGS="$LDFLAGS -S"
+ADDONS="linux-pcore"
+CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
+MAKEBUILD="make ARCH=$TARGET CROSS_COMPILE=$TARGET-linux- modules"
+MAKEINSTALL=("make ARCH=$TARGET CROSS_COMPILE=$TARGET-linux- INSTALL_MOD_PATH=$ROOT modules_install"
+             "rm -rf $ROOT/lib/modules/$VERSION/build"
+             "rm -rf $ROOT/lib/modules/$VERSION/source")
+COMMENT="this depends on your kernel configuration"

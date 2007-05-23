@@ -1,0 +1,8 @@
+ADDONS="linux-pcore"
+CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
+MAKEBUILD="make ARCH=$TARGET CROSS_COMPILE=$TARGET-linux- zImage"
+MAKEINSTALL=("chmod a-x vmlinux"
+             "cp -a vmlinux $ROOT/vmlinux-$VERSION"
+             "cp -a System.map $ROOT/System.map-$VERSION"
+             "cp -a .config $ROOT/config-$VERSION")
+COMMENT="this may take a while"

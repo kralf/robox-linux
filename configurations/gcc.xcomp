@@ -1,0 +1,3 @@
+PATH="$PATH:$ROOT/bin"
+CONFIGURE="$CONFIGURE --host=$HOST-linux --target=$TARGET-linux --with-sysroot=$ROOT --with-local-prefix=$ROOT --enable-languages=c,c++ --enable-threads=posix --disable-nls"
+COMMENT="go grab another coffee"

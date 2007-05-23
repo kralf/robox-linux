@@ -1,0 +1,2 @@
+CONFIGURE="$CONFIGURE --without-debug --without-ada --enable-overwrite"
+COMMENT="this usually takes two minutes"

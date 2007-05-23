@@ -1,0 +1,4 @@
+CONFIGURE="./configure --prefix=$ROOT --build=$HOST-linux --host=$TARGET-linux --disable-nls"
+MAKEINSTALL=("make install"
+             "ln -s agetty $ROOT/sbin/getty")
+COMMENT="should not take long"

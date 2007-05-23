@@ -1,0 +1,4 @@
+CONFIGURE=""
+MAKEBUILD=""
+MAKEINSTALL="cp -a * $ROOT"
+COMMENT="just a second"

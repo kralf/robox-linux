@@ -1,0 +1,2 @@
+CONFIGURE="./configure -p=$USRROOT -e=$ROOT --shared"
+COMMENT="just a moment"

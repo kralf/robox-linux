@@ -1,0 +1,4 @@
+CONFIGURE=""
+MAKEBUILD="make CROSS_COMPILE=$TARGET-linux-"
+MAKEINSTALL="make DESTDIR=$ROOT install"
+COMMENT="almost done"

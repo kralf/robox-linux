@@ -1,0 +1,4 @@
+CONFIGURE="$CONFIGURE --infodir=$ROOT/usr/share/info --disable-nls"
+MAKEINSTALL=("rm -f $ROOT/bin/?grep" 
+             "make install")
+COMMENT="another quick build"

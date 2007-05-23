@@ -1,0 +1,4 @@
+BUILDDIR="./build"
+CONFIGURE="../configure --prefix=/usr --build=$HOST-linux --host=$TARGET-linux --with-headers=$XCROOT/usr/include --disable-profile"
+MAKEINSTALL="make install_root=$ROOT install"
+COMMENT="consider leaving for lunch"

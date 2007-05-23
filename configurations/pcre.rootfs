@@ -1,0 +1,4 @@
+CONFIGURE="$CONFIGURE CC_FOR_BUILD=cc CFLAGS_FOR_BUILD=-L/lib --disable-nls"
+MAKEINSTALL=("make install"
+             "rm -rf $ROOT/lib/pkgconfig")
+COMMENT="a quick build"

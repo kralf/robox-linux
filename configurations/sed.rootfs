@@ -1,0 +1,2 @@
+CONFIGURE="$CONFIGURE --infodir=$ROOT/usr/share/info --disable-nls"
+COMMENT="also a quick build"

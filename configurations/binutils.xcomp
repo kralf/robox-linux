@@ -1,0 +1,2 @@
+CONFIGURE="$CONFIGURE --host=$HOST-linux --target=$TARGET-linux --with-sysroot=$ROOT --disable-nls"
+COMMENT="this usually takes two minutes"

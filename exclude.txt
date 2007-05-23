@@ -1,0 +1,8 @@
+buildroot
+*.bz2
+*.gz
+*.build
+*.mnt
+*.root
+*.img
+*.log

@@ -1,0 +1,2 @@
+CONFIGURE="$CONFIGURE --with-local-prefix=$XCROOT --enable-languages=c,c++ --enable-threads=posix --disable-nls"
+COMMENT="go grab some coffee"

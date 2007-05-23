@@ -1,0 +1,8 @@
+ADDONS="linux-pcore"
+CONFIGURE=""
+MAKEBUILD="make include/linux/version.h"
+MAKEINSTALL=("mkdir -p $USRROOT/include" 
+             "cp -aL include/asm-$TARGET $USRROOT/include/asm" 
+             "cp -a include/asm-generic $USRROOT/include" 
+             "cp -a include/linux $USRROOT/include")
+COMMENT="this won't take long"
