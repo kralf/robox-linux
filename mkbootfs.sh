@@ -33,7 +33,7 @@ set_arg "--image|-i" "" "IMAGE" "bootfs.img" \
   "boot filesystem image to be created"
 set_arg "--root" "DIR" "FSROOT" ".bootfs.root" \
   "temporary root of filesystem"
-set_arg "--build-root" "DIR" "BUILDROOT" ".rootfs.build" \
+set_arg "--build-root" "DIR" "BUILDROOT" ".bootfs.build" \
   "temporary build root"
 set_arg "--mount-point" "DIR" "MNT" ".rootfs.mount" \
   "temporary mount point of root filesystem"
@@ -63,7 +63,7 @@ abs_path $FSROOT
 FSROOT=$ABSPATH
 abs_path $XCROOT
 XCROOT=$ABSPATH
-PATH="$PATH:$XCROOT/bin"
+PATH="$XCROOT/bin:$PATH"
 
 message "making boot filesystem image $IMAGE"
 

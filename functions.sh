@@ -27,6 +27,7 @@ DOC="undocumented command"
 DEFVAR=""
 DEFDEFAULT=""
 DEFDOC=""
+FAILEXIT="true"
 
 ARGS=("--help"
       "--verbose|-v"
@@ -249,10 +250,12 @@ function exit_message
 {
   message "error: $1"
   
-  STAGE=0
-  message "bailing out, see $LOGFILE for details"
-  
-  exit 1
+  if [ "$FAILEXIT" = "true" ]; then
+    message "bailing out, see $LOGFILE for details"
+    
+    STAGE=0
+    exit 1
+  fi
 }
 
 function message
@@ -283,7 +286,7 @@ function execute
       message "executing \"$1\""
     fi
   
-    echo "COMMAND: $1" > $LOGFILE
+    echo "COMMAND: $1" >> $LOGFILE
     echo "INVOKED BY: $SCRIPT" >> $LOGFILE
     echo "INVOKED IN: `pwd`" >> $LOGFILE
     echo "TIMESTAMP: `date`" >> $LOGFILE
@@ -295,6 +298,9 @@ function execute
     
     if [ "$?" != 0 ]; then
       exit_message "failed to execute command \"$1\""
+    fi
+    if [ "$RETVAL" = 0 ]; then
+      RETVAL=$?
     fi
     shift
   done
@@ -687,4 +693,24 @@ function upload_image
   message "uploading image $1 to $2"
   
   execute "scp $1 $3@$2:$4"
+}
+
+function boot_image
+{
+  KERNEL=`ls $3/vmlinux-* 2> /dev/null`
+  if [ "$KERNEL" = "" ]; then
+    exit_message "missing kernel image in $3"
+  else
+    message "booting kernel $KERNEL"
+    stage_up
+  
+    message "creating domain $1"
+    abs_path $4
+    execute "xm create -c $2 name=$1 kernel=$KERNEL disk=file:$ABSPATH,hda1,w"
+  
+    if [ "$RETVAL" != 0 ]; then
+      message "failed to create domain $1"
+    fi
+    stage_down
+  fi
 }

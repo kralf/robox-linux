@@ -1,10 +1,17 @@
-ADDONS="linux-pcore"
+if [ "$TARGET" = "powerpc" ]; then
+    ADDONS="linux-pcore"
+fi
+if [[ "$TARGET" =~ "i[3-6]86" ]]; then
+    ARCH="i386"
+else
+    ARCH="$TARGET"
+fi
 CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
-MAKEBUILD=("cp -a $ROOTFS arch/$TARGET/boot/images/ramdisk.image"
-           "gzip -f arch/$TARGET/boot/images/ramdisk.image"
-           "make ARCH=$TARGET CROSS_COMPILE=$TARGET-linux- zImage.initrd")
+MAKEBUILD=("cp -a $ROOTFS arch/$ARCH/boot/images/ramdisk.image"
+           "gzip -f arch/$ARCH/boot/images/ramdisk.image"
+           "make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- zImage.initrd")
 if [ "$TARGET" == "powerpc" ]; then
-  MAKEINSTALL="cp -a arch/$TARGET/boot/images/zImage.initrd.pcore $ROOT/$IMAGE"
+  MAKEINSTALL="cp -a arch/$ARCH/boot/images/zImage.initrd.pcore $ROOT/$IMAGE"
 else 
   MAKEINSTALL=""
 fi

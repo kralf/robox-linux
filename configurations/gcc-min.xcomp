@@ -1,4 +1,4 @@
-PATH="$PATH:$ROOT/bin"
+PATH="$ROOT/bin:$PATH"
 CONFIGURE="$CONFIGURE --host=$HOST-linux --target=$TARGET-linux --enable-languages=c --disable-shared --disable-threads --disable-multilib --disable-nls"
 MAKEBUILD="make all-gcc"
 MAKEINSTALL="make install-gcc"

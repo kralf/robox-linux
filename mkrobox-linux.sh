@@ -70,15 +70,13 @@ fi
 message "making robox-linux"
 stage_up
 
-./mkxcomp.sh  $CALLARGS
+./mkxcomp.sh $CALLARGS && ./mkrootfs.sh $CALLARGS && \
+  ./mkbootrd.sh $CALLARGS
 
-./mkrootfs.sh  $CALLARGS
+if [ $? = 0 ]; then
+  upload_image "bootrd.img" $TFTPSERVER $TFTPUSER $TFTPROOT
 
-./mkbootrd.sh  $CALLARGS
-
-upload_image "bootrd.img" $TFTPSERVER $TFTPUSER $TFTPROOT
-
-clean $LOGFILE
-
-stage_down
-message "success"
+  stage_down
+  clean $LOGFILE
+  message "success"
+fi

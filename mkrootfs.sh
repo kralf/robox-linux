@@ -93,7 +93,7 @@ if [ "$NOARCH" != "true" ]; then
 fi
 abs_path $XCROOT
 XCROOT=$ABSPATH
-PATH="$PATH:$XCROOT/bin"
+PATH="$XCROOT/bin:$PATH"
 
 message "making root filesystem image $IMAGE"
 

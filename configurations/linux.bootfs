@@ -1,6 +1,15 @@
-ADDONS="linux-pcore"
+if [ "$TARGET" = "powerpc" ]; then
+    ADDONS="linux-pcore"
+fi
+if [[ "$TARGET" =~ "i[3-6]86" ]]; then
+    ARCH="i386"
+    BUILD="bzImage"
+else
+    ARCH="$TARGET"
+    BUILD="zImage"
+fi
 CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
-MAKEBUILD="make ARCH=$TARGET CROSS_COMPILE=$TARGET-linux- zImage"
+MAKEBUILD="make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- $BUILD"
 MAKEINSTALL=("chmod a-x vmlinux"
              "cp -a vmlinux $ROOT/vmlinux-$VERSION"
              "cp -a System.map $ROOT/System.map-$VERSION"

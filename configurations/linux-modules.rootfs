@@ -1,8 +1,15 @@
 LDFLAGS="$LDFLAGS -S"
-ADDONS="linux-pcore"
+if [ "$TARGET" = "powerpc" ]; then
+    ADDONS="linux-pcore"
+fi
+if [[ "$TARGET" =~ "i[3-6]86" ]]; then
+    ARCH="i386"
+else
+    ARCH="$TARGET"
+fi
 CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
-MAKEBUILD="make ARCH=$TARGET CROSS_COMPILE=$TARGET-linux- modules"
-MAKEINSTALL=("make ARCH=$TARGET CROSS_COMPILE=$TARGET-linux- INSTALL_MOD_PATH=$ROOT modules_install"
+MAKEBUILD="make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- modules"
+MAKEINSTALL=("make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- INSTALL_MOD_PATH=$ROOT modules_install"
              "rm -rf $ROOT/lib/modules/$VERSION/build"
              "rm -rf $ROOT/lib/modules/$VERSION/source")
 COMMENT="this depends on your kernel configuration"

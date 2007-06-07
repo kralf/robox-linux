@@ -20,24 +20,13 @@
 
 #!/bin/bash
 
-# Create a boot ramdisk image from scratch
-# This script requires a cross compiling environment and a root filesystem
-# to be created first
+# Create robox-linux image  and boot it in a Xen virtual machine
 # See usage for a description of the arguments
 
 . ./functions.sh
 
-init "create a boot ramdisk image from scratch" "PKG" "linux" \
-  "list of packages to be added to the image"
+init "create robox-linux image and boot it in a Xen virtual machine"
 
-set_arg "--image|-i" "" "IMAGE" "bootrd.img" \
-  "boot ramdisk image to be created"
-set_arg "--rootfs" "FILE" "ROOTFS" "rootfs.img" \
-  "root filesystem image to be attached"
-set_arg "--build-root" "DIR" "BUILDROOT" ".bootrd.build" \
-  "temporary build root"
-set_arg "--xcompile-root" "DIR" "XCROOT" ".xcomp.root" \
-  "root directory of the cross compiler"
 set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
   "override host architecture"
 set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
@@ -46,41 +35,67 @@ set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
   "directory containing packages"
 set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
   "directory containing build configurations"
+set_arg "--tftp-server" "ADDRESS" "TFTPSERVER" "shantipc1" \
+  "ip or dns name of the tftp server"
+set_arg "--tftp-user" "LOGIN" "TFTPUSER" "tftp" \
+  "login name of the tftp user"
+set_arg "--tftp-root" "DIR" "TFTPROOT" "~" \
+  "tftp root directory"
 set_arg "--no-build" "" "NOBUILD" "false" \
-  "do not build any packages"
+  "do not build and install any packages"
+set_arg "--install" "" "INSTALL" "false" \
+  "perform install stage only"
 set_arg "--clean" "" "CLEAN" "false" \
   "remove working directories"
+set_arg "--mount-point" "DIR" "MNT" ".bootfs.mount" \
+  "mount point of boot filesystem"
+set_arg "--xen-config" "FILE" "XENCFG" "robox-linux.xen" \
+  "Xen virtual machine configuration"
+set_arg "--boot" "" "BOOT" "false" \
+  "just boot into the image"
+
 
 check_args $*
 check_uid
 
-abs_path .
-FSROOT=$ABSPATH
-abs_path $ROOTFS
-ROOTFS=$ABSPATH
-abs_path $XCROOT
-XCROOT=$ABSPATH
-PATH="$XCROOT/bin:$PATH"
+STAGE=0
+export STAGE
 
-message "making boot ramdisk image $IMAGE"
+CALLARGS="--host $HOST --target $TARGET"
+CALLARGS="$CALLARGS --package-dir $PKGDIR --config-dir $CFGDIR"
 
-check_xcomp $TARGET gcc g++ ar as ranlib ld strip
-check_image $ROOTFS
-
-execute "mkdir -p $BUILDROOT"
-
-set_xcomp $TARGET $XCROOT $FSROOT true
-
-if [ "$NOBUILD" != "true" ]; then
-  process_packages bootrd $FSROOT "" $BUILDROOT $PKGDIR $CFGDIR \
-    $HOST $TARGET false $PKG
+if [ "$NOBUILD" == "true" ]; then
+  CALLARGS="$CALLARGS --no-build"
 fi
-
+if [ "$INSTALL" == "true" ]; then
+  CALLARGS="$CALLARGS --install"
+fi
 if [ "$CLEAN" == "true" ]; then
-  clean $BUILDROOT $LOGFILE
-else
-  clean $LOGFILE
+  CALLARGS="$CALLARGS --clean"
 fi
 
-get_filesize $IMAGE
-message "success, size of the boot ramdisk is ${SIZE}kB"
+message "making robox-linux"
+stage_up
+
+if [ "$BOOT" != "true" ]; then
+  ./mkxcomp.sh $CALLARGS && ./mkrootfs.sh $CALLARGS && \
+    ./mkbootfs.sh $CALLARGS linux-xen
+fi
+
+if [ $? = 0 ]; then
+  abs_path $MNT
+  MNTPATH="$ABSPATH"
+  ./mountbootfs.sh --mount-point $MNTPATH
+
+  FAILEXIT="false"  
+  boot_image "robox-linux" $XENCFG $MNTPATH "rootfs.img"
+  FAILEXIT="true"
+  
+  ./umountbootfs.sh --mount-point $MNTPATH
+  stage_down
+  
+  if [ "$RETVAL" = 0 ]; then
+    #clean $LOGFILE
+    message "success"
+  fi
+fi

@@ -1,8 +1,16 @@
-ADDONS="linux-pcore"
-CONFIGURE=""
-MAKEBUILD="make include/linux/version.h"
+if [ "$TARGET" = "powerpc" ]; then
+    ADDONS="linux-pcore"
+fi
+if [[ "$TARGET" =~ "i[3-6]86" ]]; then
+    ARCH="i386"
+else
+    ARCH="$TARGET"
+fi
+CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
+MAKEBUILD=("make include/linux/version.h"
+	   "make include/linux/autoconf.h")
 MAKEINSTALL=("mkdir -p $USRROOT/include" 
-             "cp -aL include/asm-$TARGET $USRROOT/include/asm" 
+             "cp -aL include/asm-$ARCH $USRROOT/include/asm" 
              "cp -a include/asm-generic $USRROOT/include" 
              "cp -a include/linux $USRROOT/include")
 COMMENT="this won't take long"
