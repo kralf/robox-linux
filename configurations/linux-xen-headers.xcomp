@@ -1,12 +1,9 @@
-if [ "$TARGET" = "powerpc" ]; then
-    ADDONS="linux-pcore"
-fi
 if [[ "$TARGET" =~ "i[3-6]86" ]]; then
     ARCH="i386"
 else
     ARCH="$TARGET"
 fi
-CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
+CONFIGURE="cp -ua $CFGDIR/linux-xen.$TARGET .config"
 MAKEBUILD=("make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/version.h"
 	   "make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/autoconf.h")
 MAKEINSTALL=("mkdir -p $USRROOT/include" 

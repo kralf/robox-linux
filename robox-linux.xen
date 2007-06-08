@@ -96,7 +96,7 @@ memory = 64
 #hostname= "vm%d" % vmid
 
 # Set root device.
-root = "/dev/hda1 ro"
+root = "/dev/hda1"
 
 # Root device for nfs.
 #root = "/dev/nfs"
@@ -105,8 +105,8 @@ root = "/dev/hda1 ro"
 # Root directory on the nfs server.
 #nfs_root   = '/full/path/to/root/directory'
 
-# Sets runlevel 4.
-extra = "4"
+# Sets runlevel.
+extra = "3"
 
 #----------------------------------------------------------------------------
 # Configure the behaviour when a domain exits.  There are three 'reasons'
@@ -141,8 +141,8 @@ extra = "4"
 #                            on_reboot   = 'destroy'
 #                            on_crash    = 'destroy'
 
-#on_poweroff = 'destroy'
-#on_reboot   = 'restart'
-#on_crash    = 'destroy'
+on_poweroff = 'destroy'
+on_reboot   = 'destroy'
+on_crash    = 'destroy'
 
 #============================================================================

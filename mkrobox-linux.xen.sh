@@ -25,6 +25,12 @@
 
 . ./functions.sh
 
+XCOMPPKGS="linux-xen-headers binutils gcc-min glibc gcc"
+ROOTPKGS="coreutils glibc-min ncurses readline bash pcre grep sed zlib"
+ROOTPKGS="$ROOTPKGS sysvinit e2fsprogs util-linux module-init-tools udev"
+ROOTPKGS="$ROOTPKGS procps hostname sysklogd dpkg shadow linux-xen-modules"
+BOOTPKGS="linux-xen"
+
 init "create robox-linux image and boot it in a Xen virtual machine"
 
 set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
@@ -35,12 +41,12 @@ set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
   "directory containing packages"
 set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
   "directory containing build configurations"
-set_arg "--tftp-server" "ADDRESS" "TFTPSERVER" "shantipc1" \
-  "ip or dns name of the tftp server"
-set_arg "--tftp-user" "LOGIN" "TFTPUSER" "tftp" \
-  "login name of the tftp user"
-set_arg "--tftp-root" "DIR" "TFTPROOT" "~" \
-  "tftp root directory"
+set_arg "--no-xcomp" "" "NOXCOMP" "false" \
+  "do not build and install cross compiler packages"
+set_arg "--no-rootfs" "" "NOROOT" "false" \
+  "do not build and install root filesystem packages"
+set_arg "--no-bootfs" "" "NOBOOT" "false" \
+  "do not build and install boot filesystem packages"
 set_arg "--no-build" "" "NOBUILD" "false" \
   "do not build and install any packages"
 set_arg "--install" "" "INSTALL" "false" \
@@ -61,7 +67,11 @@ check_uid
 STAGE=0
 export STAGE
 
-CALLARGS="--host $HOST --target $TARGET"
+if [ "$VERBOSE" = "true" ]; then
+  CALLARGS="--verbose"
+fi
+
+CALLARGS="$CALLARGS --host $HOST --target $TARGET"
 CALLARGS="$CALLARGS --package-dir $PKGDIR --config-dir $CFGDIR"
 
 if [ "$NOBUILD" == "true" ]; then
@@ -74,12 +84,24 @@ if [ "$CLEAN" == "true" ]; then
   CALLARGS="$CALLARGS --clean"
 fi
 
+if [ "$NOXCOMP" = "true" ]; then
+  XCOMPARGS="--no-build"
+fi
+ROOTARGS="--no-exclusions"
+if [ "$NOROOT" = "true" ]; then
+  ROOTARGS="$ROOTARGS --no-build"
+fi
+if [ "$NOBOOT" = "true" ]; then
+  BOOTARGS="--no-build"
+fi
+
 message "making robox-linux"
 stage_up
 
 if [ "$BOOT" != "true" ]; then
-  ./mkxcomp.sh $CALLARGS && ./mkrootfs.sh $CALLARGS && \
-    ./mkbootfs.sh $CALLARGS linux-xen
+  ./mkxcomp.sh $CALLARGS $XCOMPARGS $XCOMPPKGS && \
+  ./mkrootfs.sh $CALLARGS $ROOTARGS $ROOTPKGS && \
+  ./mkbootfs.sh $CALLARGS $BOOTARGS $BOOTPKGS
 fi
 
 if [ $? = 0 ]; then
@@ -94,8 +116,8 @@ if [ $? = 0 ]; then
   ./umountbootfs.sh --mount-point $MNTPATH
   stage_down
   
-  if [ "$RETVAL" = 0 ]; then
-    #clean $LOGFILE
+  if [ "$EXITVAL" = 0 ]; then
+    clean $LOGFILE
     message "success"
   fi
 fi

@@ -27,6 +27,8 @@ DOC="undocumented command"
 DEFVAR=""
 DEFDEFAULT=""
 DEFDOC=""
+
+EXITVAL=0
 FAILEXIT="true"
 
 ARGS=("--help"
@@ -295,12 +297,13 @@ function execute
     echo -n "****************************************" >> $LOGFILE
     echo "****************************************" >> $LOGFILE
     $1 >> $LOGFILE 2>&1
+    RETVAL=$?
     
-    if [ "$?" != 0 ]; then
+    if [ "$RETVAL" != 0 ]; then
       exit_message "failed to execute command \"$1\""
     fi
-    if [ "$RETVAL" = 0 ]; then
-      RETVAL=$?
+    if [ "$EXITVAL" = 0 ]; then
+      EXITVAL=$RETVAL
     fi
     shift
   done
@@ -364,6 +367,16 @@ function mk_files
     
     stage_down
   done
+  
+  stage_down
+}
+
+function cp_files
+{
+  stage_up
+
+  message "copying contents of $1 to $2"
+  execute "cp -a --remove-destination $1/* $2"
   
   stage_down
 }
@@ -706,9 +719,9 @@ function boot_image
   
     message "creating domain $1"
     abs_path $4
-    execute "xm create -c $2 name=$1 kernel=$KERNEL disk=file:$ABSPATH,hda1,w"
+    xm create -c $2 name=$1 kernel=$KERNEL disk=file:$ABSPATH,hda1,w
   
-    if [ "$RETVAL" != 0 ]; then
+    if [ "$EXITVAL" != 0 ]; then
       message "failed to create domain $1"
     fi
     stage_down

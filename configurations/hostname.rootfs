@@ -1,0 +1,4 @@
+CONFIGURE=""
+MAKEBUILD="make CC=$CC"
+MAKEINSTALL="make BASEDIR=$ROOT CC=$CC install"
+COMMENT="won't take long"

@@ -1,0 +1,2 @@
+CONFIGURE="./configure --prefix=$ROOT --build=$HOST-linux --host=$TARGET-linux --disable-nls"
+COMMENT="about a minute"

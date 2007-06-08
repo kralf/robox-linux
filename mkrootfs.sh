@@ -26,21 +26,14 @@
 
 . ./functions.sh
 
-DEFPKGS="coreutils glibc-min ncurses readline bash pcre grep sed zlib sysvinit"
-DEFPKGS="$DEFPKGS e2fsprogs util-linux module-init-tools udev linux-modules"
-DEFPKGS="$DEFPKGS robox-linux"
+DEFPKGS="coreutils glibc-min ncurses readline bash pcre grep sed zlib"
+DEFPKGS="$DEFPKGS sysvinit e2fsprogs util-linux module-init-tools udev"
+DEFPKGS="$DEFPKGS procps hostname sysklogd dpkg shadow linux-modules"
 DIRS="proc dev mnt etc boot home root tmp usr"
 DIRS="$DIRS var var/lock var/log var/mail var/run var/spool"
-FILES="etc/passwd 600 etc/group 600"
-FILES="$FILES var/run/utmp 664"
+FILES="var/run/utmp 664"
 FILES="$FILES var/log/lastlog 664 var/log/wtmp 664 var/log/btmp 600"
-FILECONTENT="etc/passwd root::0:0:root:/root:/bin/bash"
-FILECONTENT="$FILECONTENT etc/group"
-FILECONTENT="$FILECONTENT root:x:0:\nbin:x:1:\nsys:x:2:\nkmem:x:3:\ntty:x:4:\n"
-FILECONTENT="${FILECONTENT}tape:x:5:\ndaemon:x:6:\nfloppy:x:7:\ndisk:x:8:\n"
-FILECONTENT="${FILECONTENT}lp:x:9:\ndialout:x:10:\naudio:x:11:\nvideo:x:12:\n"
-FILECONTENT="${FILECONTENT}utmp:x:13:\nusb:x:14:\ncdrom:x:15:"
-DEVS="console kmsg mem null ram[0-6] tty[0-6] ttyS[0-3] initctl"
+DEVS="console kmsg mem null ram[0-6] tty[0-6] ttyS[0-3] initctl rtc"
 EXCLDIRS="usr/man usr/info usr/share usr/include"
 EXCLFILES="*.a *.o"
 
@@ -69,6 +62,8 @@ set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
   "directory containing packages"
 set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
   "directory containing build configurations"
+set_arg "--sysinit-dir" "DIR" "SYSINITDIR" "sysinit" \
+  "directory containing sysinit files"
 set_arg "--debug" "" "DEBUG" "false" \
   "emit debugging information for all symbols"
 set_arg "--no-arch-split" "" "NOARCH" "false" \
@@ -109,7 +104,6 @@ message "creating directory structure in $FSROOT"
 
 mk_dirs $FSROOT $DIRS
 mk_files $FSROOT $FILES
-fill_files $FSROOT $FILECONTENT
 mk_devices $FSROOT $DEVS
 
 stage_down
@@ -118,6 +112,8 @@ if [ "$NOBUILD" != "true" ]; then
   process_packages rootfs $FSROOT $FSUSRDIR $BUILDROOT $PKGDIR $CFGDIR \
     $HOST $TARGET $INSTALL $PKG
 fi
+
+cp_files $SYSINITDIR $FSROOT/etc
 
 if [ "$NOEXCLUDE" != "true" ]; then
   rm_dirs $FSROOT $EXCLDIRS

@@ -1,0 +1,10 @@
+CONFIGURE="./configure --prefix=$ROOT --build=$HOST-linux --host=$TARGET-linux --disable-nls"
+MAKEBUILD=("cd getopt"
+           "make"
+           "cd ../utils"
+	   "make"
+	   "cd ..")
+MAKEINSTALL=("cd utils"
+             "make install"
+	     "cd ..")
+COMMENT="this will not take long"
