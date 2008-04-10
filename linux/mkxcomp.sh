@@ -39,6 +39,8 @@ set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
   "override host architecture"
 set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
   "target architecture"
+set_arg "--cores" "NUM" "CORES" "1" \
+  "number of cores to compile on"
 set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
   "directory containing packages"
 set_arg "--patch-dir" "DIR" "PATCHDIR" "patches" \
@@ -56,6 +58,7 @@ check_args $*
 
 BUILDROOT="$BUILDROOT/$TARGET"
 XCROOT="$XCROOT/$TARGET"
+BUILDOPTS="$BUILDOPTS -j$CORES"
 
 message "making cross compile environment in $XCROOT"
 
