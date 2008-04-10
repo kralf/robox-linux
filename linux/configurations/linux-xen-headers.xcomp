@@ -4,10 +4,10 @@ else
     ARCH="$TARGET"
 fi
 CONFIGURE="cp -ua $CFGDIR/linux-xen.$TARGET .config"
-MAKEBUILD=("make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/version.h"
-	   "make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/autoconf.h")
-MAKEINSTALL=("mkdir -p $USRROOT/include" 
-             "cp -aL include/asm-$ARCH $USRROOT/include/asm" 
-             "cp -a include/asm-generic $USRROOT/include" 
+MAKEBUILD=("make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/version.h"
+	   "make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/autoconf.h")
+MAKEINSTALL=("mkdir -p $USRROOT/include"
+             "cp -aL include/asm-$ARCH $USRROOT/include/asm"
+             "cp -a include/asm-generic $USRROOT/include"
              "cp -a include/linux $USRROOT/include")
 COMMENT="this won't take long"

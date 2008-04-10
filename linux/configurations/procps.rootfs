@@ -1,4 +1,4 @@
 CONFIGURE=""
-MAKEBUILD="make CFLAGS=-I$USRROOT/include LDFLAGS=-L$ROOT/lib CC=$CC"
-MAKEINSTALL="make DESTDIR=$ROOT CC=$CC install"
+MAKEBUILD="make $MAKEOPTS CFLAGS=-I$BUILDROOT/ncurses/include LDFLAGS=-L$BUILDROOT/ncurses/lib CC=$CC"
+MAKEINSTALL="make $MAKEOPTS DESTDIR=$ROOT CC=$CC install"
 COMMENT="yet another quick build"

@@ -1,2 +1,4 @@
-CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --host=$TARGET-linux --without-ada --enable-overwrite"
+CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --build=$HOST-linux --host=$TARGET-linux --without-ada --enable-overwrite"
+MAKEBUILD=("make $MAKEOPTS all"
+           "ln -sf curses.h include/ncurses.h")
 COMMENT="this usually takes two minutes"

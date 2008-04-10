@@ -1,2 +1,2 @@
-CONFIGURE="./configure -p=$USRROOT -e=$ROOT --shared"
+CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --shared"
 COMMENT="just a moment"

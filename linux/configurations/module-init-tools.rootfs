@@ -1,2 +1,3 @@
-CONFIGURE="$CONFIGURE --enable-zlib"
+CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --host=$TARGET-linux --enable-zlib"
+MAKEBUILD="make $MAKEOPTS CFLAGS=-I$BUILDROOT/zlib"
 COMMENT="hang on for a while"

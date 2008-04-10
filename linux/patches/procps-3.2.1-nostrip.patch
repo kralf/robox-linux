@@ -1,0 +1,24 @@
+diff -Naur procps-3.2.1/Makefile procps-3.2.1-nostrip/Makefile
+--- procps-3.2.1/Makefile	2004-03-27 05:24:57.000000000 +0100
++++ procps-3.2.1-nostrip/Makefile	2008-04-10 18:01:49.000000000 +0200
+@@ -179,7 +179,7 @@
+ ###### install
+ 
+ $(BINFILES) : all
+-	$(install) --mode a=rx --strip $(notdir $@) $@
++	$(install) --mode a=rx $(notdir $@) $@
+ 
+ $(MANFILES) : all
+ 	$(install) --mode a=r $(notdir $@) $@
+diff -Naur procps-3.2.1/proc/module.mk procps-3.2.1-nostrip/proc/module.mk
+--- procps-3.2.1/proc/module.mk	2004-01-29 21:04:45.000000000 +0100
++++ procps-3.2.1-nostrip/proc/module.mk	2008-04-10 18:03:53.000000000 +0200
+@@ -63,7 +63,7 @@
+ 
+ 
+ $(lib)/$(SONAME) : proc/$(SONAME)
+-	$(install) --mode a=rx --strip $< $@
++	$(install) --mode a=rx $< $@
+ 	cd $(lib) && $(ln_sf) $(SONAME) lib$(NAME).so
+ 	$(ldconfig)
+ 

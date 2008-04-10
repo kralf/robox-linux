@@ -1,4 +1,6 @@
 CONFIGURE=""
-MAKEBUILD="make CC=$CC"
-MAKEINSTALL="make BINDIR=$ROOT/sbin MANDIR=$USRROOT/man CC=$CC install"
+MAKEBUILD="make $MAKEOPTS CC=$CC"
+MAKEINSTALL=("mkdir -p $ROOT/usr/man/man5"
+             "mkdir -p $ROOT/usr/man/man8"
+             "make $MAKEOPTS BINDIR=$ROOT/sbin MANDIR=$USRROOT/man CC=$CC install")
 COMMENT="won't take long"

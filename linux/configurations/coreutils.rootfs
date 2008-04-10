@@ -1,6 +1,6 @@
 CONFIGURE="./configure --exec-prefix=$USRROOT --build=$HOST-linux --host=$TARGET-linux --cache-file=config.cache --disable-nls"
 if [ "$USRROOT" != "$ROOT" ]; then
-  MAKEINSTALL=("make install"
+  MAKEINSTALL=("make $MAKEOPTS install"
                "mkdir -p $ROOT/bin"
                "mv $USRROOT/bin/basename $ROOT/bin"
                "mv $USRROOT/bin/cat $ROOT/bin"
@@ -34,7 +34,7 @@ if [ "$USRROOT" != "$ROOT" ]; then
                "mkdir -p $USRROOT/sbin"
                "mv $USRROOT/bin/chroot $USRROOT/sbin")
 else
-  MAKEINSTALL=("make install"
+  MAKEINSTALL=("make $MAKEOPTS install"
                "mkdir -p $ROOT/sbin"
                "mv $ROOT/bin/chroot $ROOT/sbin")
 fi

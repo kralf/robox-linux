@@ -1,0 +1,13 @@
+diff -Naur shadow-4.0.3/configure shadow-4.0.3-nosetpgrp/configure
+--- shadow-4.0.3/configure	2007-06-08 19:30:01.000000000 +0200
++++ shadow-4.0.3-nosetpgrp/configure	2008-04-10 18:31:15.000000000 +0200
+@@ -22146,8 +22146,7 @@
+ else
+   if test "$cross_compiling" = yes; then
+   { { echo "$as_me:$LINENO: error: cannot check setpgrp when cross compiling" >&5
+-echo "$as_me: error: cannot check setpgrp when cross compiling" >&2;}
+-   { (exit 1); exit 1; }; }
++echo "$as_me: error: cannot check setpgrp when cross compiling" >&2;} }
+ else
+   cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */

@@ -12,7 +12,7 @@ MAKEBUILD=("cp -a $ROOTFS arch/$ARCH/boot/images/ramdisk.image"
            "make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- zImage.initrd")
 if [ "$TARGET" == "powerpc" ]; then
   MAKEINSTALL="cp -a arch/$ARCH/boot/images/zImage.initrd.pcore $ROOT/$IMAGE"
-else 
+else
   MAKEINSTALL=""
 fi
 COMMENT="this may take a while"

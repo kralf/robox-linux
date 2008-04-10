@@ -1,4 +1,5 @@
-CONFIGURE="$CONFIGURE --infodir=$ROOT/usr/share/info --disable-nls"
-MAKEINSTALL=("rm -f $ROOT/bin/?grep" 
-             "make install")
+CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --host=$TARGET-linux --infodir=$ROOT/usr/share/info --disable-nls"
+MAKEBUILD="make $MAKEOPTS CFLAGS=-I$BUILDROOT/pcre"
+MAKEINSTALL=("rm -f $ROOT/bin/?grep"
+             "make $MAKEOPTS install")
 COMMENT="another quick build"

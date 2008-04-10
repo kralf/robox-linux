@@ -1,1 +1,2 @@
+CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --host=$TARGET-linux"
 COMMENT="just a minute"

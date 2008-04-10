@@ -28,8 +28,8 @@
 
 BLDPKGS="$BLDPKGS coreutils glibc-min ncurses readline bash pcre grep sed"
 BLDPKGS="$BLDPKGS zlib sysvinit e2fsprogs util-linux module-init-tools udev"
-BLDPKGS="$BLDPKGS procps hostname sysklogd dpkg shadow linux-modules"
-BUILDOPTS="$BUILDOPTS"
+BLDPKGS="$BLDPKGS procps hostname sysklogd shadow linux-modules"
+MAKEOPTS="$MAKEOPTS"
 MKDIRS="$MKDIRS proc dev mnt etc boot home root tmp usr"
 MKDIRS="$MKDIRS var var/lock var/log var/mail var/run var/spool"
 MKFILES="$MKFILES var/run/utmp 664"
@@ -41,10 +41,10 @@ EXCLFILES="$EXCLFILES *.a *.o"
 init "create a root filesystem from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"
 
-set_arg "--image|-i" "" "IMAGE" "rootfs.img" \
-  "root filesystem image to be created"
 set_arg "--root" "DIR" "FSROOT" ".rootfs.root" \
   "temporary root of filesystem"
+set_arg "--image-root" "DIR" "IMGROOT" "images" \
+  "root directory of the images to be created"
 set_arg "--build-root" "DIR" "BUILDROOT" ".rootfs.build" \
   "temporary build root"
 set_arg "--mount-point" "DIR" "MNT" ".rootfs.mount" \
@@ -91,17 +91,21 @@ FSUSRDIR=""
 if [ "$NOARCH" != "true" ]; then
   FSUSRDIR="/usr"
 fi
-BUILDROOT="$BUILDROOT/$TARGET"
+IMGROOT="$IMGROOT/$TARGET"
+IMAGE="$IMGROOT/rootfs.img"
+abs_path $BUILDROOT
+BUILDROOT="$ABSPATH/$TARGET"
 abs_path $XCROOT
 XCROOT="$ABSPATH/$TARGET"
 PATH="$XCROOT/bin:$PATH"
-BUILDOPTS="$BUILDOPTS -j$CORES"
+MAKEOPTS="$MAKEOPTS -j$CORES"
 
 message "making root filesystem image $IMAGE"
 
 check_xcomp $TARGET gcc g++ ar as ranlib ld strip
 
 execute "mkdir -p $FSROOT"
+execute "mkdir -p $IMGROOT"
 execute "mkdir -p $BUILDROOT"
 
 set_xcomp $TARGET $XCROOT $FSROOT $DEBUG
@@ -116,7 +120,7 @@ mk_devices $FSROOT $MKDEVS
 stage_down
 
 if [ "$NOBUILD" != "true" ]; then
-  build_packages rootfs $FSROOT $FSUSRDIR $BUILDROOT "$BUILDOPTS" $PKGDIR \
+  build_packages rootfs $FSROOT $FSUSRDIR $BUILDROOT "$MAKEOPTS" $PKGDIR \
     $PATCHDIR $CFGDIR $HOST $TARGET $INSTALL $PKGn
 fi
 

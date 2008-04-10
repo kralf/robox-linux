@@ -626,7 +626,7 @@ function build_packages
   shift
   BUILDROOT=$1
   shift
-  BUILDOPTS=$1
+  MAKEOPTS=$1
   shift
   abs_path $1
   PGKDIR=$ABSPATH
@@ -662,8 +662,8 @@ function build_packages
         BUILDDIR="."
         DEFCONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT"
         CONFIGURE=("$DEFCONFIGURE")
-        MAKEBUILD=("make $BUILDOPTS all")
-        MAKEINSTALL=("make install")
+        MAKEBUILD=("make $MAKEOPTS all")
+        MAKEINSTALL=("make $MAKEOPTS install")
         COMMENT="this may take a while"
         TARNAME=`basename $PKG`
         FULLNAME=${TARNAME%.tar*}

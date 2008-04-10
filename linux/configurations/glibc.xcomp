@@ -1,5 +1,5 @@
 PATH="$PATH:$ROOT/bin"
 BUILDDIR="./build"
 CONFIGURE="../configure --prefix=/usr --host=$TARGET-linux --build=$HOST-linux --with-headers=$USRROOT/include --disable-debug"
-MAKEINSTALL="make install_root=$ROOT install"
+MAKEINSTALL="make $MAKEOPTS install_root=$ROOT install"
 COMMENT="consider leaving for lunch"
