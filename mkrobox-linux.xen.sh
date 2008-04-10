@@ -60,7 +60,6 @@ set_arg "--xen-config" "FILE" "XENCFG" "robox-linux.xen" \
 set_arg "--boot" "" "BOOT" "false" \
   "just boot into the image"
 
-
 check_args $*
 check_uid
 
@@ -109,13 +108,13 @@ if [ $? = 0 ]; then
   MNTPATH="$ABSPATH"
   ./mountbootfs.sh --mount-point $MNTPATH
 
-  FAILEXIT="false"  
+  FAILEXIT="false"
   boot_image "robox-linux" $XENCFG $MNTPATH "rootfs.img"
   FAILEXIT="true"
-  
+
   ./umountbootfs.sh --mount-point $MNTPATH
   stage_down
-  
+
   if [ "$EXITVAL" = 0 ]; then
     clean $LOGFILE
     message "success"

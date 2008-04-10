@@ -26,7 +26,10 @@
 
 . ./functions.sh
 
-init "create a boot filesystem from scratch" "PKG" "linux" \
+BLDPKGS="$BLDPKGS linux"
+BUILDOPTS="$BUILDOPTS -j2"
+
+init "create a boot filesystem from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"
 
 set_arg "--image|-i" "" "IMAGE" "bootfs.img" \
@@ -75,8 +78,8 @@ execute "mkdir -p $BUILDROOT"
 set_xcomp $TARGET $XCROOT $FSROOT true
 
 if [ "$NOBUILD" != "true" ]; then
-  process_packages bootfs $FSROOT "" $BUILDROOT $PKGDIR $CFGDIR \
-    $HOST $TARGET $INSTALL $PKG
+  build_packages bootfs $FSROOT "" $BUILDROOT "$BUILDOPTS" $PKGDIR $CFGDIR \
+    $HOST $TARGET $INSTALL $PKGn
 fi
 
 mk_image $IMAGE $FSROOT $MNT $FSTYPE 0

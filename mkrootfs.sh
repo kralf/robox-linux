@@ -26,18 +26,19 @@
 
 . ./functions.sh
 
-DEFPKGS="coreutils glibc-min ncurses readline bash pcre grep sed zlib"
-DEFPKGS="$DEFPKGS sysvinit e2fsprogs util-linux module-init-tools udev"
-DEFPKGS="$DEFPKGS procps hostname sysklogd dpkg shadow linux-modules"
-DIRS="proc dev mnt etc boot home root tmp usr"
-DIRS="$DIRS var var/lock var/log var/mail var/run var/spool"
-FILES="var/run/utmp 664"
-FILES="$FILES var/log/lastlog 664 var/log/wtmp 664 var/log/btmp 600"
-DEVS="console kmsg mem null ram[0-6] tty[0-6] ttyS[0-3] initctl rtc"
-EXCLDIRS="usr/man usr/info usr/share usr/include"
-EXCLFILES="*.a *.o"
+BLDPKGS="$BLDPKGS coreutils glibc-min ncurses readline bash pcre grep sed"
+BLDPKGS="$BLDPKGS zlib sysvinit e2fsprogs util-linux module-init-tools udev"
+BLDPKGS="$BLDPKGS procps hostname sysklogd dpkg shadow linux-modules"
+BUILDOPTS="$BUILDOPTS"
+MKDIRS="$MKDIRS proc dev mnt etc boot home root tmp usr"
+MKDIRS="$MKDIRS var var/lock var/log var/mail var/run var/spool"
+MKFILES="$MKFILES var/run/utmp 664"
+MKFILES="$MKFILES var/log/lastlog 664 var/log/wtmp 664 var/log/btmp 600"
+MKDEVS="$MKDEVS console kmsg mem null ram[0-6] tty[0-6] ttyS[0-3] initctl rtc"
+EXCLDIRS="$EXCLDIRS usr/man usr/info usr/share usr/include"
+EXCLFILES="$EXCLFILES *.a *.o"
 
-init "create a root filesystem from scratch" "PKG" "$DEFPKGS" \
+init "create a root filesystem from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"
 
 set_arg "--image|-i" "" "IMAGE" "rootfs.img" \
@@ -81,13 +82,14 @@ check_args $*
 check_uid
 
 abs_path $FSROOT
-FSROOT=$ABSPATH
+FSROOT="$ABSPATH/$TARGET"
 FSUSRDIR=""
 if [ "$NOARCH" != "true" ]; then
   FSUSRDIR="/usr"
 fi
+BUILDROOT="$BUILDROOT/$TARGET"
 abs_path $XCROOT
-XCROOT=$ABSPATH
+XCROOT="$ABSPATH/$TARGET"
 PATH="$XCROOT/bin:$PATH"
 
 message "making root filesystem image $IMAGE"
@@ -102,15 +104,15 @@ set_xcomp $TARGET $XCROOT $FSROOT $DEBUG
 stage_up
 message "creating directory structure in $FSROOT"
 
-mk_dirs $FSROOT $DIRS
-mk_files $FSROOT $FILES
-mk_devices $FSROOT $DEVS
+mk_dirs $FSROOT $MKDIRS
+mk_files $FSROOT $MKFILES
+mk_devices $FSROOT $MKDEVS
 
 stage_down
 
 if [ "$NOBUILD" != "true" ]; then
-  process_packages rootfs $FSROOT $FSUSRDIR $BUILDROOT $PKGDIR $CFGDIR \
-    $HOST $TARGET $INSTALL $PKG
+  build_packages rootfs $FSROOT $FSUSRDIR $BUILDROOT "$BUILDOPTS" $PKGDIR \
+    $CFGDIR $HOST $TARGET $INSTALL $PKGn
 fi
 
 cp_files $SYSINITDIR $FSROOT/etc

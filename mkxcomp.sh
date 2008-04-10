@@ -25,8 +25,10 @@
 
 . ./functions.sh
 
-init "make a cross compiling environment" "PKG" \
-  "linux-headers binutils gcc-min glibc gcc" \
+BLDPKGS="$BLDPKGS linux-headers binutils gcc-min glibc gcc"
+BUILDOPTS="$BUILDOPTS"
+
+init "make a cross compiling environment" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the environment"
 
 set_arg "--root" "DIR" "XCROOT" ".xcomp.root" \
@@ -50,14 +52,17 @@ set_arg "--clean" "" "CLEAN" "false" \
 
 check_args $*
 
+BUILDROOT="$BUILDROOT/$TARGET"
+XCROOT="$XCROOT/$TARGET"
+
 message "making cross compile environment in $XCROOT"
 
 execute "mkdir -p $XCROOT"
 execute "mkdir -p $BUILDROOT"
 
 if [ "$NOBUILD" != "true" ]; then
-  process_packages xcomp $XCROOT "/usr" $BUILDROOT $PKGDIR $CFGDIR \
-    $HOST $TARGET $INSTALL $PKG
+  build_packages xcomp $XCROOT "/usr" $BUILDROOT "$BUILDOPTS" $PKGDIR $CFGDIR \
+    $HOST $TARGET $INSTALL $PKGn
 fi
 
 if [ "$CLEAN" == "true" ]; then

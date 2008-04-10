@@ -27,7 +27,10 @@
 
 . ./functions.sh
 
-init "create a boot ramdisk image from scratch" "PKG" "linux" \
+BLDPKGS="$BLDPKGS linux"
+BUILDOPTS="$BUILDOPTS -j2"
+
+init "create a boot ramdisk image from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"
 
 set_arg "--image|-i" "" "IMAGE" "bootrd.img" \
@@ -72,8 +75,8 @@ execute "mkdir -p $BUILDROOT"
 set_xcomp $TARGET $XCROOT $FSROOT true
 
 if [ "$NOBUILD" != "true" ]; then
-  process_packages bootrd $FSROOT "" $BUILDROOT $PKGDIR $CFGDIR \
-    $HOST $TARGET false $PKG
+  build_packages bootrd $FSROOT "" $BUILDROOT "$BUILDOPTS" $PKGDIR $CFGDIR \
+    $HOST $TARGET false $PKGn
 fi
 
 if [ "$CLEAN" == "true" ]; then

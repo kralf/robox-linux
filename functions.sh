@@ -28,9 +28,6 @@ DEFVAR=""
 DEFDEFAULT=""
 DEFDOC=""
 
-EXITVAL=0
-FAILEXIT="true"
-
 ARGS=("--help"
       "--verbose|-v"
       "--logfile")
@@ -81,13 +78,13 @@ function echo_arg
   CHARS=`echo -n "$1" | wc -m`
   calc "30-$CHARS"
   BLANKS=$RETVAL
-  
+
   echo -n "  $1"
-  
+
   for (( B=0; B < $BLANKS; B++ )); do
     echo -n " "
   done
-  
+
   echo "$2"
 }
 
@@ -95,24 +92,38 @@ function echo_usage
 {
   echo -n "usage: `basename $0` [OPT1 OPT2 ...]"
   if [ "$DEFVAR" != "" ]; then
-    echo " [${DEFVAR}1 ${DEFVAR}2 ...]"
+    if [[ "$DEFVAR" =~ "n$" ]]; then
+      DSPVAR=`echo $DEFVAR | sed s/n$//`
+      echo " [${DSPVAR}1 ${DSPVAR}2 ...]"
+    else
+      echo " [${DEFVAR}]"
+    fi
   else
     echo ""
   fi
-  
+
   echo "$DOC"
 
   if [ "$DEFVAR" != "" ]; then
-   echo_arg "${DEFVAR}1 ${DEFVAR}2 ..." "$DEFDOC"
+    if [[ "$DEFVAR" =~ "n$" ]]; then
+      DSPVAR=`echo $DEFVAR | sed s/n$//`
+      echo_arg "${DSPVAR}1 ${DSPVAR}2 ..." "$DEFDOC"
+    else
+      echo_arg "${DEFVAR}" "$DEFDOC"
+    fi
   fi
 
   echo_arg "OPT1 OPT2 ..." "list of options as given below [default]"
   for (( A=0; A < ${#ARGS[@]}; A++ )); do
     ARG=${ARGS[A]}
     ARG=${ARG//"|"/", "}
-    echo_arg "$ARG ${VALS[A]}" "${DOCS[A]} [${DEFAULTS[A]}]"
+    if [ "${DEFAULTS[A]}" != "" ]; then
+      echo_arg "$ARG ${VALS[A]}" "${DOCS[A]} [${DEFAULTS[A]}]"
+    else
+      echo_arg "$ARG ${VALS[A]}" "${DOCS[A]}"
+    fi
   done
-  
+
   echo "Report bugs to <ralf.kaestner@gmail.com>, attach error logs"
 }
 
@@ -130,16 +141,16 @@ function check_args
   for (( A=0; A < ${#ARGS[@]}; A++ )); do
     eval "${VARS[A]}=\"${DEFAULTS[A]}\""
   done
-  
+
   RETVAL=0
 
   while [ "$1" != "" ]; do
     if [[ "$1" =~ "^-" ]]; then
       MATCH=false
-    
+
       for (( A=0; A < ${#ARGS[@]}; A++ )); do
         if [[ "$1" =~ "${ARGS[A]}" ]]; then
-          if [[ "${DEFAULTS[A]}" =~ "true|false|yes|no" ]]; then
+          if [[ "${DEFAULTS[A]}" =~ "\<true\>|\<false\>|\<yes\>|\<no\>" ]]; then
             eval "${VARS[A]}=\"true\""
             MATCH=true
           else
@@ -149,7 +160,7 @@ function check_args
           fi
         fi
       done
-      
+
       if [ "$MATCH" != "true" ]; then
         echo "unknown argument: $1"
         RETVAL=1
@@ -158,10 +169,10 @@ function check_args
     else
       VAR[${#VAR[*]}]=$1
     fi
-    
+
     shift
   done
-  
+
   abs_path $LOGFILE
   LOGFILE=$ABSPATH
   rm -f $LOGFILE
@@ -170,11 +181,17 @@ function check_args
     if [ ${#VAR[@]} != 0 ]; then
       eval "$DEFVAR=\"${VAR[@]}\""
     else
-      eval "$DEFVAR=\"$DEFDEFAULT\""
+      if [ "$DEFDEFAULT" != "" ]; then
+        eval "$DEFVAR=\"$DEFDEFAULT\""
+      else
+        echo "missing argument(s): $DEFVAR"
+        RETVAL=1
+        HELP=true
+      fi
     fi
   fi
-  
-  if [ "$HELP" == "true" ]; then 
+
+  if [ "$HELP" == "true" ]; then
     echo_usage
     exit $RETVAL
   fi
@@ -187,7 +204,7 @@ function check_uid
   if [ "$UID" != "0" ]; then
     exit_message "`basename $0` must be run as root"
   fi
-  
+
   stage_down
 }
 
@@ -198,12 +215,12 @@ function check_xcomp
 
   stage_up
   message "checking the cross compiler"
-  
+
   while [ "$1" != "" ]; do
     execute "$TARGET-linux-$1 --version"
     shift
   done
-  
+
   stage_down
 }
 
@@ -211,11 +228,11 @@ function check_image
 {
   stage_up
   message "checking filesystem image"
-  
+
   if ! [ -r $1 ]; then
     exit_message "image $1 could not be read"
   fi
-  
+
   stage_down
 }
 
@@ -223,7 +240,7 @@ function set_xcomp
 {
   stage_up
   message "setting up environment"
-  
+
   CC="$1-linux-gcc"
   CXX="$1-linux-g++"
   AR="$1-linux-ar"
@@ -232,10 +249,10 @@ function set_xcomp
   LD="$1-linux-ld"
   STRIP="$1T-linux-strip"
   export CC CXX AR AS RANLIB LD STRIP
-  
+
   CFLAGS="-I$2/usr/include -I$3/include -I$3/usr/include"
   LDFLAGS="-L$2/lib -L$2/usr/lib -L$3/lib -L$3/usr/lib"
-  if [ "$4" != "true" ]; then 
+  if [ "$4" != "true" ]; then
     LDFLAGS="$LDFLAGS -s"
   fi
   export CFLAGS LDFLAGS
@@ -251,13 +268,11 @@ function warn_message
 function exit_message
 {
   message "error: $1"
-  
-  if [ "$FAILEXIT" = "true" ]; then
-    message "bailing out, see $LOGFILE for details"
-    
-    STAGE=0
-    exit 1
-  fi
+
+  STAGE=0
+  message "bailing out, see $LOGFILE for details"
+
+  exit 1
 }
 
 function message
@@ -287,7 +302,7 @@ function execute
     if [ "$VERBOSE" == "true" ]; then
       message "executing \"$1\""
     fi
-  
+
     echo "COMMAND: $1" >> $LOGFILE
     echo "INVOKED BY: $SCRIPT" >> $LOGFILE
     echo "INVOKED IN: `pwd`" >> $LOGFILE
@@ -298,7 +313,7 @@ function execute
     echo "****************************************" >> $LOGFILE
     $1 >> $LOGFILE 2>&1
     RETVAL=$?
-    
+
     if [ "$RETVAL" != 0 ]; then
       exit_message "failed to execute command \"$1\""
     fi
@@ -307,7 +322,7 @@ function execute
     fi
     shift
   done
-  
+
   stage_down
 }
 
@@ -315,7 +330,7 @@ function execute_if
 {
   COND = $1
   shift
-  
+
   if [ "$COND" == "true" ]; then
     execute $2
   fi
@@ -330,20 +345,20 @@ function mk_dirs
 {
   ROOT=$1
   shift
-  
+
   stage_up
   message "making directory structure in $ROOT"
-  
+
   while [ "$1" != "" ]; do
     stage_up
     message "making directory /$1"
-    
+
     execute "mkdir -p $ROOT/$1"
     shift
-    
+
     stage_down
   done
-  
+
   stage_down
 }
 
@@ -351,23 +366,23 @@ function mk_files
 {
   ROOT=$1
   shift
-  
+
   stage_up
   message "making files in $ROOT"
-  
+
   while [ "$1" != "" ]; do
     stage_up
     message "making file /$1"
-    
+
     execute "touch $ROOT/$1"
     >$ROOT/$1
     execute "chmod -v $2 $ROOT/$1"
     shift
     shift
-    
+
     stage_down
   done
-  
+
   stage_down
 }
 
@@ -377,7 +392,7 @@ function cp_files
 
   message "copying contents of $1 to $2"
   execute "cp -a --remove-destination $1/* $2"
-  
+
   stage_down
 }
 
@@ -385,20 +400,20 @@ function rm_dirs
 {
   ROOT=$1
   shift
-  
+
   stage_up
   message "removing directories in $ROOT"
-  
+
   while [ "$1" != "" ]; do
     stage_up
     message "removing directory /$1"
-    
+
     execute "rm -rf $ROOT/$1"
     shift
-    
+
     stage_down
   done
-  
+
   stage_down
 }
 
@@ -406,40 +421,40 @@ function rm_files
 {
   ROOT=$1
   shift
-  
-  stage_up 
+
+  stage_up
   message "removing files in $ROOT"
-  
+
   RETDIR=`pwd`
   execute "cd $ROOT"
-  
+
   while [ "$1" != "" ]; do
     stage_up
     message "removing file(s) /$1"
-    
+
     execute "find -wholename ./$1 -exec rm -rf {} ;"
     shift
-    
+
     stage_down
   done
-  
+
   execute "cd $RETDIR"
-  
+
   stage_down
 }
 
 function rm_brokenlinks
 {
-  stage_up 
+  stage_up
   message "removing broken links in $1"
-  
+
   LINKS=`find $1 -type l`
   for LINK in $LINKS; do
     if ! [ -e $LINK ]; then
       execute "rm -rf $LINK"
-    fi  
+    fi
   done
-  
+
   stage_down
 }
 
@@ -447,21 +462,21 @@ function fill_files
 {
   ROOT=$1
   shift
-  
+
   stage_up
   message "filling files in $ROOT"
-  
+
   while [ "$1" != "" ]; do
     stage_up
     message "filling file /$1"
-    
+
     echo -e $2 > $ROOT/$1
     shift
     shift
-    
+
     stage_down
   done
-  
+
   stage_down
 }
 
@@ -472,17 +487,99 @@ function mk_devices
 
   stage_up
   message "making devices in $ROOT/dev"
-  
+
   while [ "$1" != "" ]; do
     stage_up
     message "making device(s) $1"
-    
+
     execute "cp -a --remove-destination /dev/$1 $ROOT/dev"
     shift
-    
+
     stage_down
   done
-  
+
+  stage_down
+}
+
+function mk_groups
+{
+  ROOT=$1
+  shift
+
+  stage_up
+  message "making groups in $ROOT"
+
+  while [ "$1" != "" ]; do
+    stage_up
+    message "adding group $1"
+
+    execute "chroot $ROOT groupadd --gid $2 $1"
+    shift
+    shift
+
+    stage_down
+  done
+
+  stage_down
+}
+
+function mk_users
+{
+  ROOT=$1
+  shift
+
+  stage_up
+  message "making users in $ROOT"
+
+  while [ "$1" != "" ]; do
+    stage_up
+    message "adding user $1"
+
+    PASSWD=`mkpasswd --hash=md5 $6`
+    execute "chroot $ROOT useradd -u $2 -g $3 -m -d $4 -s $5 -p $PASSWD $1"
+    if [ -d $4 ]; then
+      execute "chown -R $2:$3 $ROOT$4"
+    fi
+    shift
+    shift
+    shift
+    shift
+    shift
+    shift
+
+    stage_down
+  done
+
+  stage_down
+}
+
+function mod_users
+{
+  ROOT=$1
+  shift
+
+  stage_up
+  message "making users in $ROOT"
+
+  while [ "$1" != "" ]; do
+    stage_up
+    message "adding user $1"
+
+    PASSWD=`mkpasswd --hash=md5 $6`
+    execute "chroot $ROOT useradd -u $2 -g $3 -m -d $4 -s $5 -p $PASSWD $1"
+    if [ -d $4 ]; then
+      execute "chown -R $2:$3 $ROOT$4"
+    fi
+    shift
+    shift
+    shift
+    shift
+    shift
+    shift
+
+    stage_down
+  done
+
   stage_down
 }
 
@@ -517,7 +614,7 @@ function extract_package
   esac
 }
 
-function process_packages
+function build_packages
 {
   SUFFIX=$1
   shift
@@ -528,6 +625,8 @@ function process_packages
   USRROOT=$ROOT$USRDIR
   shift
   BUILDROOT=$1
+  shift
+  BUILDOPTS=$1
   shift
   abs_path $1
   PGKDIR=$ABSPATH
@@ -545,23 +644,22 @@ function process_packages
   stage_up
   message "processing package list"
   stage_up
-  
+
   while [ "$1" != "" ]; do
     PKGS=`ls $PKGDIR/$1-[0-9]*.{gz,bz2} 2> /dev/null`
-    
+
     if [ "$PKGS" == "" ]; then
       warn_message "package $1 not found"
     fi
-    
+
     for PKG in $PKGS; do
       PKG=`readlink -m $PKG`
       if [ -r $PKG ]; then
         ADDONS=""
         BUILDDIR="."
         DEFCONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT"
-        DEFCONFIGURE="$DEFCONFIGURE --build=$HOST-linux --host=$TARGET-linux"
         CONFIGURE=("$DEFCONFIGURE")
-        MAKEBUILD=("make all")
+        MAKEBUILD=("make $BUILDOPTS all")
         MAKEINSTALL=("make install")
         COMMENT="this may take a while"
         TARNAME=`basename $PKG`
@@ -583,75 +681,75 @@ function process_packages
         else
           message "extracting contents of `basename $PKG` to $PKGBUILDROOT"
           extract_package $BUILDROOT $PKG
-          
+
           PATCHES=`ls $PKGDIR/$1-[0-9]*.patch 2> /dev/null`
           if [ "$PATCHES" != "" ]; then
             message "patching package sources"
             stage_up
-            
+
             for PATCH in $PATCHES; do
               message "applying $PATCH"
               patch -d $BUILDROOT -p0 < $PATCH >& /dev/null
             done
-            
+
             stage_down
           fi
 
-          if [ ! -x $PKGBUILDROOT ]; then 
+          if [ ! -x $PKGBUILDROOT ]; then
             execute "mv $BUILDROOT/$EXTRACTPKG $PKGBUILDROOT"
           fi
-          
+
           if [ "$ADDONS" != "" ]; then
             message "extracting addons to $PKGBUILDROOT"
             stage_up
-            
+
             for ADDON in $ADDONS; do
               ADDONPKGS=`ls $PKGDIR/$ADDON-[0-9]*.{gz,bz2} 2> /dev/null`
               for ADDONPKG in $ADDONPKGS; do
                 ADDONPKG=`readlink -m $ADDONPKG`
-              
+
                 MSG="extracting contents of `basename $ADDONPKG`"
                 MSG="$MSG to $PKGBUILDROOT"
                 message $MSG
                 extract_package $PKGBUILDROOT $ADDONPKG
               done
             done
-            
+
             stage_down
           fi
         fi
-        
-        message "descending into build directory"                
+
+        message "descending into build directory"
         RETDIR=`pwd`
         execute "cd $PKGBUILDROOT"
         if [ ! -x $BUILDDIR ]; then
           execute "mkdir -p $BUILDDIR"
         fi
         execute "cd $BUILDDIR"
-          
+
         if [ "$INSTALL" != "true" ] && [ "$CONFIGURE" != "" ]; then
-          message "configuring package sources"                
+          message "configuring package sources"
           execute "${CONFIGURE[@]}"
         fi
         if [ "$INSTALL" != "true" ] && [ "$MAKEBUILD" != "" ]; then
           message "compiling package sources ($COMMENT)"
           execute "${MAKEBUILD[@]}"
         fi
-            
+
         if [ "$MAKEINSTALL" != "" ]; then
           message "installing built package content"
           execute "${MAKEINSTALL[@]}"
         fi
-            
-        message "ascending from build directory"                
+
+        message "ascending from build directory"
         execute "cd $RETDIR"
-    
-        stage_down    
+
+        stage_down
       fi
     done
     shift
   done
-  
+
   stage_down
   stage_down
 }
@@ -661,29 +759,29 @@ function mk_image
   stage_up
   message "making filesystem image $1"
   stage_up
-  
+
   message "evaluating image size"
   get_dirsize $2
   calc "$SIZE*1.05+$5"
   SIZE=$RETVAL
-  
+
   message "writing zeroed image"
   execute "dd if=/dev/zero of=$1 bs=1k count=$SIZE"
-  
+
   message "building filesystem on image device"
   execute "/sbin/mkfs -t $4 -F $1"
-  
+
   message "mounting filesystem image to $3"
   execute "mkdir -p $3"
   execute "mount -o loop $1 $3"
-  
+
   message "copying filesystem content"
   execute "cp -a $2/* $3"
-  
+
   message "unmounting filesystem image"
   execute "umount $3"
   execute "rm -rf $3"
-  
+
   stage_down
   stage_down
 }
@@ -692,19 +790,19 @@ function clean
 {
   stage_up
   message "cleaning up working directories"
-  
+
   while [ "$1" != "" ]; do
     rm -rf $1
     shift
   done
-  
+
   stage_down
 }
 
 function upload_image
 {
   message "uploading image $1 to $2"
-  
+
   execute "scp $1 $3@$2:$4"
 }
 
@@ -716,11 +814,11 @@ function boot_image
   else
     message "booting kernel $KERNEL"
     stage_up
-  
+
     message "creating domain $1"
     abs_path $4
     xm create -c $2 name=$1 kernel=$KERNEL disk=file:$ABSPATH,hda1,w
-  
+
     if [ "$EXITVAL" != 0 ]; then
       message "failed to create domain $1"
     fi
