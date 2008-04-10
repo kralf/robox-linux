@@ -1,0 +1,24 @@
+diff -urN module-init-tools-3.2.2/configure module-init-tools-3.2.2-shared/configure
+--- module-init-tools-3.2.2/configure	2005-12-07 05:43:46.000000000 +0100
++++ module-init-tools-3.2.2-shared/configure	2007-02-06 21:39:39.000000000 +0100
+@@ -1741,7 +1741,7 @@
+ #define CONFIG_USE_ZLIB 1
+ _ACEOF
+ 
+-  zlib_flags="-Wl,-Bstatic -lz -Wl,-Bdynamic"
++  zlib_flags="-Wl,-Bdynamic -lz"
+ fi
+ fi;
+ 
+diff -urN module-init-tools-3.2.2/configure.in module-init-tools-3.2.2-shared/configure.in
+--- module-init-tools-3.2.2/configure.in	2005-12-02 00:20:48.000000000 +0100
++++ module-init-tools-3.2.2-shared/configure.in	2007-02-06 21:39:50.000000000 +0100
+@@ -10,7 +10,7 @@
+ [  --enable-zlib               Handle gzipped modules],
+ [if test "$enableval" = "yes"; then
+   AC_DEFINE(CONFIG_USE_ZLIB)
+-  zlib_flags="-Wl,-Bstatic -lz -Wl,-Bdynamic"
++  zlib_flags="-Wl,-Bdynamic -lz"
+ fi])
+ 
+ AC_PROG_CC

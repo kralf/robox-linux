@@ -1,0 +1,15 @@
+diff -ur linux-xen-2.6.20.3/arch/i386/kernel/fixup.c linux-xen-2.6.20.3-fixup/arch/i386/kernel/fixup.c
+--- linux-xen-2.6.20.3/arch/i386/kernel/fixup.c	2007-06-06 10:52:28.000000000 +0200
++++ linux-xen-2.6.20.3-fixup/arch/i386/kernel/fixup.c	2007-06-07 23:55:53.000000000 +0200
+@@ -78,11 +78,6 @@
+ 	}
+ 
+ 	printk("Continuing...\n\n");
+-#else
+-	if (printk_ratelimit())
+-		printk(KERN_WARNING
+-		       "4gb seg fixup, process %s (pid %d), cs:ip %02x:%08lx\n",
+-		       current->comm, current->tgid, regs->xcs, regs->eip);
+ #endif
+ }
+ 

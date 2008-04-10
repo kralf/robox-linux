@@ -1,0 +1,24 @@
+diff -urN e2fsprogs-1.39/configure e2fsprogs-1.39-strip/configure
+--- e2fsprogs-1.39/configure	2006-04-09 03:37:51.000000000 +0200
++++ e2fsprogs-1.39-strip/configure	2007-02-06 18:31:06.000000000 +0100
+@@ -3076,7 +3076,7 @@
+ echo "${ECHO_T}LDFLAGS is $withval" >&6
+ LDFLAGS=$withval
+ else
+-  LDFLAGS=
++  LDFLAGS="$LDFLAGS"
+ fi;
+ 
+ # Check whether --with-root-prefix or --without-root-prefix was given.
+diff -urN e2fsprogs-1.39/configure.in e2fsprogs-1.39-strip/configure.in
+--- e2fsprogs-1.39/configure.in	2006-04-09 03:36:21.000000000 +0200
++++ e2fsprogs-1.39-strip/configure.in	2007-02-06 18:31:24.000000000 +0100
+@@ -126,7 +126,7 @@
+ [  --with-ldopts=LDOPTS    select linker command line options],
+ AC_MSG_RESULT(LDFLAGS is $withval)
+ LDFLAGS=$withval,
+-LDFLAGS=)dnl
++LDFLAGS="$LDFLAGS")dnl
+ AC_SUBST(LDFLAGS)
+ dnl
+ dnl Allow separate `root_prefix' to be specified

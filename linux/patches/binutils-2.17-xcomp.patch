@@ -1,0 +1,31 @@
+diff -ru binutils-2.17/configure binutils-2.17-xcomp/configure
+--- binutils-2.17/configure	2006-04-06 23:49:25.000000000 +0200
++++ binutils-2.17-xcomp/configure	2007-06-02 00:36:25.000000000 +0200
+@@ -663,10 +663,9 @@
+ build_os=`echo $build | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
+ echo "$ac_t""$build" 1>&6
+ 
+-test "$host_alias" != "$target_alias" &&
+-  test "$program_prefix$program_suffix$program_transform_name" = \
+-    NONENONEs,x,x, &&
+-  program_prefix=${target_alias}-
++test "$program_prefix$program_suffix$program_transform_name" = \
++  NONENONEs,x,x, &&
++program_prefix=${target_alias}-
+ 
+ if test "$program_transform_name" = s,x,x,; then
+   program_transform_name=
+@@ -952,12 +951,7 @@
+ appdirs=""
+ 
+ # Define is_cross_compiler to save on calls to 'test'.
+-is_cross_compiler=
+-if test x"${host}" = x"${target}" ; then
+-  is_cross_compiler=no
+-else
+-  is_cross_compiler=yes
+-fi	
++is_cross_compiler=yes
+ 
+ # Find the build and target subdir names.
+  case ${build_alias} in

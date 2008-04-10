@@ -1,0 +1,22 @@
+diff -ur glibc-2.5/nptl/sysdeps/pthread/configure glibc-2.5/nptl/sysdeps/pthread.pthread/configure
+--- glibc-2.5/nptl/sysdeps/pthread/configure	2006-09-29 22:18:33.000000000 +0200
++++ glibc-2.5/nptl/sysdeps/pthread.pthread/configure	2007-01-30 22:44:24.000000000 +0100
+@@ -152,8 +152,4 @@
+ echo "$as_me: error: the compiler must support C cleanup handling" >&2;}
+    { (exit 1); exit 1; }; }
+   fi
+-else
+-  { { echo "$as_me:$LINENO: error: forced unwind support is required" >&5
+-echo "$as_me: error: forced unwind support is required" >&2;}
+-   { (exit 1); exit 1; }; }
+ fi
+diff -ur glibc-2.5/nptl/sysdeps/pthread/configure.in glibc-2.5/nptl/sysdeps/pthread.pthread/configure.in
+--- glibc-2.5/nptl/sysdeps/pthread/configure.in	2003-12-03 07:50:01.000000000 +0100
++++ glibc-2.5/nptl/sysdeps/pthread.pthread/configure.in	2007-01-30 22:46:26.000000000 +0100
+@@ -44,6 +44,4 @@
+   if test $libc_cv_c_cleanup = no; then
+     AC_MSG_ERROR([the compiler must support C cleanup handling])
+   fi
+-else
+-  AC_MSG_ERROR(forced unwind support is required)
+ fi

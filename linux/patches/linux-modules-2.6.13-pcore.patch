@@ -1,0 +1,27 @@
+diff -urN linux-2.6.13/arch/ppc/boot/simple/misc.c linux-2.6.13-pcore/arch/ppc/boot/simple/misc.c
+--- linux-2.6.13/arch/ppc/boot/simple/misc.c	2005-08-29 01:41:01.000000000 +0200
++++ linux-2.6.13-pcore/arch/ppc/boot/simple/misc.c	2007-02-19 18:26:43.000000000 +0100
+@@ -269,11 +269,6 @@
+ 	return rec;
+ }
+ 
+-void __attribute__ ((weak))
+-board_isa_init(void)
+-{
+-}
+-
+ /* Allow decompress_kernel to be hooked into.  This is the default. */
+ void * __attribute__ ((weak))
+ load_kernel(unsigned long load_addr, int num_words, unsigned long cksum,
+diff -urN linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/platforms/pcore.c
+--- linux-2.6.13/arch/ppc/platforms/pcore.c	2005-08-29 01:41:01.000000000 +0200
++++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.c	2007-02-19 18:27:19.000000000 +0100
+@@ -235,8 +235,6 @@
+ 	else
+ 		printk("680\n");
+ 	printk(KERN_INFO "Port by MontaVista Software, Inc. (source@mvista.com)\n");
+-	_set_L2CR(L2CR_L2E | _get_L2CR());
+-
+ }
+ 
+ static void

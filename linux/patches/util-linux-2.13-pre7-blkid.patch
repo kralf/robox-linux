@@ -1,0 +1,29 @@
+diff -urN util-linux-2.13-pre7/configure util-linux-2.13-pre7-blkid/configure
+--- util-linux-2.13-pre7/configure	2006-03-06 00:30:02.000000000 +0100
++++ util-linux-2.13-pre7-blkid/configure	2007-02-06 20:41:28.000000000 +0100
+@@ -6586,14 +6586,6 @@
+ fi
+ echo "$as_me:$LINENO: result: $ac_cv_lib_blkid_blkid_known_fstype" >&5
+ echo "${ECHO_T}$ac_cv_lib_blkid_blkid_known_fstype" >&6
+-if test $ac_cv_lib_blkid_blkid_known_fstype = yes; then
+-  cat >>confdefs.h <<_ACEOF
+-#define HAVE_LIBBLKID 1
+-_ACEOF
+-
+-  LIBS="-lblkid $LIBS"
+-
+-fi
+ 
+ 
+ 
+diff -urN util-linux-2.13-pre7/configure.ac util-linux-2.13-pre7-blkid/configure.ac
+--- util-linux-2.13-pre7/configure.ac	2006-03-05 23:20:52.000000000 +0100
++++ util-linux-2.13-pre7-blkid/configure.ac	2007-02-06 20:41:46.000000000 +0100
+@@ -56,7 +56,6 @@
+ AC_CHECK_LIB(termcap, tgetnum)
+ AM_CONDITIONAL(HAVE_TERMCAP, test x$ac_cv_lib_termcap_tgetnum = xyes)
+ 
+-AC_CHECK_LIB(blkid, blkid_known_fstype)
+ AM_CONDITIONAL(HAVE_BLKID, test x$ac_cv_lib_blkid_blkid_known_fstype = xyes)
+ 
+ 

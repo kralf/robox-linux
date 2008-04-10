@@ -1,0 +1,11 @@
+diff -ru udev-105/Makefile udev-105-start/Makefile
+--- udev-105/Makefile	2007-02-03 01:24:48.000000000 +0100
++++ udev-105-start/Makefile	2007-06-08 12:50:41.000000000 +0200
+@@ -278,6 +278,7 @@
+ 	$(INSTALL_PROGRAM) -D udevd $(DESTDIR)$(sbindir)/udevd
+ 	$(INSTALL_PROGRAM) -D udevtrigger $(DESTDIR)$(sbindir)/udevtrigger
+ 	$(INSTALL_PROGRAM) -D udevsettle $(DESTDIR)$(sbindir)/udevsettle
++	$(INSTALL_PROGRAM) -D udevstart $(DESTDIR)$(sbindir)/udevstart
+ 	$(INSTALL_PROGRAM) -D udevcontrol $(DESTDIR)$(sbindir)/udevcontrol
+ 	$(INSTALL_PROGRAM) -D udevmonitor $(DESTDIR)$(usrsbindir)/udevmonitor
+ 	$(INSTALL_PROGRAM) -D udevinfo $(DESTDIR)$(usrbindir)/udevinfo
