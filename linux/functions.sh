@@ -632,6 +632,9 @@ function build_packages
   PGKDIR=$ABSPATH
   shift
   abs_path $1
+  PATCHDIR=$ABSPATH
+  shift
+  abs_path $1
   CFGDIR=$ABSPATH
   shift
   HOST=$1
@@ -682,7 +685,7 @@ function build_packages
           message "extracting contents of `basename $PKG` to $PKGBUILDROOT"
           extract_package $BUILDROOT $PKG
 
-          PATCHES=`ls $PKGDIR/$1-[0-9]*.patch 2> /dev/null`
+          PATCHES=`ls $PATCHDIR/$1-[0-9]*.patch 2> /dev/null`
           if [ "$PATCHES" != "" ]; then
             message "patching package sources"
             stage_up

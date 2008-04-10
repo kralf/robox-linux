@@ -47,6 +47,8 @@ set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
   "target architecture"
 set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
   "directory containing packages"
+set_arg "--patch-dir" "DIR" "PATCHDIR" "patches" \
+  "directory containing patches"
 set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
   "directory containing build configurations"
 set_arg "--no-build" "" "NOBUILD" "false" \
@@ -75,8 +77,8 @@ execute "mkdir -p $BUILDROOT"
 set_xcomp $TARGET $XCROOT $FSROOT true
 
 if [ "$NOBUILD" != "true" ]; then
-  build_packages bootrd $FSROOT "" $BUILDROOT "$BUILDOPTS" $PKGDIR $CFGDIR \
-    $HOST $TARGET false $PKGn
+  build_packages bootrd $FSROOT "" $BUILDROOT "$BUILDOPTS" $PKGDIR $PATCHDIR \
+    $CFGDIR $HOST $TARGET false $PKGn
 fi
 
 if [ "$CLEAN" == "true" ]; then

@@ -61,6 +61,8 @@ set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
   "target architecture"
 set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
   "directory containing packages"
+set_arg "--patch-dir" "DIR" "PATCHDIR" "patches" \
+  "directory containing patches"
 set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
   "directory containing build configurations"
 set_arg "--sysinit-dir" "DIR" "SYSINITDIR" "sysinit" \
@@ -112,7 +114,7 @@ stage_down
 
 if [ "$NOBUILD" != "true" ]; then
   build_packages rootfs $FSROOT $FSUSRDIR $BUILDROOT "$BUILDOPTS" $PKGDIR \
-    $CFGDIR $HOST $TARGET $INSTALL $PKGn
+    $PATCHDIR $CFGDIR $HOST $TARGET $INSTALL $PKGn
 fi
 
 cp_files $SYSINITDIR $FSROOT/etc
