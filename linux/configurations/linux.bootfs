@@ -9,7 +9,7 @@ else
     BUILD="zImage"
 fi
 CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
-MAKEBUILD="make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- $BUILD"
+MAKEBUILD="make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- $BUILD"
 MAKEINSTALL=("chmod a-x vmlinux"
              "cp -a vmlinux $ROOT/vmlinux-$VERSION"
              "cp -a System.map $ROOT/System.map-$VERSION"

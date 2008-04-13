@@ -458,6 +458,50 @@ function rm_brokenlinks
   stage_down
 }
 
+function chown_dirs
+{
+  ROOT=$1
+  shift
+
+  stage_up
+  message "changing directory ownerships"
+
+  while [ "$1" != "" ]; do
+    stage_up
+    message "changing ownership of $ROOT/$1 to $2"
+
+    execute "chown -R $2 $ROOT/$1"
+    shift
+    shift
+
+    stage_down
+  done
+
+  stage_down
+}
+
+function chmod_dirs
+{
+  ROOT=$1
+  shift
+
+  stage_up
+  message "changing directory permissions"
+
+  while [ "$1" != "" ]; do
+    stage_up
+    message "changing permissions of $ROOT/$1 to $2"
+
+    execute "find $ROOT/$1 -type d -exec chmod $2 {} ;"
+    shift
+    shift
+
+    stage_down
+  done
+
+  stage_down
+}
+
 function fill_files
 {
   ROOT=$1

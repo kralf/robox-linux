@@ -4,7 +4,7 @@ else
     ARCH="$TARGET"
 fi
 CONFIGURE="cp -ua $CFGDIR/linux-xen.$TARGET .config"
-MAKEBUILD="make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- vmlinuz"
+MAKEBUILD="make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- vmlinuz"
 MAKEINSTALL=("chmod a-x vmlinux"
              "cp -a vmlinux $ROOT/vmlinux-$VERSION"
              "cp -a System.map $ROOT/System.map-$VERSION"

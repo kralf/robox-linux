@@ -27,15 +27,15 @@
 . ./functions.sh
 
 BLDPKGS="$BLDPKGS linux"
-BUILDOPTS="$BUILDOPTS -j2"
+MAKEOPTS="$MAKEOPTS -j2"
 
 init "create a boot filesystem from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"
 
-set_arg "--image|-i" "" "IMAGE" "bootfs.img" \
-  "boot filesystem image to be created"
 set_arg "--root" "DIR" "FSROOT" ".bootfs.root" \
   "temporary root of filesystem"
+set_arg "--image-root" "DIR" "IMGROOT" "images" \
+  "root directory of the images"
 set_arg "--build-root" "DIR" "BUILDROOT" ".bootfs.build" \
   "temporary build root"
 set_arg "--mount-point" "DIR" "MNT" ".rootfs.mount" \
@@ -68,12 +68,15 @@ check_uid
 
 abs_path $FSROOT
 FSROOT=$ABSPATH
+abs_path $IMGROOT
+IMGROOT="$ABSPATH/$TARGET"
+IMAGE="$IMGROOT/bootfs.img"
 abs_path $BUILDROOT
 BUILDROOT="$ABSPATH/$TARGET"
 abs_path $XCROOT
-XCROOT=$ABSPATH
+XCROOT="$ABSPATH/$TARGET"
 PATH="$XCROOT/bin:$PATH"
-BUILDOPTS="$BUILDOPTS -j$CORES"
+MAKEOPTS="$MAKEOPTS -j$CORES"
 
 message "making boot filesystem image $IMAGE"
 
@@ -85,7 +88,7 @@ execute "mkdir -p $BUILDROOT"
 set_xcomp $TARGET $XCROOT $FSROOT true
 
 if [ "$NOBUILD" != "true" ]; then
-  build_packages bootfs $FSROOT "" $BUILDROOT "$BUILDOPTS" $PKGDIR $PATCHDIR \
+  build_packages bootfs $FSROOT "" $BUILDROOT "$MAKEOPTS" $PKGDIR $PATCHDIR \
     $CFGDIR $HOST $TARGET $INSTALL $PKGn
 fi
 

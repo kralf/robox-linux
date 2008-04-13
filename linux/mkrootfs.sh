@@ -30,7 +30,7 @@ BLDPKGS="$BLDPKGS coreutils glibc-min ncurses readline bash pcre grep sed"
 BLDPKGS="$BLDPKGS zlib sysvinit e2fsprogs util-linux module-init-tools udev"
 BLDPKGS="$BLDPKGS procps hostname sysklogd shadow linux-modules"
 MAKEOPTS="$MAKEOPTS"
-MKDIRS="$MKDIRS proc dev mnt etc boot home root tmp usr"
+MKDIRS="$MKDIRS proc sys dev mnt etc boot home root tmp usr"
 MKDIRS="$MKDIRS var var/lock var/log var/mail var/run var/spool"
 MKFILES="$MKFILES var/run/utmp 664"
 MKFILES="$MKFILES var/log/lastlog 664 var/log/wtmp 664 var/log/btmp 600"
@@ -91,7 +91,8 @@ FSUSRDIR=""
 if [ "$NOARCH" != "true" ]; then
   FSUSRDIR="/usr"
 fi
-IMGROOT="$IMGROOT/$TARGET"
+abs_path $IMGROOT
+IMGROOT="$ABSPATH/$TARGET"
 IMAGE="$IMGROOT/rootfs.img"
 abs_path $BUILDROOT
 BUILDROOT="$ABSPATH/$TARGET"
@@ -125,6 +126,7 @@ if [ "$NOBUILD" != "true" ]; then
 fi
 
 cp_files $SYSINITDIR $FSROOT/etc
+chown_dirs $FSROOT etc root:root
 
 if [ "$NOEXCLUDE" != "true" ]; then
   rm_dirs $FSROOT $EXCLDIRS

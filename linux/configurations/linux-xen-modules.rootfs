@@ -5,8 +5,8 @@ else
     ARCH="$TARGET"
 fi
 CONFIGURE="cp -ua $CFGDIR/linux-xen.$TARGET .config"
-MAKEBUILD="make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- modules"
-MAKEINSTALL=("make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- INSTALL_MOD_PATH=$ROOT modules_install"
+MAKEBUILD="make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- modules"
+MAKEINSTALL=("make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- INSTALL_MOD_PATH=$ROOT modules_install"
              "rm -rf $ROOT/lib/modules/$VERSION/build"
              "rm -rf $ROOT/lib/modules/$VERSION/source")
 COMMENT="this depends on your kernel configuration"

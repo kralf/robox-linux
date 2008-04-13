@@ -9,9 +9,9 @@ fi
 CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
 MAKEBUILD=("cp -a $ROOTFS arch/$ARCH/boot/images/ramdisk.image"
            "gzip -f arch/$ARCH/boot/images/ramdisk.image"
-           "make ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- zImage.initrd")
+           "make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- zImage.initrd")
 if [ "$TARGET" == "powerpc" ]; then
-  MAKEINSTALL="cp -a arch/$ARCH/boot/images/zImage.initrd.pcore $ROOT/$IMAGE"
+  MAKEINSTALL="cp -a arch/$ARCH/boot/images/zImage.initrd.pcore $IMAGE"
 else
   MAKEINSTALL=""
 fi

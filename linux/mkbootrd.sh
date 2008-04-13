@@ -28,15 +28,13 @@
 . ./functions.sh
 
 BLDPKGS="$BLDPKGS linux"
-BUILDOPTS="$BUILDOPTS -j2"
+MAKEOPTS="$MAKEOPTS -j2"
 
 init "create a boot ramdisk image from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"
 
-set_arg "--image|-i" "" "IMAGE" "bootrd.img" \
-  "boot ramdisk image to be created"
-set_arg "--rootfs" "FILE" "ROOTFS" "rootfs.img" \
-  "root filesystem image to be attached"
+set_arg "--image-root" "DIR" "IMGROOT" "images" \
+  "root directory of the images"
 set_arg "--build-root" "DIR" "BUILDROOT" ".bootrd.build" \
   "temporary build root"
 set_arg "--xcompile-root" "DIR" "XCROOT" ".xcomp.root" \
@@ -63,14 +61,16 @@ check_uid
 
 abs_path .
 FSROOT=$ABSPATH
-abs_path $ROOTFS
-ROOTFS=$ABSPATH
+abs_path $IMGROOT
+IMGROOT="$ABSPATH/$TARGET"
+ROOTFS="$IMGROOT/rootfs.img"
+IMAGE="$IMGROOT/bootrd.img"
 abs_path $BUILDROOT
 BUILDROOT="$ABSPATH/$TARGET"
 abs_path $XCROOT
-XCROOT=$ABSPATH
+XCROOT="$ABSPATH/$TARGET"
 PATH="$XCROOT/bin:$PATH"
-BUILDOPTS="$BUILDOPTS -j$CORES"
+MAKEOPTS="$MAKEOPTS -j$CORES"
 
 message "making boot ramdisk image $IMAGE"
 
@@ -82,7 +82,7 @@ execute "mkdir -p $BUILDROOT"
 set_xcomp $TARGET $XCROOT $FSROOT true
 
 if [ "$NOBUILD" != "true" ]; then
-  build_packages bootrd $FSROOT "" $BUILDROOT "$BUILDOPTS" $PKGDIR $PATCHDIR \
+  build_packages bootrd $FSROOT "" $BUILDROOT "$MAKEOPTS" $PKGDIR $PATCHDIR \
     $CFGDIR $HOST $TARGET false $PKGn
 fi
 
