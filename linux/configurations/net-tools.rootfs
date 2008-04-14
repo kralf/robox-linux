@@ -1,0 +1,3 @@
+CONFIGURE="cp -ua $CFGDIR/net-tools.$TARGET config.h"
+MAKEINSTALL="make $MAKEOPTS BASEDIR=$ROOT install"
+COMMENT="this will not take long"

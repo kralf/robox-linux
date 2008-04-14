@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.13
-# Wed Feb 21 18:48:29 2007
+# Mon Apr 14 19:25:28 2008
 #
 CONFIG_MMU=y
 CONFIG_GENERIC_HARDIRQS=y
@@ -140,8 +140,8 @@ CONFIG_ISA_DMA_API=y
 CONFIG_GENERIC_ISA_DMA=y
 CONFIG_PCI=y
 CONFIG_PCI_DOMAINS=y
-# CONFIG_PCI_LEGACY_PROC is not set
-# CONFIG_PCI_NAMES is not set
+CONFIG_PCI_LEGACY_PROC=y
+CONFIG_PCI_NAMES=y
 
 #
 # PCCARD (PCMCIA/CardBus) support
@@ -323,8 +323,10 @@ CONFIG_NET_ETHERNET=y
 # Tulip family network device support
 #
 CONFIG_NET_TULIP=y
-# CONFIG_TULIP is not set
-CONFIG_DE4X5=y
+CONFIG_TULIP=y
+# CONFIG_TULIP_MMIO is not set
+# CONFIG_TULIP_NAPI is not set
+# CONFIG_DE4X5 is not set
 # CONFIG_WINBOND_840 is not set
 # CONFIG_DM9102 is not set
 # CONFIG_HP100 is not set
