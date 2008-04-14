@@ -28,7 +28,7 @@
 . ./functions.sh
 
 BLDPKGS="$BLDPKGS linux"
-MAKEOPTS="$MAKEOPTS -j2"
+MAKEOPTS="$MAKEOPTS"
 
 init "create a boot ramdisk image from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"

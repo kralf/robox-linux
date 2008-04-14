@@ -27,7 +27,7 @@
 . ./functions.sh
 
 BLDPKGS="$BLDPKGS linux"
-MAKEOPTS="$MAKEOPTS -j2"
+MAKEOPTS="$MAKEOPTS"
 
 init "create a boot filesystem from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"
@@ -67,7 +67,7 @@ check_args $*
 check_uid
 
 abs_path $FSROOT
-FSROOT=$ABSPATH
+FSROOT="$ABSPATH/$TARGET"
 abs_path $IMGROOT
 IMGROOT="$ABSPATH/$TARGET"
 IMAGE="$IMGROOT/bootfs.img"

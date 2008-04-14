@@ -28,14 +28,16 @@
 XCOMPPKGS="linux-xen-headers binutils gcc-min glibc gcc"
 ROOTPKGS="coreutils glibc-min ncurses readline bash pcre grep sed zlib"
 ROOTPKGS="$ROOTPKGS sysvinit e2fsprogs util-linux module-init-tools udev"
-ROOTPKGS="$ROOTPKGS procps hostname sysklogd dpkg shadow linux-xen-modules"
+ROOTPKGS="$ROOTPKGS procps hostname sysklogd shadow linux-xen-modules"
 BOOTPKGS="linux-xen"
 
 init "create robox-linux image and boot it in a Xen virtual machine"
 
+set_arg "--image-root" "DIR" "IMGROOT" "images" \
+  "root directory of the images to be created"
 set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
   "override host architecture"
-set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
+set_arg "--target" "i686|powerpc|..." "TARGET" "i686" \
   "target architecture"
 set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
   "directory containing packages"
@@ -63,6 +65,9 @@ set_arg "--boot" "" "BOOT" "false" \
 check_args $*
 check_uid
 
+abs_path $IMGROOT
+IMGROOT="$ABSPATH/$TARGET"
+
 STAGE=0
 export STAGE
 
@@ -86,12 +91,13 @@ fi
 if [ "$NOXCOMP" = "true" ]; then
   XCOMPARGS="--no-build"
 fi
-ROOTARGS="--no-exclusions"
+ROOTARGS="--image-root $IMGROOT --no-exclusions"
 if [ "$NOROOT" = "true" ]; then
   ROOTARGS="$ROOTARGS --no-build"
 fi
+BOOTARGS="--image-root $IMGROOT"
 if [ "$NOBOOT" = "true" ]; then
-  BOOTARGS="--no-build"
+  BOOTARGS="$BOOTARGS --no-build"
 fi
 
 message "making robox-linux"
@@ -106,10 +112,10 @@ fi
 if [ $? = 0 ]; then
   abs_path $MNT
   MNTPATH="$ABSPATH"
-  ./mountbootfs.sh --mount-point $MNTPATH
+  ./mountbootfs.sh --image $IMGROOT/bootfs.img --mount-point $MNTPATH
 
   FAILEXIT="false"
-  boot_image "robox-linux" $XENCFG $MNTPATH "rootfs.img"
+  boot_image "robox-linux" $XENCFG $MNTPATH "$IMGROOT/rootfs.img"
   FAILEXIT="true"
 
   ./umountbootfs.sh --mount-point $MNTPATH

@@ -1,5 +1,5 @@
+CFLAGS="-I$BUILDROOT/zlib -I$BUILDROOT/ncurses/include"
 CONFIGURE="./configure --prefix=$ROOT --host=$TARGET-linux --disable-nls"
-MAKEBUILD="make $MAKEOPTS CFLAGS=-I$BUILDROOT/zlib"
 MAKEINSTALL=("make $MAKEOPTS install"
              "ln -sf agetty $ROOT/sbin/getty")
 COMMENT="should not take long"

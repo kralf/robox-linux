@@ -510,7 +510,12 @@ CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
 # Character devices
 #
 # CONFIG_VT is not set
+# CONFIG_VT_CONSOLE is not set
+# CONFIG_VT_HW_CONSOLE_BINDING is not set
 # CONFIG_SERIAL_NONSTANDARD is not set
+# CONFIG_VGA_CONSOLE is not set
+# CONFIG_VGACON_SOFT_SCROLLBACK is not set
+# CONFIG_VIDEO_SELECT is not se t
 
 #
 # Serial drivers

@@ -106,7 +106,7 @@ root = "/dev/hda1"
 #nfs_root   = '/full/path/to/root/directory'
 
 # Sets runlevel.
-extra = "3"
+#extra = "3"
 
 #----------------------------------------------------------------------------
 # Configure the behaviour when a domain exits.  There are three 'reasons'
