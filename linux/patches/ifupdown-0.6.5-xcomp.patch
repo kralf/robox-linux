@@ -1,0 +1,10 @@
+diff -Naur ifupdown-0.6.5/Makefile ifupdown-0.6.5-xcomp/Makefile
+--- ifupdown-0.6.5/Makefile	2005-04-05 19:35:17.000000000 +0200
++++ ifupdown-0.6.5-xcomp/Makefile	2008-04-15 09:39:31.000000000 +0200
+@@ -1,5 +1,5 @@
+ CFLAGS := -Wall -W -g -O2 -D'IFUPDOWN_VERSION="0.6.5"'
+-CC := gcc
++#CC := gcc
+ 
+ CFILES := addrfam.c execute.c config.c main.c archlinux.c
+ HFILES := header.h archlinux.h

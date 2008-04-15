@@ -1,0 +1,8 @@
+CONFIGURE=""
+MAKEINSTALL=("cp -a arping $USRROOT/bin"
+             "cp -a ping $ROOT/bin"
+             "cp -a ping6 $ROOT/bin"
+             "cp -a tracepath $USRROOT/sbin"
+             "cp -a tracepath6 $USRROOT/sbin"
+             "cp -a traceroute6 $USRROOT/sbin")
+COMMENT="this will not take long"

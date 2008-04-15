@@ -29,6 +29,7 @@
 BLDPKGS="$BLDPKGS coreutils glibc-min ncurses readline bash pcre grep sed"
 BLDPKGS="$BLDPKGS zlib sysvinit e2fsprogs util-linux module-init-tools udev"
 BLDPKGS="$BLDPKGS procps hostname sysklogd shadow dpkg linux-modules"
+BLDPKGS="$BLDPKGS net-tools iputils ifupdown debianutils"
 MAKEOPTS="$MAKEOPTS"
 MKDIRS="$MKDIRS proc sys dev mnt etc boot home root tmp usr"
 MKDIRS="$MKDIRS var var/lock var/log var/mail var/run var/spool"
