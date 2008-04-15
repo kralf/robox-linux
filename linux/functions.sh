@@ -809,14 +809,14 @@ function mk_image
 
   message "evaluating image size"
   get_dirsize $2
-  calc "$SIZE*1.05+$5"
+  calc "$SIZE*1.05+$6"
   SIZE=$RETVAL
 
   message "writing zeroed image"
   execute "dd if=/dev/zero of=$1 bs=1k count=$SIZE"
 
   message "building filesystem on image device"
-  execute "/sbin/mkfs -t $4 -F $1"
+  execute "/sbin/mkfs -t $4 -F $1 -b $5"
 
   message "mounting filesystem image to $3"
   execute "mkdir -p $3"

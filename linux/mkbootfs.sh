@@ -42,6 +42,8 @@ set_arg "--mount-point" "DIR" "MNT" ".rootfs.mount" \
   "temporary mount point of root filesystem"
 set_arg "--type" "ext2|ext3|..." "FSTYPE" "ext2" \
   "type of filesystem to be built"
+set_arg "--block-size" "BYTES" "BLOCKSIZE" "1024" \
+  "size of filesystem blocks in bytes"
 set_arg "--xcompile-root" "DIR" "XCROOT" ".xcomp.root" \
   "root directory of the cross compiler"
 set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
@@ -92,7 +94,7 @@ if [ "$NOBUILD" != "true" ]; then
     $CFGDIR $HOST $TARGET $INSTALL $PKGn
 fi
 
-mk_image $IMAGE $FSROOT $MNT $FSTYPE 0
+mk_image $IMAGE $FSROOT $MNT $FSTYPE $BLOCKSIZE 0
 
 if [ "$CLEAN" == "true" ]; then
   clean $BUILDROOT $FSROOT $LOGFILE

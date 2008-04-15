@@ -29,7 +29,7 @@
 BLDPKGS="$BLDPKGS coreutils glibc-min ncurses readline bash pcre grep sed"
 BLDPKGS="$BLDPKGS zlib sysvinit e2fsprogs util-linux module-init-tools udev"
 BLDPKGS="$BLDPKGS procps hostname sysklogd shadow dpkg linux-modules"
-BLDPKGS="$BLDPKGS net-tools iputils ifupdown debianutils"
+BLDPKGS="$BLDPKGS net-tools iputils ifupdown debianutils openssl openssh"
 MAKEOPTS="$MAKEOPTS"
 MKDIRS="$MKDIRS proc sys dev mnt etc boot home root tmp usr"
 MKDIRS="$MKDIRS var var/lock var/log var/mail var/run var/spool"
@@ -52,8 +52,10 @@ set_arg "--mount-point" "DIR" "MNT" ".rootfs.mount" \
   "temporary mount point of root filesystem"
 set_arg "--type" "ext2|ext3|..." "FSTYPE" "ext2" \
   "type of filesystem to be built"
+set_arg "--block-size" "BYTES" "BLOCKSIZE" "1024" \
+  "size of filesystem blocks in bytes"
 set_arg "--space" "BLOCKS" "FSSPACE" "128" \
-  "number of free 1kB filesystem blocks"
+  "number of free filesystem blocks"
 set_arg "--xcompile-root" "DIR" "XCROOT" ".xcomp.root" \
   "root directory of the cross compiler"
 set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
@@ -135,13 +137,13 @@ if [ "$NOEXCLUDE" != "true" ]; then
 fi
 rm_brokenlinks $FSROOT
 
-mk_image $IMAGE $FSROOT $MNT $FSTYPE $FSSPACE
+mk_image $IMAGE $FSROOT $MNT $FSTYPE $BLOCKSIZE $FSSPACE
 
-if [ "$CLEAN" == "true" ]; then
-  clean $BUILDROOT $FSROOT $LOGFILE
-else
-  clean $LOGFILE
-fi
+# if [ "$CLEAN" == "true" ]; then
+#   clean $BUILDROOT $FSROOT $LOGFILE
+# else
+#   clean $LOGFILE
+# fi
 
 get_dirsize $FSROOT
 message "success, size of the root filesystem is ${SIZE}kB"
