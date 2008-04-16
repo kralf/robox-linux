@@ -1,4 +1,5 @@
-CONFIGURE="./configure CFLAGS=-I$BUILDROOT/zlib --prefix=$ROOT --build=$HOST-linux --host=$TARGET-linux --disable-nls"
+CFLAGS="$CFLAGS -I$BUILDROOT/zlib"
+CONFIGURE="./configure --prefix=$ROOT --build=$HOST-linux --host=$TARGET-linux --disable-nls"
 MAKEBUILD=("cd getopt"
            "make $MAKEOPTS"
            "cd ../utils"

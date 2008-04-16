@@ -241,6 +241,7 @@ function set_xcomp
   stage_up
   message "setting up environment"
 
+  CPP="$1-linux-cpp"
   CC="$1-linux-gcc"
   CXX="$1-linux-g++"
   AR="$1-linux-ar"

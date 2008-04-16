@@ -21,3 +21,4 @@ tape:x:26:
 sudo:x:27:
 audio:x:29:
 dip:x:30:
+ssh:x:103:

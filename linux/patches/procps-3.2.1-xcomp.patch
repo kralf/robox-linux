@@ -1,0 +1,12 @@
+diff -Naur procps-3.2.1/Makefile procps-3.2.1-xcomp/Makefile
+--- procps-3.2.1/Makefile	2004-03-27 05:24:57.000000000 +0100
++++ procps-3.2.1-xcomp/Makefile	2008-04-16 14:45:19.000000000 +0200
+@@ -31,7 +31,7 @@
+ install  := install -D --owner 0 --group 0
+ 
+ # Lame x86-64 /lib64 and /usr/lib64 abomination:
+-lib64    := lib$(shell [ -d /lib64 ] && echo 64)
++lib64    := lib
+ 
+ usr/bin                  := $(DESTDIR)/usr/bin/
+ bin                      := $(DESTDIR)/bin/
