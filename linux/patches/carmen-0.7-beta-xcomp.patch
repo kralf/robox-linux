@@ -1,0 +1,42 @@
+diff -Naur carmen-0.7-beta/src/camera/Makefile carmen-0.7-beta-xcomp/src/camera/Makefile
+--- carmen-0.7-beta/src/camera/Makefile	2007-07-10 21:19:23.000000000 +0200
++++ carmen-0.7-beta-xcomp/src/camera/Makefile	2008-04-17 16:10:26.000000000 +0200
+@@ -18,6 +18,7 @@
+ else 
+ ifneq ($(VENDOR),apple) 
+ ifneq ($(PROCESSOR),x86_64)
++ifneq ($(PROCESSOR),powerpc)
+ ifdef KERNEL_HEADERS_DIR
+ SUBDIRS += quickcam
+ PUBLIC_BINARIES += camera_quickcam
+@@ -26,6 +27,7 @@
+ endif
+ endif
+ endif
++endif
+ 
+ PUBLIC_LIBRARIES_SO = libcamera_interface.so
+ ifndef NO_PYTHON
+diff -Naur carmen-0.7-beta/src/ipc/formatters.h carmen-0.7-beta-xcomp/src/ipc/formatters.h
+--- carmen-0.7-beta/src/ipc/formatters.h	2006-01-15 22:22:33.000000000 +0100
++++ carmen-0.7-beta-xcomp/src/ipc/formatters.h	2008-04-17 15:37:58.000000000 +0200
+@@ -591,7 +591,7 @@
+ #define ALIGN ALIGN_INT
+ #elif defined (i386) && defined(__CYGWIN__)
+ #define ALIGN ALIGN_LONGEST
+-#elif defined(ppc) || defined(PPC603)
++#elif defined(ppc) || defined(PPC) || defined(PPC603)
+ #define ALIGN ALIGN_LONGEST
+ #elif defined(THINK_C) || defined(sun3) || defined(SUN3)
+ #define ALIGN ALIGN_WORD
+diff -Naur carmen-0.7-beta/src/maptools/Makefile carmen-0.7-beta-xcomp/src/maptools/Makefile
+--- carmen-0.7-beta/src/maptools/Makefile	2006-06-08 20:33:19.000000000 +0200
++++ carmen-0.7-beta-xcomp/src/maptools/Makefile	2008-04-17 16:06:38.000000000 +0200
+@@ -1,6 +1,6 @@
+ include ../Makefile.conf
+ 
+-LINK=g++
++#LINK=g++
+ LFLAGS += -lparam_interface -lglobal -lipc -lm
+ 
+ 

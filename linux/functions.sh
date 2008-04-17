@@ -654,6 +654,9 @@ function extract_package
      gz) execute "tar -xzf $EXTRACTPKG -C $1"
          EXTRACTPKG=`basename $EXTRACTPKG .tar.gz`
          ;;
+    tgz) execute "tar -xzf $EXTRACTPKG -C $1"
+         EXTRACTPKG=`basename $EXTRACTPKG .tgz`
+         ;;
       *) exit_message "unsupported format of package $EXTRACTPKG"
          ;;
   esac
@@ -694,7 +697,7 @@ function build_packages
   stage_up
 
   while [ "$1" != "" ]; do
-    PKGS=`ls $PKGDIR/$1-[0-9]*.{gz,bz2} 2> /dev/null`
+    PKGS=`ls $PKGDIR/$1-[0-9]*.{gz,tgz,bz2} 2> /dev/null`
 
     if [ "$PKGS" == "" ]; then
       warn_message "package $1 not found"

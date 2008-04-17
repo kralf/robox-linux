@@ -25,6 +25,8 @@
 
 . ./functions.sh
 
+BLDPKGS="$BLDPKGS carmen"
+
 init "create robox-linux cross compiling environment and boot image"
 
 set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
