@@ -1,11 +1,10 @@
 LDFLAGS="$LDFLAGS -S"
-if [ "$TARGET" = "powerpc" ]; then
-    ADDONS="linux-pcore"
-fi
+ARCH="$TARGET"
 if [[ "$TARGET" =~ "i[3-6]86" ]]; then
     ARCH="i386"
-else
-    ARCH="$TARGET"
+fi
+if [[ "$TARGET" == "powerpc" ]]; then
+    ARCH="ppc"
 fi
 CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
 MAKEBUILD="make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- modules"

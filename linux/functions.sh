@@ -248,7 +248,7 @@ function set_xcomp
   AS="$1-linux-as"
   RANLIB="$1-linux-ranlib"
   LD="$1-linux-ld"
-  STRIP="$1T-linux-strip"
+  STRIP="$1-linux-strip"
   export CC CXX AR AS RANLIB LD STRIP
 
   CFLAGS="-I$2/usr/include -I$3/include -I$3/usr/include"
@@ -282,7 +282,7 @@ function message
     echo -n "    "
   done
   echo -n "|-> "
-  echo $1
+  echo "$1"
 }
 
 function stage_up
@@ -433,7 +433,7 @@ function rm_files
     stage_up
     message "removing file(s) /$1"
 
-    execute "find -wholename ./$1 -exec rm -rf {} ;"
+    find -wholename ./$1 -exec rm -rf {} \; >& /dev/null
     shift
 
     stage_down
@@ -455,6 +455,22 @@ function rm_brokenlinks
       execute "rm -rf $LINK"
     fi
   done
+
+  stage_down
+}
+
+function rm_symbols
+{
+  stage_up
+  message "removing symbols links in $1"
+
+  RETDIR=`pwd`
+  execute "cd $1"
+
+  execute "find -wholename ./*.so -exec $STRIP -s {} ;"
+  execute "find -perm /111 -exec $STRIP -s {} ;"
+
+  execute "cd $RETDIR"
 
   stage_down
 }
@@ -697,40 +713,39 @@ function build_packages
   stage_up
 
   while [ "$1" != "" ]; do
-    PKGS=`ls $PKGDIR/$1-[0-9]*.{gz,tgz,bz2} 2> /dev/null`
+    ADDONS=""
+    BUILDDIR="."
+    DEFCONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT"
+    CONFIGURE=("$DEFCONFIGURE")
+    MAKEBUILD=("make $MAKEOPTS all")
+    MAKEINSTALL=("make $MAKEOPTS install")
+    COMMENT="this may take a while"
+    PKG=`ls $PKGDIR/$1-[0-9]*.{gz,tgz,bz2} 2> /dev/null`
 
-    if [ "$PKGS" == "" ]; then
-      warn_message "package $1 not found"
+    message "processing package $1"
+    stage_up
+
+    if [ -r $CFGDIR/$1.$SUFFIX ]; then
+      message "sourcing package configuration"
+      . $CFGDIR/$1.$SUFFIX
     fi
 
-    for PKG in $PKGS; do
-      PKG=`readlink -m $PKG`
-      if [ -r $PKG ]; then
-        ADDONS=""
-        BUILDDIR="."
-        DEFCONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT"
-        CONFIGURE=("$DEFCONFIGURE")
-        MAKEBUILD=("make $MAKEOPTS all")
-        MAKEINSTALL=("make $MAKEOPTS install")
-        COMMENT="this may take a while"
-        TARNAME=`basename $PKG`
-        FULLNAME=${TARNAME%.tar*}
-        NAME=${FULLNAME%%-[0-9]*}
-        VERSION=${FULLNAME##*-}
+    PKG=`readlink -m $PKG`
+    if [ -r $PKG ]; then
+      PKGBASENAME=`basename $PKG`
+      FULLPKGNAME=${PKGBASENAME%.tar*}
+      PKGNAME=${FULLPKGNAME%%-[0-9]*}
+      PKGVERSION=${FULLPKGNAME##*-}
+      PKGBUILDROOT=$BUILDROOT/$1
 
-        message "processing package $1"
-        PKGBUILDROOT=$BUILDROOT/$1
-        stage_up
-
-        if [ -r $CFGDIR/$1.$SUFFIX ]; then
-          message "sourcing package configuration"
-          . $CFGDIR/$1.$SUFFIX
-        fi
-
-        if [ -x $PKGBUILDROOT ]; then
-          message "contents of `basename $PKG` found in $PKGBUILDROOT"
+      if [ -x $PKGBUILDROOT ]; then
+        message "contents of $PKGBASENAME found in $PKGBUILDROOT"
+      else
+        if [ -d $PKG ]; then
+          message "linking $PKG to $PKGBUILDROOT"
+          execute "ln -sf $PKG $PKGBUILDROOT"
         else
-          message "extracting contents of `basename $PKG` to $PKGBUILDROOT"
+          message "extracting contents of $PKGBASENAME to $PKGBUILDROOT"
           extract_package $BUILDROOT $PKG
 
           PATCHES=`ls $PATCHDIR/$1-[0-9]*.patch 2> /dev/null`
@@ -755,13 +770,12 @@ function build_packages
             stage_up
 
             for ADDON in $ADDONS; do
-              ADDONPKGS=`ls $PKGDIR/$ADDON-[0-9]*.{gz,bz2} 2> /dev/null`
+              ADDONPKGS=`ls $PKGDIR/$ADDON-[0-9]*.{gz,tgz,bz2} 2> /dev/null`
               for ADDONPKG in $ADDONPKGS; do
                 ADDONPKG=`readlink -m $ADDONPKG`
+                ADDONBASENAME=`basename $ADDONPKG`
 
-                MSG="extracting contents of `basename $ADDONPKG`"
-                MSG="$MSG to $PKGBUILDROOT"
-                message $MSG
+                message "extracting contents of $ADDONBASENAME to $PKGBUILDROOT"
                 extract_package $PKGBUILDROOT $ADDONPKG
               done
             done
@@ -769,35 +783,38 @@ function build_packages
             stage_down
           fi
         fi
-
-        message "descending into build directory"
-        RETDIR=`pwd`
-        execute "cd $PKGBUILDROOT"
-        if [ ! -x $BUILDDIR ]; then
-          execute "mkdir -p $BUILDDIR"
-        fi
-        execute "cd $BUILDDIR"
-
-        if [ "$INSTALL" != "true" ] && [ "$CONFIGURE" != "" ]; then
-          message "configuring package sources"
-          execute "${CONFIGURE[@]}"
-        fi
-        if [ "$INSTALL" != "true" ] && [ "$MAKEBUILD" != "" ]; then
-          message "compiling package sources ($COMMENT)"
-          execute "${MAKEBUILD[@]}"
-        fi
-
-        if [ "$MAKEINSTALL" != "" ]; then
-          message "installing built package content"
-          execute "${MAKEINSTALL[@]}"
-        fi
-
-        message "ascending from build directory"
-        execute "cd $RETDIR"
-
-        stage_down
       fi
-    done
+
+      message "descending into build directory"
+      RETDIR=`pwd`
+      execute "cd $PKGBUILDROOT"
+      if [ ! -x $BUILDDIR ]; then
+        execute "mkdir -p $BUILDDIR"
+      fi
+      execute "cd $BUILDDIR"
+
+      if [ "$INSTALL" != "true" ] && [ "$CONFIGURE" != "" ]; then
+        message "configuring package sources"
+        execute "${CONFIGURE[@]}"
+      fi
+      if [ "$INSTALL" != "true" ] && [ "$MAKEBUILD" != "" ]; then
+        message "compiling package sources ($COMMENT)"
+        execute "${MAKEBUILD[@]}"
+      fi
+
+      if [ "$MAKEINSTALL" != "" ]; then
+        message "installing built package content"
+        execute "${MAKEINSTALL[@]}"
+      fi
+
+      message "ascending from build directory"
+      execute "cd $RETDIR"
+    else
+      warn_message "package $1 not found"
+    fi
+
+    stage_down
+    message "package processed"
     shift
   done
 

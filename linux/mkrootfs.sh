@@ -36,8 +36,8 @@ MKDIRS="$MKDIRS var var/lock var/log var/mail var/run var/spool"
 MKFILES="$MKFILES var/run/utmp 664"
 MKFILES="$MKFILES var/log/lastlog 664 var/log/wtmp 664 var/log/btmp 600"
 MKDEVS="$MKDEVS console kmsg mem null ram[0-6] tty[0-6] ttyS[0-3] initctl rtc"
-EXCLDIRS="$EXCLDIRS usr/man usr/info usr/share usr/include"
-EXCLFILES="$EXCLFILES *.a *.o"
+EXCLDIRS="$EXCLDIRS man share usr/man usr/info usr/share usr/include"
+EXCLFILES="$EXCLFILES *.a *.o *.old *.svn"
 
 init "create a root filesystem from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"
@@ -82,6 +82,8 @@ set_arg "--install" "" "INSTALL" "false" \
   "perform install stage only"
 set_arg "--no-exclusions" "" "NOEXCLUDE" "false" \
   "do not exclude any files from image"
+set_arg "--no-strip" "" "NOSTRIP" "false" \
+  "do not strip symbols from binary files"
 set_arg "--clean" "" "CLEAN" "false" \
   "remove working directories"
 
@@ -121,6 +123,7 @@ mk_dirs $FSROOT $MKDIRS
 mk_files $FSROOT $MKFILES
 mk_devices $FSROOT $MKDEVS
 
+message "directory structure created"
 stage_down
 
 if [ "$NOBUILD" != "true" ]; then
@@ -136,6 +139,9 @@ if [ "$NOEXCLUDE" != "true" ]; then
   rm_files $FSROOT $EXCLFILES
 fi
 rm_brokenlinks $FSROOT
+if [ "$NOSTRIP" != "true" ]; then
+  rm_symbols $FSROOT
+fi
 
 mk_image $IMAGE $FSROOT $MNT $FSTYPE $BLOCKSIZE $FSSPACE
 
