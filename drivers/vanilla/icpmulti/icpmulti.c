@@ -12,13 +12,11 @@
  * very much inspired by the comedi icp_multi driver, but
  * taken out of comedi.
  *
+ * char device modifications by Ralf Kaestner
+ *
  *-------------------------------------------------------------
  * $Id: icpmulti.c,v 1.5 2004/01/12 12:54:08 fred Exp $
  *-------------------------------------------------------------*/
-
-/** \file icpmulti.c
- * \brief ICPMULTI (digital and analog I/O) device driver (kernel module)
- */
 
 #include "icpmulti.h"
 
@@ -28,20 +26,16 @@
 #include <linux/delay.h>
 #include <linux/pci.h>
 #include <linux/interrupt.h>
+#include <linux/cdev.h>
+#include <linux/device.h>
 #include <asm/uaccess.h>
-
-#define ICPMULTI_MAJOR 210
-int icpmulti_read_di0(struct file *filp, char *buf, size_t count,
-		      loff_t *f_pos);
-
-static struct file_operations icpmulti_fops = {
-  read:   icpmulti_read_di0
-};
 
 static int debug;
 
+// IDs and names
+#define ICPMULTI_VENDORID       0x104c  // Vendor ID
 #define ICPMULTI_DEVICEID	0x8000	// Device ID
-#define ICPMULTI_VENDORID	0x104c	// Device ID
+#define ICPMULTI_FULLNAME       "ICP-multi composite A&D I/O board"
 #define ICPMULTI_NAME           "icpmulti"
 
 // Hardware types of the cards
@@ -90,11 +84,11 @@ static int debug;
 // Useful definitions
 #define	Status_IRQ	0x00ff    // All interrupts
 
+// Dummy RTAI functions for non-RTAI systems
 #define ICPMULTI_NORTAI
 #ifdef ICPMULTI_NORTAI
 typedef int SEM;
 #define BIN_SEM 0
-// DUMMY RTAI FUNCTIONS for non-RTAI system
 int rt_sem_wait(SEM *sem){return 0;}
 int rt_sem_signal(SEM *sem){return 0;}
 int rt_sem_delete(SEM *sem){return 0;}
@@ -106,6 +100,39 @@ int rt_busy_sleep(int delay){
   return 0;
 };
 #endif
+
+// Character device operations
+#define ICPMULTI_DIGITALMAJOR 210
+#define ICPMULTI_ANALOGMAJOR 211
+
+#define ICPMULTI_DEVCLASS "icp"
+#define ICPMULTI_DIGITALCDEV "icpD"
+#define ICPMULTI_ANALOGCDEV "icpA"
+
+int icpmulti_device_open(struct inode *inode, struct file *file);
+int icpmulti_device_release(struct inode *inode, struct file *file);
+int icpmulti_device_read(struct file *filp, char *buf, size_t count,
+  loff_t *f_pos);
+int icpmulti_device_write(struct file *filp, const char *buff, size_t len,
+  loff_t *off);
+
+static struct file_operations icpmulti_fops = {
+  .open = icpmulti_device_open,
+  .release = icpmulti_device_release,
+  .read = icpmulti_device_read,
+  .write = icpmulti_device_write
+};
+
+// Kernel messages
+#define icpmulti_printk(fmt, arg...) {\
+  char message[256]; \
+  sprintf(message, fmt, ## arg); \
+  printk("%s: %s", ICPMULTI_NAME, message); \
+}
+#define icpmulti_alertk(fmt, arg...) \
+  icpmulti_printk(KERN_ALERT fmt, ## arg)
+#define icpmulti_debugk(fmt, arg...) \
+  if (debug) icpmulti_printk(KERN_DEBUG fmt, ## arg)
 
 /*
 ==============================================================================
@@ -140,15 +167,26 @@ typedef struct {
   SEM ao_sem;                           // analog out semaphore
   SEM di_sem;                           // digital in semaphore
   SEM do_sem;                           // digital out semaphore
+
+  /* char devices */
+  struct class* dev_class;              // device class
+  struct cdev digital_cdev;             // digital in/out char device
+  struct cdev analog_cdev;              // analog in/out char device
 } icpmulti_private;
 
 static icpmulti_private private;
 
-MODULE_AUTHOR ("Frederic Pont");
-MODULE_DESCRIPTION ("Linux driver for ICP-Multi Composite A&D I/O Board");
-MODULE_LICENSE ("GPL");
+MODULE_AUTHOR("Frederic Pont and Ralf Kaestner");
+MODULE_DESCRIPTION("Linux driver for ICP-multi composite A&D I/O board");
+MODULE_LICENSE("GPL");
 module_param(debug, bool, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(debug, "Debug enabled or not");
+static struct pci_device_id icpmulti_pci_table[] __devinitdata = {
+  { ICPMULTI_VENDORID, ICPMULTI_DEVICEID, PCI_ANY_ID, PCI_ANY_ID, },
+  { 0, } // Terminating entry
+};
+MODULE_DEVICE_TABLE(pci, icpmulti_pci_table);
+
 
 /*
 ==============================================================================
@@ -168,24 +206,22 @@ static void setup_channel_list(void);
 
 static int icpmulti_init(void) {
   struct pci_dev *dev;
-  int result;
+  int i, test;
 
-  printk("%s: module_init()\n", ICPMULTI_NAME);
-  dev = pci_find_device(ICPMULTI_VENDORID,ICPMULTI_DEVICEID,NULL);
+  dev = pci_find_device(ICPMULTI_VENDORID, ICPMULTI_DEVICEID, NULL);
 
   if (!dev) {
-    printk(KERN_ALERT "%s: device not found\n", ICPMULTI_NAME);
+    icpmulti_alertk("%s not found\n", ICPMULTI_FULLNAME);
     return -ENODEV;
   }
 
-  printk("%s: board detected\n",ICPMULTI_NAME);
+  icpmulti_printk("%s detected\n", ICPMULTI_FULLNAME);
 
-  if (pci_enable_device(dev))
-    return -ENODEV;
+  if (pci_enable_device(dev)) return -ENODEV;
 
   /* configure PCI */
-  pci_write_config_dword(dev,0xb0,0x00050000); // enable pci 16 bits
-  pci_write_config_dword(dev,0x04,0x00000002); // enable memory
+  pci_write_config_dword(dev, 0xb0, 0x00050000); // enable pci 16 bits
+  pci_write_config_dword(dev, 0x04, 0x00000002); // enable memory
 
   private.n_aichan = 16;
   private.n_aochan = 4;
@@ -194,64 +230,68 @@ static int icpmulti_init(void) {
   private.do_state = 0;
 
   /* init mutexes */
-  rt_typed_sem_init(&private.ai_sem,1,BIN_SEM);
-  rt_typed_sem_init(&private.ao_sem,1,BIN_SEM);
-  rt_typed_sem_init(&private.di_sem,1,BIN_SEM);
-  rt_typed_sem_init(&private.do_sem,1,BIN_SEM);
+  rt_typed_sem_init(&private.ai_sem, 1, BIN_SEM);
+  rt_typed_sem_init(&private.ao_sem, 1, BIN_SEM);
+  rt_typed_sem_init(&private.di_sem, 1, BIN_SEM);
+  rt_typed_sem_init(&private.do_sem, 1, BIN_SEM);
 
-
-  private.phys_iobase = pci_resource_start(dev,2);
+  private.phys_iobase = pci_resource_start(dev, 2);
 
   private.iobase = ioremap(private.phys_iobase, ICP_MULTI_SIZE);
 
   if (!private.iobase) {
-    printk("%s: ioremap failed.\n",ICPMULTI_NAME);
+    icpmulti_printk("I/O remap failed\n");
     return -ENOMEM;
   }
-  {
-    int i, test;
 
-    icpmulti_reset();
-    init_ao_channels();
+  icpmulti_reset();
+  init_ao_channels();
 
-    printk("%s: do_state=%x\n",ICPMULTI_NAME,private.do_state);
+  icpmulti_debugk("do_state = %x\n", private.do_state);
 
-    icpmulti_write_do(6,1);
+  // register char devices
+  private.dev_class = class_create(THIS_MODULE, ICPMULTI_DEVCLASS);
 
-    for(i=0;i<private.n_dichan;i++) {
-      icpmulti_read_di(i,&test);
-      printk("channel %d: %d\n",i,test);
+  cdev_init(&private.digital_cdev, &icpmulti_fops);
+  private.digital_cdev.owner = THIS_MODULE;
+  if (!cdev_add(&private.digital_cdev, MKDEV(ICPMULTI_DIGITALMAJOR, 0),
+    private.n_dichan)) {
+    icpmulti_printk("Registering %d digital channel char devices\n",
+      private.n_dichan);
+
+    for(i = 0; i < private.n_dichan; i++) {
+      char name[256];
+      sprintf(name, "%s%d", ICPMULTI_DIGITALCDEV, i);
+
+      class_device_create(private.dev_class, MKDEV(ICPMULTI_DIGITALMAJOR, 0)+i,
+        NULL, name);
+
+      icpmulti_read_di(i, &test);
+      icpmulti_printk("Digital channel %d at %s (tested 0x%x)\n", i, name, test);
     }
-
-#ifdef NO
-    icpmulti_write_do(0,1);
-    printk("%s: do_state=%x\n",ICPMULTI_NAME,private.do_state);
-    icpmulti_write_do(0,0);
-    printk("%s: do_state=%x\n",ICPMULTI_NAME,private.do_state);
-
-    i=1000000000;
-    while(i--);
-#endif
-    rt_busy_sleep(1000000000);
-
-    /* turn off flash */
-    icpmulti_write_do(6,0);
   }
+  else
+    icpmulti_printk("Could not register digital channel char devices\n");
 
-  /* register char driver */
-  result = register_chrdev(ICPMULTI_MAJOR,ICPMULTI_NAME,&icpmulti_fops);
-  if (result < 0)
-    printk("%s: could not register major number %d\n",ICPMULTI_NAME,
-    ICPMULTI_MAJOR);
+  rt_busy_sleep(1000000000);
 
   return 0;
 }
 
 
 static void icpmulti_exit(void) {
-  int result;
+  int i;
 
-  result = unregister_chrdev(ICPMULTI_MAJOR,ICPMULTI_NAME);
+  if (private.digital_cdev.count) {
+    for(i = 0; i < private.digital_cdev.count; i++)
+    class_device_destroy(private.dev_class, MKDEV(ICPMULTI_DIGITALMAJOR, 0)+i);
+
+    cdev_del(&private.digital_cdev);
+
+    icpmulti_printk("Unregistered digital channel char devices");
+  }
+
+  class_destroy(private.dev_class);
 
   /* delete mutexes */
   rt_sem_delete(&private.ai_sem);
@@ -259,9 +299,7 @@ static void icpmulti_exit(void) {
   rt_sem_delete(&private.di_sem);
   rt_sem_delete(&private.do_sem);
 
-  if(private.iobase) iounmap(private.iobase);
-
-  return;
+  if (private.iobase) iounmap(private.iobase);
 }
 
 module_init(icpmulti_init);
@@ -287,22 +325,20 @@ module_exit(icpmulti_exit);
 */
 
 int icpmulti_read_ai(int channel, int *value) {
-  int n,timeout;
+  int n, timeout;
   int range = 0x30; // range -10 10
 
-  if (debug)
-    printk("%s: EDBG: BGN: icp_multi_insn_read_ai(...)\n",
-    ICPMULTI_NAME);
+  icpmulti_debugk("EDBG: BGN: icp_multi_insn_read_ai(...)\n");
 
   rt_sem_wait(&private.ai_sem);
 
   // Disable A/D conversion ready interrupt
   private.IntEnable &= ~ADC_READY;
-  writew(private.IntEnable,private.iobase + ICP_MULTI_INT_EN);
+  writew(private.IntEnable, private.iobase+ICP_MULTI_INT_EN);
 
   // Clear interrupt status
   private.IntStatus |= ADC_READY;
-  writew(private.IntStatus,private.iobase + ICP_MULTI_INT_STAT);
+  writew(private.IntStatus, private.iobase+ICP_MULTI_INT_STAT);
 
   // Set up appropriate channel, mode and range data, for specified channel
   private.AdcCmdStatus &= 0xf00f;
@@ -312,24 +348,19 @@ int icpmulti_read_ai(int channel, int *value) {
   /* Output channel, range, mode to ICP Multi */
   writew(private.AdcCmdStatus, private.iobase+ICP_MULTI_ADC_CSR);
 
-  if (debug)
-    printk("%s: A ST=%4x IO=%x\n",ICPMULTI_NAME,
-    readw(private.iobase+ICP_MULTI_ADC_CSR),
+  icpmulti_debugk("A ST=%4x IO=%x\n", readw(private.iobase+ICP_MULTI_ADC_CSR),
     private.iobase+ICP_MULTI_ADC_CSR);
 
-  for (n=0; n<1; n++) {
+  for (n = 0; n < 1; n++) {
     // Set start ADC bit
     private.AdcCmdStatus |= ADC_ST;
     writew(private.AdcCmdStatus, private.iobase+ICP_MULTI_ADC_CSR);
     private.AdcCmdStatus &= ~ADC_ST;
 
-  if (debug)
-    printk("%s: B n=%d ST=%4x\n",ICPMULTI_NAME,n,
-    readw(private.iobase+ICP_MULTI_ADC_CSR));
-
-  if (debug)
-    printk("%s: C n=%d ST=%4x\n",ICPMULTI_NAME,n,
-    readw(private.iobase+ICP_MULTI_ADC_CSR));
+    icpmulti_debugk("B n=%d ST=%4x\n", n,
+      readw(private.iobase+ICP_MULTI_ADC_CSR));
+    icpmulti_debugk("C n=%d ST=%4x\n", n,
+      readw(private.iobase+ICP_MULTI_ADC_CSR));
 
     // Wait for conversion to complete, or get fed up waiting
     timeout=100;
@@ -338,27 +369,25 @@ int icpmulti_read_ai(int channel, int *value) {
       goto conv_finish;
 
       if (debug) if (!(timeout%10))
-        printk("%s: D n=%d tm=%d ST=%4x\n",ICPMULTI_NAME, n,timeout,
+        icpmulti_debugk("D n=%d tm=%d ST=%4x\n", n, timeout,
         readw(private.iobase+ICP_MULTI_ADC_CSR));
     }
 
     // If we reach here, a timeout has occurred
-    printk("%s: A/D insn timeout", ICPMULTI_NAME);
+    icpmulti_printk("A/D insn timeout");
 
     // Disable interrupt
     private.IntEnable &= ~ADC_READY;
-    writew(private.IntEnable,private.iobase + ICP_MULTI_INT_EN);
+    writew(private.IntEnable, private.iobase+ICP_MULTI_INT_EN);
 
     // Clear interrupt status
     private.IntStatus |= ADC_READY;
-    writew(private.IntStatus,private.iobase + ICP_MULTI_INT_STAT);
+    writew(private.IntStatus, private.iobase+ICP_MULTI_INT_STAT);
 
     // Clear data received
-    *value=0;
+    *value = 0;
 
-    if (debug)
-      printk("%s: EDBG: END: icp_multi_insn_read_ai(...) n=%d\n",
-      ICPMULTI_NAME,n);
+    icpmulti_debugk("EDBG: END: icp_multi_insn_read_ai(...) n=%d\n", n);
 
     rt_sem_signal(&private.ai_sem);
     return -ETIME;
@@ -369,18 +398,14 @@ conv_finish:
 
   // Disable interrupt
   private.IntEnable &= ~ADC_READY;
-  writew(private.IntEnable,private.iobase + ICP_MULTI_INT_EN);
+  writew(private.IntEnable, private.iobase+ICP_MULTI_INT_EN);
 
   // Clear interrupt status
   private.IntStatus |= ADC_READY;
-  writew(private.IntStatus,private.iobase + ICP_MULTI_INT_STAT);
+  writew(private.IntStatus, private.iobase+ICP_MULTI_INT_STAT);
 
-  if (debug) {
-    printk("%s: read AI chan=%d value=%d\n",ICPMULTI_NAME,
-      channel,*value);
-    printk("%s: EDBG: END: icp_multi_insn_read_ai(...) n=%d\n",
-      ICPMULTI_NAME,n);
-  }
+  icpmulti_debugk("Read AI chan=%d value=%d\n", channel, *value);
+  icpmulti_debugk("EDBG: END: icp_multi_insn_read_ai(...) n=%d\n", n);
 
   rt_sem_signal(&private.ai_sem);
   return 0;
@@ -401,19 +426,17 @@ int icpmulti_write_ao(int channel, short value) {
   int n, timeout;
   int range = 0x30; /* range -10 10 */
 
-  if (debug)
-    printk("%s: EDBG: BGN: icp_multi_insn_write_ao(...)\n",
-    ICPMULTI_NAME);
+  icpmulti_debugk("EDBG: BGN: icp_multi_insn_write_ao(...)\n");
 
   rt_sem_wait(&private.ao_sem);
 
   // Disable D/A conversion ready interrupt
   private.IntEnable &= ~DAC_READY;
-  writew(private.IntEnable,private.iobase + ICP_MULTI_INT_EN);
+  writew(private.IntEnable, private.iobase+ICP_MULTI_INT_EN);
 
   // Clear interrupt status
   private.IntStatus |= DAC_READY;
-  writew(private.IntStatus,private.iobase + ICP_MULTI_INT_STAT);
+  writew(private.IntStatus, private.iobase+ICP_MULTI_INT_STAT);
 
   // Set up range and channel data
   // Bit 4 = 1 : Bipolar
@@ -426,7 +449,7 @@ int icpmulti_write_ao(int channel, short value) {
 
   writew(private.DacCmdStatus, private.iobase+ICP_MULTI_DAC_CSR);
 
-  for (n=0; n<1; n++) {
+  for (n = 0; n < 1; n++) {
     /* Wait for analogue output data register to be ready for new data,
        or get fed up waiting */
     timeout=100;
@@ -434,42 +457,38 @@ int icpmulti_write_ao(int channel, short value) {
       if (!(readw(private.iobase+ICP_MULTI_DAC_CSR) & DAC_BSY))
         goto dac_ready;
 
-      if (!(timeout%10))
-        printk("%s: ERROR :AO channel%d n=%d tm=%d ST=%4x\n",
-        ICPMULTI_NAME,channel,n,timeout,
-        readw(private.iobase+ICP_MULTI_DAC_CSR));
+      if (debug) if (!(timeout%10))
+        icpmulti_debugk("ERROR: AO chan=%d n=%d tm=%d ST=%4x\n", channel, n,
+        timeout, readw(private.iobase+ICP_MULTI_DAC_CSR));
 
       rt_busy_sleep(1000);
     }
 
     // If we reach here, a timeout has occurred
-    printk("%s: D/A insn timeout", ICPMULTI_NAME);
+    icpmulti_printk("D/A insn timeout");
 
     // Disable interrupt
     private.IntEnable &= ~DAC_READY;
-    writew(private.IntEnable,private.iobase + ICP_MULTI_INT_EN);
+    writew(private.IntEnable, private.iobase+ICP_MULTI_INT_EN);
 
     // Clear interrupt status
     private.IntStatus |= DAC_READY;
-    writew(private.IntStatus,private.iobase + ICP_MULTI_INT_STAT);
+    writew(private.IntStatus, private.iobase+ICP_MULTI_INT_STAT);
 
     // Clear data received
-    private.ao_data[channel]=0;
+    private.ao_data[channel] = 0;
 
-    if (debug)
-      printk("%s: EDBG: END: icp_multi_insn_write_ao(...) n=%d\n",
-      ICPMULTI_NAME,n);
+    icpmulti_debugk("EDBG: END: icp_multi_insn_write_ao(...) n=%d\n", n);
 
     rt_sem_signal(&private.ao_sem);
     return -ETIME;
 
 dac_ready:
     // Write data to analogue output data register
-    writew(value*0x10, private.iobase + ICP_MULTI_AO);
+    writew(value*0x10, private.iobase+ICP_MULTI_AO);
 
-    if (debug)
-      printk("%s: AO chan+%d, range=%d: %x at %x+%d\n",ICPMULTI_NAME,
-      channel,range,value*0x10,private.iobase,ICP_MULTI_AO);
+    icpmulti_debugk("AO chan=%d, range=%d: %x at %x=%d\n", channel, range,
+      value*0x10, private.iobase, ICP_MULTI_AO);
 
     // Set DAC_ST bit to write the data to selected channel
     private.DacCmdStatus |= DAC_ST;
@@ -477,12 +496,10 @@ dac_ready:
     private.DacCmdStatus &= ~DAC_ST;
 
     // Save analogue output data
-    private.ao_data[channel]=value;
+    private.ao_data[channel] = value;
   }
 
-  if (debug)
-    printk("%s: EDBG: END: icp_multi_insn_write_ao(...) n=%d\n",
-    ICPMULTI_NAME,n);
+  icpmulti_debugk("EDBG: END: icp_multi_insn_write_ao(...) n=%d\n", n);
 
   rt_sem_signal(&private.ao_sem);
   return n;
@@ -500,7 +517,7 @@ dac_ready:
 */
 
 int icpmulti_read_ao(int channel, int *value) {
-  *value=private.ao_data[channel];
+  *value = private.ao_data[channel];
 
   return 1;
 }
@@ -521,14 +538,12 @@ int icpmulti_read_di(int channel, int *value) {
 
   rt_sem_wait(&private.di_sem);
 
-  status = readw(private.iobase + ICP_MULTI_DI);
+  status = readw(private.iobase+ICP_MULTI_DI);
   status >>= channel;
   status &= 0x0001;
 
-  if (status)
-    (*value) = 1;
-  else
-    (*value) = 0;
+  if (status) (*value) = 1;
+  else (*value) = 0;
 
   return 0;
 }
@@ -553,7 +568,7 @@ int icpmulti_write_do(int channel, unsigned char value) {
   private.do_state &= ~bit;
   if(value) private.do_state |= bit;
 
-  writew(private.do_state, private.iobase + ICP_MULTI_DO);
+  writew(private.do_state, private.iobase+ICP_MULTI_DO);
 
   rt_sem_signal(&private.do_sem);
   return 0;
@@ -577,11 +592,10 @@ static void setup_channel_list(void) {
   unsigned int i, range, chanprog;
   unsigned int diff;
 
-  if (debug)
-    printk("%s: EDBG:  setup_channel_list()\n",ICPMULTI_NAME);
+  icpmulti_debugk("EDBG: setup_channel_list()\n");
 
   /* FIXME: clean this up */
-  for (i=0; i<private.n_aichan; i++) {
+  for (i = 0; i < private.n_aichan; i++) {
     diff = 0;
     chanprog &= 0x000f;
 
@@ -606,9 +620,8 @@ static void setup_channel_list(void) {
     /* Output channel, range, mode to ICP Multi */
     writew(private.AdcCmdStatus, private.iobase+ICP_MULTI_ADC_CSR);
 
-    if (debug)
-      printk("%s: GS: %2d. [%4x]=%4x %4x\n", ICPMULTI_NAME, i, chanprog,
-      range, private.act_chanlist[i]);
+    icpmulti_debugk("GS: %2d. [%4x]=%4x %4x\n", i, chanprog, range,
+      private.act_chanlist[i]);
   }
 }
 
@@ -629,17 +642,16 @@ static void setup_channel_list(void) {
 */
 
 int icpmulti_reset(void) {
-  unsigned int    i;
+  unsigned int i;
 
-  if (debug)
-    printk("%s: EDBG: BGN: icp_multi_reset(...)\n", ICPMULTI_NAME);
+  icpmulti_debugk("EDBG: BGN: icp_multi_reset(...)\n");
 
   // Clear INT enables and requests
-  writew(0, private.iobase + ICP_MULTI_INT_EN);
-  writew(0x00ff, private.iobase + ICP_MULTI_INT_STAT);
+  writew(0, private.iobase+ICP_MULTI_INT_EN);
+  writew(0x00ff, private.iobase+ICP_MULTI_INT_STAT);
 
   // Set DACs to 0 5 range and 0V output
-  for (i =0; i < private.n_aochan; i++) {
+  for (i = 0; i < private.n_aochan; i++) {
     private.DacCmdStatus &= 0xfcce;
 
     // Set channel number
@@ -660,10 +672,9 @@ int icpmulti_reset(void) {
   }
 
   // Digital outputs to 0
-  writew(0, private.iobase + ICP_MULTI_DO);
+  writew(0, private.iobase+ICP_MULTI_DO);
 
-  if (debug)
-    printk("%s: EDBG: END: icp_multi_reset(...)\n", ICPMULTI_NAME);
+  icpmulti_debugk("EDBG: END: icp_multi_reset(...)\n");
 
   return 0;
 }
@@ -673,19 +684,17 @@ static int init_ao_channels(void) {
   int init_value = 2048;
   int range = 0x30;
 
-  if (debug)
-    printk("%s: EDBG: BGN: init_ao_channels(...)\n", ICPMULTI_NAME);
+  icpmulti_debugk("EDBG: BGN: init_ao_channels(...)\n");
 
   // Disable D/A conversion ready interrupt
   private.IntEnable &= ~DAC_READY;
-  writew(private.IntEnable,private.iobase + ICP_MULTI_INT_EN);
+  writew(private.IntEnable, private.iobase+ICP_MULTI_INT_EN);
 
   // Clear interrupt status
   private.IntStatus |= DAC_READY;
-  writew(private.IntStatus,private.iobase + ICP_MULTI_INT_STAT);
+  writew(private.IntStatus, private.iobase+ICP_MULTI_INT_STAT);
 
-  for (chan =0; chan < private.n_aochan; chan++) {
-
+  for (chan = 0; chan < private.n_aochan; chan++) {
     private.DacCmdStatus &= 0xfccf;
     private.DacCmdStatus |= range;
     private.DacCmdStatus |= (chan << 8);
@@ -693,7 +702,7 @@ static int init_ao_channels(void) {
     writew(private.DacCmdStatus, private.iobase+ICP_MULTI_DAC_CSR);
 
     // Write data to analogue output data register
-    writew(init_value*0x10, private.iobase + ICP_MULTI_AO);
+    writew(init_value*0x10, private.iobase+ICP_MULTI_AO);
 
     // Set DAC_ST bit to write the data to selected channel
     private.DacCmdStatus |= DAC_ST;
@@ -702,30 +711,54 @@ static int init_ao_channels(void) {
     private.DacCmdStatus &= ~DAC_ST;
 
     // Save analogue output data
-    private.ao_data[chan]=init_value;
+    private.ao_data[chan] = init_value;
 
     rt_busy_sleep(100000);
   }
 
-  if (debug)
-    printk("%s: EDBG: END: init_ao_channels(...)\n", ICPMULTI_NAME);
+  icpmulti_debugk("EDBG: END: init_ao_channels(...)\n");
 
   return 0;
+}
+
+int icpmulti_device_open(struct inode *inode, struct file *file) {
+  icpmulti_printk("device_open(...)\n");
+
+  return 0;
+}
+
+int icpmulti_device_release(struct inode *inode, struct file *file) {
+  icpmulti_printk("device_release(...)\n");
+
+  return 0;
+}
+
+int icpmulti_device_read(struct file *filp, char *buf, size_t count,
+  loff_t *f_pos) {
+  icpmulti_printk("device_read(...)\n");
+
+  return 0;
+}
+
+int icpmulti_device_write(struct file *filp, const char *buff, size_t len,
+  loff_t *off) {
+  icpmulti_printk("device_write(...)\n");
+
+  return -EINVAL;
 }
 
 int icpmulti_read_di0(struct file *filp, char *buf, size_t count,
   loff_t *f_pos) {
   int value;
 
-  if (debug)
-    printk("%s: read_di0\n", ICPMULTI_NAME);
+  icpmulti_debugk("read_di0\n");
 
-  if(count < sizeof(value))
+  if (count < sizeof(value))
     return -EFAULT;
 
-  icpmulti_read_di(0,&value);
+  icpmulti_read_di(0, &value);
 
-  if (copy_to_user(buf,(char *)&value,sizeof(value)))
+  if (copy_to_user(buf, (char*)&value, sizeof(value)))
     return -EFAULT;
 
   return sizeof(value);

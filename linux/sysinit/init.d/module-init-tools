@@ -46,10 +46,13 @@ for d in $boot; do
     modprobe "$mod"
 done
 
+if [ -e /etc/init.d/udev ]; then
+  /etc/init.d/udev force-reload
+fi
+
 if [ -r /etc/modprobe.conf ] \
 	&& ! grep -q '^include.*modprobe.d' /etc/modprobe.conf; then
    echo 'WARNING: /etc/modprobe.conf exists but does not include /etc/modprobe.d/!'
 fi
 
 exit 0
-

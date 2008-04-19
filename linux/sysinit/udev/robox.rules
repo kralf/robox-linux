@@ -1,0 +1,6 @@
+# RoboX-specific devices
+#
+
+# ICP-multi devices
+KERNEL=="icpD[0-9]*",						NAME="icpD%n"
+KERNEL=="icpA[0-9]*",						NAME="icpA%n"
