@@ -145,11 +145,11 @@ fi
 
 mk_image $IMAGE $FSROOT $MNT $FSTYPE $BLOCKSIZE $FSSPACE
 
-if [ "$CLEAN" == "true" ]; then
-  clean $BUILDROOT $FSROOT $LOGFILE
-else
-  clean $LOGFILE
-fi
+# if [ "$CLEAN" == "true" ]; then
+#   clean $BUILDROOT $FSROOT $LOGFILE
+# else
+#   clean $LOGFILE
+# fi
 
 get_dirsize $FSROOT
 message "success, size of the root filesystem is ${SIZE}kB"

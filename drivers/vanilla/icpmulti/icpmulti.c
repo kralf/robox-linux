@@ -12,7 +12,8 @@
  * very much inspired by the comedi icp_multi driver, but
  * taken out of comedi.
  *
- * char device modifications by Ralf Kaestner
+ * char device implementation and none-realtime mutual exclusion
+ * by Ralf Kaestner
  *
  *-------------------------------------------------------------
  * $Id: icpmulti.c,v 1.5 2004/01/12 12:54:08 fred Exp $
@@ -29,6 +30,7 @@
 #include <linux/cdev.h>
 #include <linux/device.h>
 #include <asm/uaccess.h>
+#include <asm/semaphore.h>
 
 static int debug;
 
@@ -84,43 +86,44 @@ static int debug;
 // Useful definitions
 #define	Status_IRQ	0x00ff    // All interrupts
 
-// Dummy RTAI functions for non-RTAI systems
-#define ICPMULTI_NORTAI
-#ifdef ICPMULTI_NORTAI
-typedef int SEM;
-#define BIN_SEM 0
-int rt_sem_wait(SEM *sem){return 0;}
-int rt_sem_signal(SEM *sem){return 0;}
-int rt_sem_delete(SEM *sem){return 0;}
-int rt_typed_sem_init(SEM *sem,int i,int type){return 0;}
-int rt_busy_sleep(int delay){
-  unsigned long j = jiffies + delay/10000000;
-  while(jiffies < j)
-    schedule();
-  return 0;
-};
-#endif
-
 // Character device operations
-#define ICPMULTI_DIGITALMAJOR 210
-#define ICPMULTI_ANALOGMAJOR 211
-
+#define ICPMULTI_AIMAJOR 210
+#define ICPMULTI_AOMAJOR 211
+#define ICPMULTI_DIMAJOR 212
+#define ICPMULTI_DOMAJOR 213
 #define ICPMULTI_DEVCLASS "icp"
-#define ICPMULTI_DIGITALCDEV "icpD"
-#define ICPMULTI_ANALOGCDEV "icpA"
 
 int icpmulti_device_open(struct inode *inode, struct file *file);
 int icpmulti_device_release(struct inode *inode, struct file *file);
-int icpmulti_device_read(struct file *filp, char *buf, size_t count,
+int icpmulti_device_read(struct file *filp, char *buff, size_t len,
   loff_t *f_pos);
 int icpmulti_device_write(struct file *filp, const char *buff, size_t len,
   loff_t *off);
 
-static struct file_operations icpmulti_fops = {
+static struct file_operations icpmulti_ai_fops = {
   .open = icpmulti_device_open,
   .release = icpmulti_device_release,
   .read = icpmulti_device_read,
-  .write = icpmulti_device_write
+};
+
+static struct file_operations icpmulti_ao_fops = {
+  .open = icpmulti_device_open,
+  .release = icpmulti_device_release,
+  .read = icpmulti_device_read,
+  .write = icpmulti_device_write,
+};
+
+static struct file_operations icpmulti_di_fops = {
+  .open = icpmulti_device_open,
+  .release = icpmulti_device_release,
+  .read = icpmulti_device_read,
+};
+
+static struct file_operations icpmulti_do_fops = {
+  .open = icpmulti_device_open,
+  .release = icpmulti_device_release,
+  .read = icpmulti_device_read,
+  .write = icpmulti_device_write,
 };
 
 // Kernel messages
@@ -150,11 +153,11 @@ typedef struct {
   unsigned int act_chanlist[32];	// list of scaned channel
   unsigned char act_chanlist_len;	// len of scanlist
   unsigned char act_chanlist_pos;	// actual position in MUX list
-  unsigned int *ai_chanlist;		// actaul chanlist
+  unsigned int *ai_chanlist;		// actual chanlist
   unsigned char *ai_data;		// data buffer
-  unsigned int ao_data[4];		// data output buffer
+  unsigned short ao_data[4];		// Analog data output buffer
   unsigned char di_data;		// Digital input data
-  unsigned int do_data;	                // Remember digital output data
+  unsigned char do_data[8];	        // Digital data output buffer
   unsigned char do_state;
 
   int n_aichan;	                        // num of A/D chans
@@ -163,15 +166,17 @@ typedef struct {
   int n_dochan;	                        // num of DO chans
 
   /* mutexes */
-  SEM ai_sem;                           // analog in semaphore
-  SEM ao_sem;                           // analog out semaphore
-  SEM di_sem;                           // digital in semaphore
-  SEM do_sem;                           // digital out semaphore
+  struct semaphore ai_sem;              // analog in semaphore
+  struct semaphore ao_sem;              // analog out semaphore
+  struct semaphore di_sem;              // digital in semaphore
+  struct semaphore do_sem;              // digital out semaphore
 
   /* char devices */
   struct class* dev_class;              // device class
-  struct cdev digital_cdev;             // digital in/out char device
-  struct cdev analog_cdev;              // analog in/out char device
+  struct cdev ai_cdev;                  // analog in char device
+  struct cdev ao_cdev;                  // analog out char device
+  struct cdev di_cdev;                  // digital in char device
+  struct cdev do_cdev;                  // digital out char device
 } icpmulti_private;
 
 static icpmulti_private private;
@@ -187,7 +192,6 @@ static struct pci_device_id icpmulti_pci_table[] __devinitdata = {
 };
 MODULE_DEVICE_TABLE(pci, icpmulti_pci_table);
 
-
 /*
 ==============================================================================
 	More forward declarations
@@ -196,6 +200,7 @@ MODULE_DEVICE_TABLE(pci, icpmulti_pci_table);
 
 int icpmulti_reset(void);
 static int init_ao_channels(void);
+static int init_do_channels(void);
 static void setup_channel_list(void);
 
 /*
@@ -204,9 +209,55 @@ static void setup_channel_list(void);
 ==============================================================================
 */
 
+int icpmulti_busy_sleep(int delay) {
+  unsigned long j = jiffies + delay/10000000;
+
+  while(jiffies < j)
+    schedule();
+
+  return 0;
+};
+
+static void icpmulti_register_cdevs(struct class* cdev_class, struct cdev*
+  reg_cdev, struct file_operations* cdev_fops, unsigned int cdev_major,
+  unsigned int cdev_minor, unsigned int num_cdevs, const char* cdev_bname,
+  const char* cdev_name) {
+  int i;
+
+  cdev_init(reg_cdev, cdev_fops);
+  reg_cdev->owner = THIS_MODULE;
+  if (!cdev_add(reg_cdev, MKDEV(cdev_major, cdev_minor), num_cdevs)) {
+    icpmulti_printk("Registering %d %s char devices\n", num_cdevs, cdev_name);
+
+    for(i = 0; i < num_cdevs; i++) {
+      char cdev_fname[256];
+      sprintf(cdev_fname, "%s%d", cdev_bname, i);
+
+      class_device_create(cdev_class, MKDEV(cdev_major, cdev_minor)+i, NULL,
+        cdev_fname);
+
+      icpmulti_printk("%s %d at %s\n", cdev_name, i, cdev_fname);
+    }
+  }
+  else icpmulti_printk("Could not register %s char devices\n", cdev_name);
+}
+
+static void icpmulti_unregister_cdevs(struct class* cdev_class, struct cdev*
+  unreg_cdev, const char* cdev_name) {
+  int i;
+
+  if (unreg_cdev->count) {
+    for(i = 0; i < unreg_cdev->count; i++)
+    class_device_destroy(cdev_class, unreg_cdev->dev+i);
+
+    cdev_del(unreg_cdev);
+
+    icpmulti_printk("Unregistered %s char devices\n", cdev_name);
+  }
+}
+
 static int icpmulti_init(void) {
   struct pci_dev *dev;
-  int i, test;
 
   dev = pci_find_device(ICPMULTI_VENDORID, ICPMULTI_DEVICEID, NULL);
 
@@ -230,10 +281,10 @@ static int icpmulti_init(void) {
   private.do_state = 0;
 
   /* init mutexes */
-  rt_typed_sem_init(&private.ai_sem, 1, BIN_SEM);
-  rt_typed_sem_init(&private.ao_sem, 1, BIN_SEM);
-  rt_typed_sem_init(&private.di_sem, 1, BIN_SEM);
-  rt_typed_sem_init(&private.do_sem, 1, BIN_SEM);
+  sema_init(&private.ai_sem, 1);
+  sema_init(&private.ao_sem, 1);
+  sema_init(&private.di_sem, 1);
+  sema_init(&private.do_sem, 1);
 
   private.phys_iobase = pci_resource_start(dev, 2);
 
@@ -246,58 +297,45 @@ static int icpmulti_init(void) {
 
   icpmulti_reset();
   init_ao_channels();
+  init_do_channels();
 
   icpmulti_debugk("do_state = %x\n", private.do_state);
 
-  // register char devices
+  // create device class
   private.dev_class = class_create(THIS_MODULE, ICPMULTI_DEVCLASS);
 
-  cdev_init(&private.digital_cdev, &icpmulti_fops);
-  private.digital_cdev.owner = THIS_MODULE;
-  if (!cdev_add(&private.digital_cdev, MKDEV(ICPMULTI_DIGITALMAJOR, 0),
-    private.n_dichan)) {
-    icpmulti_printk("Registering %d digital channel char devices\n",
-      private.n_dichan);
+  // register char devices
+  icpmulti_register_cdevs(private.dev_class, &private.ai_cdev,
+    &icpmulti_ai_fops, ICPMULTI_AIMAJOR, 0, private.n_aichan, "ai",
+    "analog input channel");
+  icpmulti_register_cdevs(private.dev_class, &private.ao_cdev,
+    &icpmulti_ao_fops, ICPMULTI_AOMAJOR, 0, private.n_aochan, "ao",
+    "analog output channel");
+  icpmulti_register_cdevs(private.dev_class, &private.di_cdev,
+    &icpmulti_di_fops, ICPMULTI_DIMAJOR, 0, private.n_dichan, "di",
+    "digital input channel");
+  icpmulti_register_cdevs(private.dev_class, &private.do_cdev,
+    &icpmulti_do_fops, ICPMULTI_DOMAJOR, 0, private.n_dochan, "do",
+    "digital output channel");
 
-    for(i = 0; i < private.n_dichan; i++) {
-      char name[256];
-      sprintf(name, "%s%d", ICPMULTI_DIGITALCDEV, i);
-
-      class_device_create(private.dev_class, MKDEV(ICPMULTI_DIGITALMAJOR, 0)+i,
-        NULL, name);
-
-      icpmulti_read_di(i, &test);
-      icpmulti_printk("Digital channel %d at %s (tested 0x%x)\n", i, name, test);
-    }
-  }
-  else
-    icpmulti_printk("Could not register digital channel char devices\n");
-
-  rt_busy_sleep(1000000000);
+  mdelay(1000);
 
   return 0;
 }
 
-
 static void icpmulti_exit(void) {
-  int i;
+  // unregister char devices
+  icpmulti_unregister_cdevs(private.dev_class, &private.ai_cdev,
+    "analog input channel");
+  icpmulti_unregister_cdevs(private.dev_class, &private.ao_cdev,
+    "analog output channel");
+  icpmulti_unregister_cdevs(private.dev_class, &private.di_cdev,
+    "digital input channel");
+  icpmulti_unregister_cdevs(private.dev_class, &private.do_cdev,
+    "digital output channel");
 
-  if (private.digital_cdev.count) {
-    for(i = 0; i < private.digital_cdev.count; i++)
-    class_device_destroy(private.dev_class, MKDEV(ICPMULTI_DIGITALMAJOR, 0)+i);
-
-    cdev_del(&private.digital_cdev);
-
-    icpmulti_printk("Unregistered digital channel char devices");
-  }
-
+  // destroy device class
   class_destroy(private.dev_class);
-
-  /* delete mutexes */
-  rt_sem_delete(&private.ai_sem);
-  rt_sem_delete(&private.ao_sem);
-  rt_sem_delete(&private.di_sem);
-  rt_sem_delete(&private.do_sem);
 
   if (private.iobase) iounmap(private.iobase);
 }
@@ -308,7 +346,83 @@ module_exit(icpmulti_exit);
 /*
 ==============================================================================
 
-	Name:	icp_multi_insn_read_ai
+        Name:   icp_multi_read_di
+
+        Description:
+                This function reads the digital inputs.
+
+==============================================================================
+*/
+
+int icpmulti_read_di(int channel, unsigned char *value) {
+  unsigned short status;
+
+  down(&private.di_sem);
+
+  status = readw(private.iobase+ICP_MULTI_DI);
+  status >>= channel;
+  status &= 0x0001;
+
+  if (status) (*value) = 1;
+  else (*value) = 0;
+
+  up(&private.di_sem);
+  return 1;
+}
+
+/*
+==============================================================================
+
+        Name:   icpmulti_read_do
+
+        Description:
+                This function reads a single digital output.
+
+==============================================================================
+*/
+
+int icpmulti_read_do(int channel, unsigned char *value) {
+  down(&private.do_sem);
+
+  *value = private.do_data[channel];
+
+  up(&private.do_sem);
+  return 1;
+}
+
+/*
+==============================================================================
+
+        Name:   icpmulti_write_do
+
+        Description:
+                This function writes the appropriate digital outputs.
+
+==============================================================================
+*/
+
+int icpmulti_write_do(int channel, unsigned char value) {
+  unsigned short bit = 0;
+
+  down(&private.do_sem);
+
+  bit = 0x01 << channel;
+  private.do_state &= ~bit;
+  if (value) private.do_state |= bit;
+
+  writew(private.do_state, private.iobase+ICP_MULTI_DO);
+
+  // Save digital output data
+  private.do_data[channel] = value;
+
+  up(&private.do_sem);
+  return 1;
+}
+
+/*
+==============================================================================
+
+	Name:	icp_multi_read_ai
 
 	Description:
 		This function reads a single analogue input.
@@ -324,13 +438,13 @@ module_exit(icpmulti_exit);
 ==============================================================================
 */
 
-int icpmulti_read_ai(int channel, int *value) {
+int icpmulti_read_ai(int channel, short *value) {
   int n, timeout;
   int range = 0x30; // range -10 10
 
   icpmulti_debugk("EDBG: BGN: icp_multi_insn_read_ai(...)\n");
 
-  rt_sem_wait(&private.ai_sem);
+  down(&private.ai_sem);
 
   // Disable A/D conversion ready interrupt
   private.IntEnable &= ~ADC_READY;
@@ -389,7 +503,7 @@ int icpmulti_read_ai(int channel, int *value) {
 
     icpmulti_debugk("EDBG: END: icp_multi_insn_read_ai(...) n=%d\n", n);
 
-    rt_sem_signal(&private.ai_sem);
+    up(&private.ai_sem);
     return -ETIME;
 
 conv_finish:
@@ -407,8 +521,28 @@ conv_finish:
   icpmulti_debugk("Read AI chan=%d value=%d\n", channel, *value);
   icpmulti_debugk("EDBG: END: icp_multi_insn_read_ai(...) n=%d\n", n);
 
-  rt_sem_signal(&private.ai_sem);
-  return 0;
+  up(&private.ai_sem);
+  return 1;
+}
+
+/*
+==============================================================================
+
+        Name:   icpmulti_read_ao
+
+        Description:
+                This function reads a single analogue output.
+
+==============================================================================
+*/
+
+int icpmulti_read_ao(int channel, short *value) {
+  down(&private.ao_sem);
+
+  *value = private.ao_data[channel];
+
+  up(&private.ao_sem);
+  return 1;
 }
 
 /*
@@ -428,7 +562,7 @@ int icpmulti_write_ao(int channel, short value) {
 
   icpmulti_debugk("EDBG: BGN: icp_multi_insn_write_ao(...)\n");
 
-  rt_sem_wait(&private.ao_sem);
+  down(&private.ao_sem);
 
   // Disable D/A conversion ready interrupt
   private.IntEnable &= ~DAC_READY;
@@ -461,7 +595,7 @@ int icpmulti_write_ao(int channel, short value) {
         icpmulti_debugk("ERROR: AO chan=%d n=%d tm=%d ST=%4x\n", channel, n,
         timeout, readw(private.iobase+ICP_MULTI_DAC_CSR));
 
-      rt_busy_sleep(1000);
+      icpmulti_busy_sleep(1000);
     }
 
     // If we reach here, a timeout has occurred
@@ -480,7 +614,7 @@ int icpmulti_write_ao(int channel, short value) {
 
     icpmulti_debugk("EDBG: END: icp_multi_insn_write_ao(...) n=%d\n", n);
 
-    rt_sem_signal(&private.ao_sem);
+    up(&private.ao_sem);
     return -ETIME;
 
 dac_ready:
@@ -501,77 +635,8 @@ dac_ready:
 
   icpmulti_debugk("EDBG: END: icp_multi_insn_write_ao(...) n=%d\n", n);
 
-  rt_sem_signal(&private.ao_sem);
-  return n;
-}
-
-/*
-==============================================================================
-
-	Name:	icpmulti_read_ao
-
-	Description:
-		This function reads a single analogue output.
-
-==============================================================================
-*/
-
-int icpmulti_read_ao(int channel, int *value) {
-  *value = private.ao_data[channel];
-
+  up(&private.ao_sem);
   return 1;
-}
-
-/*
-==============================================================================
-
-	Name:	icp_multi_read_di
-
-	Description:
-		This function reads the digital inputs.
-
-==============================================================================
-*/
-
-int icpmulti_read_di(int channel, int *value) {
-  unsigned short status;
-
-  rt_sem_wait(&private.di_sem);
-
-  status = readw(private.iobase+ICP_MULTI_DI);
-  status >>= channel;
-  status &= 0x0001;
-
-  if (status) (*value) = 1;
-  else (*value) = 0;
-
-  return 0;
-}
-
-/*
-==============================================================================
-
-	Name:	icpmulti_write_do
-
-	Description:
-		This function writes the appropriate digital outputs.
-
-==============================================================================
-*/
-
-int icpmulti_write_do(int channel, unsigned char value) {
-  unsigned short bit = 0;
-
-  rt_sem_wait(&private.do_sem);
-
-  bit = 0x01 << channel;
-  private.do_state &= ~bit;
-  if(value) private.do_state |= bit;
-
-  writew(private.do_state, private.iobase+ICP_MULTI_DO);
-
-  rt_sem_signal(&private.do_sem);
-  return 0;
 }
 
 /*
@@ -668,7 +733,7 @@ int icpmulti_reset(void) {
     writew(private.DacCmdStatus, private.iobase+ICP_MULTI_DAC_CSR);
 
     // Delay to allow DAC time to recover
-    rt_busy_sleep(100000);
+    mdelay(1);
   }
 
   // Digital outputs to 0
@@ -713,7 +778,7 @@ static int init_ao_channels(void) {
     // Save analogue output data
     private.ao_data[chan] = init_value;
 
-    rt_busy_sleep(100000);
+    mdelay(1);
   }
 
   icpmulti_debugk("EDBG: END: init_ao_channels(...)\n");
@@ -721,45 +786,138 @@ static int init_ao_channels(void) {
   return 0;
 }
 
-int icpmulti_device_open(struct inode *inode, struct file *file) {
-  icpmulti_printk("device_open(...)\n");
+static int init_do_channels(void) {
+  int chan;
+  int init_value = 0;
+  unsigned short bit = 0;
+
+  icpmulti_debugk("EDBG: BGN: init_do_channels(...)\n");
+
+  for (chan = 0; chan < private.n_dochan; chan++) {
+    bit = 0x01 << chan;
+    private.do_state &= ~bit;
+    if (init_value) private.do_state |= bit;
+
+    writew(private.do_state, private.iobase+ICP_MULTI_DO);
+
+    // Save digital output data
+    private.do_data[chan] = init_value;
+
+    mdelay(1);
+  }
+
+  icpmulti_debugk("EDBG: END: init_do_channels(...)\n");
 
   return 0;
+}
+
+/*
+==============================================================================
+        Read/write char devices
+==============================================================================
+*/
+
+int icpmulti_device_open(struct inode *inode, struct file *file) {
+  unsigned int major = imajor(inode);
+
+  if ((file->f_mode & FMODE_WRITE) &&
+    ((major == ICPMULTI_AIMAJOR) || (major == ICPMULTI_DIMAJOR)))
+    return -EINVAL;
+  else return 0;
 }
 
 int icpmulti_device_release(struct inode *inode, struct file *file) {
-  icpmulti_printk("device_release(...)\n");
-
   return 0;
 }
 
-int icpmulti_device_read(struct file *filp, char *buf, size_t count,
+int icpmulti_device_read(struct file *filp, char *buff, size_t len,
   loff_t *f_pos) {
-  icpmulti_printk("device_read(...)\n");
+  int result = -EFAULT;
+  unsigned int major = imajor(filp->f_dentry->d_inode);
+  unsigned int minor = iminor(filp->f_dentry->d_inode);
+  short short_val;
+  unsigned char char_val;
 
-  return 0;
+  switch (major) {
+    case ICPMULTI_AIMAJOR:
+      if (len >= sizeof(short_val)) {
+        result = icpmulti_read_ai(minor, &short_val);
+        if (result > 0)
+          if (!copy_to_user(buff, (char*)&short_val, sizeof(short_val)))
+          result = sizeof(short_val);
+      }
+    break;
+    case ICPMULTI_AOMAJOR:
+      if (len >= sizeof(short_val)) {
+        result = icpmulti_read_ao(minor, &short_val);
+        if (result > 0)
+          if (!copy_to_user(buff, (char*)&short_val, sizeof(short_val)))
+          result = sizeof(short_val);
+      }
+    break;
+    case ICPMULTI_DIMAJOR:
+      if (len >= sizeof(char_val)) {
+        result = icpmulti_read_di(minor, &char_val);
+//         if (result > 0)
+//           if (!copy_to_user(buff, (char*)&char_val, sizeof(char_val)))
+//           result = sizeof(char_val);
+
+        if (result > 0) {
+          mdelay(10);
+          if (char_val > 0) copy_to_user(buff, "1", 1);
+          else copy_to_user(buff, "0", 1);
+
+          result = 1;
+        }
+      }
+    break;
+    case ICPMULTI_DOMAJOR:
+      if (len >= sizeof(char_val)) {
+        result = icpmulti_read_do(minor, &char_val);
+//         if (result > 0)
+//           if (!copy_to_user(buff, (char*)&char_val, sizeof(char_val)))
+//           result = sizeof(char_val);
+
+        if (result > 0) {
+          mdelay(10);
+          if (char_val > 0) copy_to_user(buff, "1", 1);
+          else copy_to_user(buff, "0", 1);
+
+          result = 1;
+        }
+      }
+    break;
+  }
+
+  return result;
 }
 
 int icpmulti_device_write(struct file *filp, const char *buff, size_t len,
   loff_t *off) {
-  icpmulti_printk("device_write(...)\n");
+  int result = -EFAULT;
+  unsigned int major = imajor(filp->f_dentry->d_inode);
+  unsigned int minor = iminor(filp->f_dentry->d_inode);
+  short short_val;
+  unsigned char char_val;
 
-  return -EINVAL;
-}
+  switch (major) {
+    case ICPMULTI_AOMAJOR:
+      if (len >= sizeof(short_val)) {
+        if (!copy_from_user((char*)&short_val, buff, sizeof(short_val)))
+          result = icpmulti_write_ao(minor, short_val);
+      }
+    break;
+    case ICPMULTI_DOMAJOR:
+      if (len >= sizeof(char_val)) {
+        if (!copy_from_user((char*)&char_val, buff, sizeof(char_val))) {
+//           result = icpmulti_write_do(minor, char_val);
 
-int icpmulti_read_di0(struct file *filp, char *buf, size_t count,
-  loff_t *f_pos) {
-  int value;
+          if (char_val == '0') result = icpmulti_write_do(minor, 0);
+          else result = icpmulti_write_do(minor, 1);
+        }
+      }
+    break;
+  }
 
-  icpmulti_debugk("read_di0\n");
-
-  if (count < sizeof(value))
-    return -EFAULT;
-
-  icpmulti_read_di(0, &value);
-
-  if (copy_to_user(buf, (char*)&value, sizeof(value)))
-    return -EFAULT;
-
-  return sizeof(value);
+  return result;
 }

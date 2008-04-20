@@ -2,5 +2,7 @@
 #
 
 # ICP-multi devices
-KERNEL=="icpD[0-9]*",						NAME="icpD%n"
-KERNEL=="icpA[0-9]*",						NAME="icpA%n"
+KERNEL=="ai[0-9]*", SUBSYSTEM=="icp"		NAME="icp/%k"
+KERNEL=="ao[0-9]*", SUSSYSTEM=="icp"		NAME="icp/%k"
+KERNEL=="di[0-9]*", SUBSYSTEM=="icp"		NAME="icp/%k"
+KERNEL=="do[0-9]*", SUSSYSTEM=="icp"		NAME="icp/%k"
