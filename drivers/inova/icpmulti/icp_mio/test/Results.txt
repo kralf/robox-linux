@@ -1,0 +1,65 @@
+//-----------------------------------------------------------------------------
+// Inova Computers GmbH. Sudetenstr 5, 87600 Kaufbeuren
+//
+// (c) Copyright 1998-2000. Alle Rechte vorbehalten.
+//
+// Author: BT
+// 
+// Date : Nov.01.2000
+//
+//-----------------------------------------------------------------------------
+// Project:   ICP-MULTI Linux driver
+// Titel:     Test results
+//-----------------------------------------------------------------------------
+
+The Multi I/O driver for Linux is tested with 6 MIO Cards in a system, using the sources in
+this directory. The system configuration was the following:
+ - Linux Red Hat release 6.1, Kernel 2.2.12-20.
+ - Inova K6 RevD. 166MHz, 64MB RAM, BIOS 3.77.
+
+Test equipment:
+ - Power supply (Lexon 40-1720) with 24V and a from 0-12V output, 
+   24 V is used for the test of the digital part. 
+   The second output is used for testing the analog inputs.
+ - Multimeter (FLUKE 77) for testing the analog outputs.
+
+Followings are tested:
+
+1. Counters:
+
+a.) counting up the counters 
+b.) waiting for a counter overflow Irq on each counter
+
+2. Digital Inputs
+a.) permanent digital input display
+b.) waiting for the status change interrupt
+
+3. Digital outputs
+a.) writting the digital outputs with different values
+b.) waiting for an output error IRq without output update
+c.) waiting for an output error IRq with output update
+
+4. Analog Inputs
+a.) analog input channel 0 in non-diff mode with all possible Input ranges 
+(5/10V Uni/Bipolar) and with all possible voltage units (100uV - 1V Units)
+
+b.) analog input channel 15 in non-diff mode with all possible Input ranges 
+(5/10V Uni/Bipolar) and with all possible voltage units (100uV - 1V Units)
+
+c.) analog input channel 0 in diff mode with all possible Input ranges 
+(5/10V Uni/Bipolar) and with all possible voltage units (100uV - 1V Units)
+
+d.) analog input channel 2 in diff mode with all possible Input ranges 
+(5/10V Uni/Bipolar) and with all possible voltage units (100uV - 1V Units)
+
+
+5. Analog Outputs
+a.) analog output channel 0-4 with all possible Input ranges 
+(5/10V Uni/Bipolar) and with all possible voltage units (100uV - 1V Units)
+
+//-----------------------------------------------------------------------------
+// End of file
+//-----------------------------------------------------------------------------
+
+
+

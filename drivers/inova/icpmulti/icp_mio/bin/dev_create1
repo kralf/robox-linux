@@ -1,0 +1,51 @@
+#!/bin/sh
+
+module="mio1"
+device="mio1"
+mode="664"
+
+# remove stale nodes
+rm -f /dev/${device}.*
+rm -f /dev/${device}
+
+major=`cat /proc/devices | awk "\\$2==\"$module\" {print \\$1}"`
+
+
+mknod /dev/${device} c $major 0
+
+# analog input channels
+mknod /dev/${device}.ai0  c $major 10
+mknod /dev/${device}.ai1  c $major 11
+mknod /dev/${device}.ai2  c $major 12
+mknod /dev/${device}.ai3  c $major 13
+mknod /dev/${device}.ai4  c $major 14
+mknod /dev/${device}.ai5  c $major 15
+mknod /dev/${device}.ai6  c $major 16
+mknod /dev/${device}.ai7  c $major 17
+mknod /dev/${device}.ai8  c $major 18
+mknod /dev/${device}.ai9  c $major 19
+mknod /dev/${device}.ai10 c $major 20
+mknod /dev/${device}.ai11 c $major 21
+mknod /dev/${device}.ai12 c $major 22
+mknod /dev/${device}.ai13 c $major 23
+mknod /dev/${device}.ai14 c $major 24
+mknod /dev/${device}.ai15 c $major 25
+
+# analog output channels
+mknod /dev/${device}.ao0  c $major 50
+mknod /dev/${device}.ao1  c $major 51
+mknod /dev/${device}.ao2  c $major 52
+mknod /dev/${device}.ao3  c $major 53
+
+# digital input channel
+mknod /dev/${device}.di  c $major 80
+
+# digital output channel
+mknod /dev/${device}.do  c $major 90
+
+# counters 
+mknod /dev/${device}.ctr0  c $major 100
+mknod /dev/${device}.ctr1  c $major 101
+mknod /dev/${device}.ctr2  c $major 102
+mknod /dev/${device}.ctr3  c $major 103
+

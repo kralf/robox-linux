@@ -1,0 +1,4 @@
+#!/bin/sh
+gcc -pg -Wall test.c ai_test.c ao_test.c di_test.c do_test.c ctr_test.c
+
+
