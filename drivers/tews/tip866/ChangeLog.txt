@@ -1,0 +1,22 @@
+1.3-004 - September 18, 2007
+  - Modifications for Kernel 2.6.22
+
+1.3-003 - July 26, 2007
+  - Modifications for Kernels >= 2.6.21
+  - Manual modified (Issue 1.3.1)
+
+1.3-002 - July 11, 2006
+  - BUGFIX: Problems on multiprocessor and VME-Bus systems fixed
+  - Manual modified (Issue 1.3.0)
+
+1.2-001 - January 31, 2006
+  - Modifications for kernel 2.6.x
+  - Manual modified (Issue 1.2.0)
+
+1.1.0 - May 28, 2004
+  - DevFS Support added
+  - Manual modified (Issue 1.1)
+
+
+1.0.0 - November 18, 2003
+  - First Release
