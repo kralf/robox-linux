@@ -141,6 +141,7 @@ static struct file_operations icpmulti_fops = {
 
 typedef struct {
   struct pci_dev *pdev;                 // PCI device
+  unsigned char irq;                    // Interrupt request
   unsigned long phys_iobase;		// Physical I/O address
   void __iomem *iobase;                 // Kernel space I/O address
   unsigned int AdcCmdStatus;		// ADC Command/Status register
@@ -168,9 +169,9 @@ typedef struct {
   struct semaphore di_sem;              // digital in semaphore
   struct semaphore do_sem;              // digital out semaphore
 
-  /* char devices */
+  /* char device */
   struct class* dev_class;              // device class
-  struct cdev cdev;                     // analog in char device
+  struct cdev cdev;                     // char device
 } icpmulti_device;
 
 static unsigned int icpmulti_num_devs;          // the number of devices
@@ -259,7 +260,7 @@ static void icpmulti_register_cdevs(struct class* cdev_class, struct cdev*
         cdev_fname, cdev_major, cdev_minor+i);
     }
   }
-  else icpmulti_printk("Could not register %s char devices\n", cdev_name);
+  else icpmulti_alertk("Could not register %s char devices\n", cdev_name);
 }
 
 static void icpmulti_unregister_cdevs(struct class* cdev_class, struct cdev*
@@ -300,6 +301,8 @@ int icpmulti_probe(struct pci_dev *pdev, const struct pci_device_id *ent) {
       // save PCI device
       icp_dev->pdev = pdev;
 
+      // query interrupt line
+      pci_read_config_byte(icp_dev->pdev, PCI_INTERRUPT_LINE, &icp_dev->irq);
       // enable PCI 16 bits
       pci_write_config_dword(icp_dev->pdev, 0xb0, 0x00050000);
       // enable memory
@@ -321,8 +324,8 @@ int icpmulti_probe(struct pci_dev *pdev, const struct pci_device_id *ent) {
       // request first I/O address of region 2
       icp_dev->phys_iobase = pci_resource_start(icp_dev->pdev, 2);
 
-      icpmulti_debugk("Device at 0x%x (IRQ = %d) enabled\n",
-        (unsigned int)icp_dev->phys_iobase, icp_dev->pdev->irq);
+      icpmulti_printk("Device at 0x%x (IRQ = %d) enabled\n",
+        (unsigned int)icp_dev->phys_iobase, icp_dev->irq);
 
       // remap physical I/O to kernel space I/O
       icp_dev->iobase = ioremap(icp_dev->phys_iobase, ICPMULTI_SIZE);
