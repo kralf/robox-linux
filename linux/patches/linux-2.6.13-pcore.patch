@@ -1,6 +1,6 @@
-diff -urN linux-2.6.13/arch/ppc/boot/simple/misc.c linux-2.6.13-pcore/arch/ppc/boot/simple/misc.c
---- linux-2.6.13/arch/ppc/boot/simple/misc.c	2005-08-29 01:41:01.000000000 +0200
-+++ linux-2.6.13-pcore/arch/ppc/boot/simple/misc.c	2007-02-19 18:26:43.000000000 +0100
+diff -Naur linux-2.6.13/arch/ppc/boot/simple/misc.c linux-2.6.13-pcore/arch/ppc/boot/simple/misc.c
+--- linux-2.6.13/arch/ppc/boot/simple/misc.c	2008-04-23 11:39:05.000000000 +0200
++++ linux-2.6.13-pcore/arch/ppc/boot/simple/misc.c	2008-04-22 09:50:15.000000000 +0200
 @@ -269,11 +269,6 @@
  	return rec;
  }
@@ -13,9 +13,24 @@ diff -urN linux-2.6.13/arch/ppc/boot/simple/misc.c linux-2.6.13-pcore/arch/ppc/b
  /* Allow decompress_kernel to be hooked into.  This is the default. */
  void * __attribute__ ((weak))
  load_kernel(unsigned long load_addr, int num_words, unsigned long cksum,
-diff -urN linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/platforms/pcore.c
---- linux-2.6.13/arch/ppc/platforms/pcore.c	2005-08-29 01:41:01.000000000 +0200
-+++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.c	2007-02-19 18:27:19.000000000 +0100
+diff -Naur linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/platforms/pcore.c
+--- linux-2.6.13/arch/ppc/platforms/pcore.c	2008-04-23 11:39:05.000000000 +0200
++++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.c	2008-04-23 13:38:28.000000000 +0200
+@@ -51,10 +51,10 @@
+ 	 *      A       B       C       D
+ 	 */
+ 	{
+-		{9,	10,	11,	12},	/* IDSEL 24 - DEC 21554 */
+-		{10,	0,	0,	0},	/* IDSEL 25 - DEC 21143 */
+-		{11,	12,	9,	10},	/* IDSEL 26 - PMC I */
+-		{12,	9,	10,	11},	/* IDSEL 27 - PMC II */
++		{12,	9,	10,	11},	/* IDSEL 24 - DEC 21554 */
++		{9,	10,	11,	12},	/* IDSEL 25 - DEC 21143 */
++		{10,	11,	12,	9},	/* IDSEL 26 - PMC I */
++		{11,	12,	9,	10},	/* IDSEL 27 - PMC II */
+ 		{0,	0,	0,	0},	/* IDSEL 28 - unused */
+ 		{0,	0,	9,	0},	/* IDSEL 29 - unused */
+ 		{0,	0,	0,	0},	/* IDSEL 30 - Winbond */
 @@ -235,8 +235,6 @@
  	else
  		printk("680\n");

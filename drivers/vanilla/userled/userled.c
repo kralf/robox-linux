@@ -17,6 +17,8 @@
 #include <linux/interrupt.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
+#include <asm/uaccess.h>
+#include <asm/io.h>
 
 /*
 ==============================================================================
@@ -65,8 +67,6 @@ static int debug;
 	Driver structures and declarations
 ==============================================================================
 */
-
-static struct class* userled_class;    // device class
 
 int userled_device_open(struct inode *inode, struct file *file);
 int userled_device_release(struct inode *inode, struct file *file);
@@ -131,7 +131,7 @@ static void __exit userled_exit(void) {
   if (uled_dev.cdev.count) {
     class_device_destroy(uled_dev.dev_class, uled_dev.cdev.dev);
 
-    cdev_del(&uled_dev.cdev.count);
+    cdev_del(&uled_dev.cdev);
 
     userled_printk("Unregistered char device\n");
   }
@@ -150,13 +150,19 @@ module_exit(userled_exit);
 */
 
 unsigned char userled_read(void) {
-  return readb(USERLED_IO);
+  unsigned char value = 0x0F;
+
+  value &= readb((void __iomem*)USERLED_IO);
+
+  userled_debugk("RD value=%d\n", value);
+
+  return value;
 }
 
 int userled_write(unsigned char value) {
-  userled_debugk("ULED value=%d\n", value);
+  userled_debugk("WR value=%d\n", value);
 
-  writeb(value, USERLED_IO);
+  writeb(value, (void __iomem*)USERLED_IO);
 
   return 1;
 }
@@ -183,18 +189,21 @@ int userled_device_read(struct file *file, char *buff, size_t len,
 
   userled_debugk("EDBG: BGN: userled_device_read(...)\n");
 
-  value = userled_read();
+  if (len >= sizeof(cvalue)) {
+    value = userled_read();
 
-  switch (value) {
-    case USERLED_GREEN:
-      cvalue = USERLED_CGREEN;
-    break;
-    case USERLED_RED:
-      cvalue = USERLED_CRED;
-    break;
+    switch (value) {
+      case USERLED_GREEN:
+        cvalue = USERLED_CGREEN;
+      break;
+      case USERLED_RED:
+        cvalue = USERLED_CRED;
+      break;
+    }
+
+    if (!copy_to_user(buff, &cvalue, sizeof(cvalue)))
+      result = sizeof(cvalue);
   }
-
-  copy_to_user(buff, cvalue, sizeof(cvalue));
 
   userled_debugk("EDBG: END: userled_device_read(...)\n");
 
@@ -204,10 +213,25 @@ int userled_device_read(struct file *file, char *buff, size_t len,
 int userled_device_write(struct file *file, const char *buff, size_t len,
   loff_t *off) {
   int result = -EFAULT;
+  unsigned char value = USERLED_OFF;
+  char cvalue;
 
   userled_debugk("EDBG: BGN: userled_device_write(...)\n");
 
-  result = userled_write(0x01);
+  if (len >= sizeof(cvalue)) {
+     if (!copy_from_user(&cvalue, buff, sizeof(cvalue))) {
+      switch (cvalue) {
+        case USERLED_CGREEN:
+          value = USERLED_GREEN;
+        break;
+        case USERLED_CRED:
+          value = USERLED_RED;
+        break;
+      }
+
+      result = userled_write(value);
+    }
+  }
 
   userled_debugk("EDBG: END: userled_device_write(...)\n");
 

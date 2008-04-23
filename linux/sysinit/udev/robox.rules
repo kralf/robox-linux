@@ -1,5 +1,8 @@
 # RoboX-specific devices
 #
 
+# User LED device
+KERNEL=="userled", SUBSYSTEM="userled"				NAME="%k"
+
 # ICP-multi devices
 KERNEL=="icp[0-9]*[da][io][0-9]*", SUBSYSTEM=="icp"		NAME="icp/%k"
