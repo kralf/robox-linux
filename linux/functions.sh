@@ -713,6 +713,7 @@ function build_packages
   stage_up
 
   while [ "$1" != "" ]; do
+    ALIAS="$1"
     ADDONS=""
     BUILDDIR="."
     DEFCONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT"
@@ -720,7 +721,7 @@ function build_packages
     MAKEBUILD=("make $MAKEOPTS all")
     MAKEINSTALL=("make $MAKEOPTS install")
     COMMENT="this may take a while"
-    PKG=`ls $PKGDIR/$1-[0-9]*.{gz,tgz,bz2} 2> /dev/null`
+    PKG=""
 
     message "processing package $1"
     stage_up
@@ -728,6 +729,10 @@ function build_packages
     if [ -r $CFGDIR/$1.$SUFFIX ]; then
       message "sourcing package configuration"
       . $CFGDIR/$1.$SUFFIX
+    fi
+
+    if [ "$PKG" == "" ] || [ ! -r $PKG ]; then
+      PKG=`ls $PKGDIR/$ALIAS-[0-9]*.{gz,tgz,bz2} 2> /dev/null`
     fi
 
     PKG=`readlink -m $PKG`
@@ -748,7 +753,7 @@ function build_packages
           message "extracting contents of $PKGBASENAME to $PKGBUILDROOT"
           extract_package $BUILDROOT $PKG
 
-          PATCHES=`ls $PATCHDIR/$1-[0-9]*.patch 2> /dev/null`
+          PATCHES=`ls $PATCHDIR/$ALIAS-[0-9]*.patch 2> /dev/null`
           if [ "$PATCHES" != "" ]; then
             message "patching package sources"
             stage_up

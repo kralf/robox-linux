@@ -190,7 +190,7 @@ module_param(debug, bool, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(debug, "Debug enabled or not");
 
 static struct pci_device_id icpmulti_pci_table[] = {
-  { ICPMULTI_VENDORID, ICPMULTI_DEVICEID, PCI_ANY_ID, PCI_ANY_ID, },
+  { PCI_DEVICE(ICPMULTI_VENDORID, ICPMULTI_DEVICEID) },
   { 0, } // Terminating entry
 };
 MODULE_DEVICE_TABLE(pci, icpmulti_pci_table);
@@ -322,9 +322,9 @@ int icpmulti_probe(struct pci_dev *pdev, const struct pci_device_id *ent) {
       icp_dev->do_state = 0;
 
       // request first I/O address of region 2
-      icp_dev->phys_iobase = pci_resource_start(icp_dev->pdev, 2);
+      icp_dev->phys_iobase = 0xb7fd0000;//pci_resource_start(icp_dev->pdev, 2);
 
-      icpmulti_printk("Device at 0x%x (IRQ = %d) enabled\n",
+      icpmulti_debugk("Device at 0x%x (IRQ = %d) enabled\n",
         (unsigned int)icp_dev->phys_iobase, icp_dev->irq);
 
       // remap physical I/O to kernel space I/O

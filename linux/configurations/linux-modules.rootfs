@@ -1,3 +1,4 @@
+ALIAS="linux"
 LDFLAGS="$LDFLAGS -S"
 ARCH="$TARGET"
 if [[ "$TARGET" =~ "i[3-6]86" ]]; then

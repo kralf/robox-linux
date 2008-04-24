@@ -1,6 +1,8 @@
+ARCH="linux-$TARGET"
 if [[ "$TARGET" =~ "i[3-6]86" ]]; then
     ARCH="linux-elf"
-else
+fi
+if [[ "$TARGET" == "powerpc" ]]; then
     ARCH="linux-ppc"
 fi
 CONFIGURE="./Configure $ARCH --prefix=$USRROOT --openssldir=$USRROOT/lib/ssl shared"

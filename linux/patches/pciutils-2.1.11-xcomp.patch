@@ -1,0 +1,77 @@
+diff -Naur pciutils-2.1.11/lib/configure pciutils-2.1.11-xcomp/lib/configure
+--- pciutils-2.1.11/lib/configure	2008-04-24 10:59:17.000000000 +0200
++++ pciutils-2.1.11-xcomp/lib/configure	2008-04-24 11:29:52.000000000 +0200
+@@ -18,9 +18,17 @@
+ then
+ 	rel=`/usr/bin/oslevel`
+ 	proc=`/usr/sbin/lsdev -C -c processor -S available -F name | head -1`
+-	cpu=`/usr/sbin/lsattr -F value -l $proc -a type | sed 's/_.*//'`
++	if [ "$3" == "" ]; then
++	    cpu=`/usr/sbin/lsattr -F value -l $proc -a type | sed 's/_.*//'`
++	else
++	    cpu="$3"
++	fi
+ else
+-	cpu=`uname -m | sed 's/^i.86$/i386/;s/^sun4u$/sparc64/'`
++	if [ "$3" == "" ]; then
++	    cpu=`uname -m | sed 's/^i.86$/i386/;s/^sun4u$/sparc64/'`
++	else
++	    cpu="$3"
++	fi
+ fi
+ echo " $sys/$cpu $rel"
+ 
+diff -Naur pciutils-2.1.11/lib/Makefile pciutils-2.1.11-xcomp/lib/Makefile
+--- pciutils-2.1.11/lib/Makefile	2008-04-24 10:59:17.000000000 +0200
++++ pciutils-2.1.11-xcomp/lib/Makefile	2008-04-24 11:34:22.000000000 +0200
+@@ -53,12 +53,12 @@
+ 
+ $(PCILIB): $(OBJS)
+ 	rm -f $@
+-	ar rcs $@ $^
+-	ranlib $@
++	$(AR) rcs $@ $^
++	$(RANLIB) $@
+ 
+ $(PCILIBSHARED): $(OBJS)
+ 	rm -f $@
+-	gcc -shared -fPIC -Wl,-soname,libpci.so.2 -o $@ $^
++	$(CC) -shared -fPIC -Wl,-soname,libpci.so.2 -o $@ $^
+ 
+ access.o: access.c $(INCL)
+ i386-ports.o: i386-ports.c $(INCL)
+diff -Naur pciutils-2.1.11/Makefile pciutils-2.1.11-xcomp/Makefile
+--- pciutils-2.1.11/Makefile	2008-04-24 10:59:17.000000000 +0200
++++ pciutils-2.1.11-xcomp/Makefile	2008-04-24 11:50:41.000000000 +0200
+@@ -42,17 +42,17 @@
+ 
+ lspci: lspci.o common.o lib/$(PCILIB)
+ 	(cd lib; ln -sf libpci.so.2 libpci.so)
+-	gcc -o $@ lspci.o common.o -Llib/ -lpci
++	$(CC) -o $@ lspci.o common.o -Llib/ -lpci
+ 
+ setpci: setpci.o common.o lib/$(PCILIB)
+ 	(cd lib; ln -sf libpci.so.2 libpci.so)
+-	gcc -o $@ setpci.o common.o -Llib/ -lpci
+-	(cd lib; rm libpci.so)
++	$(CC) -o $@ setpci.o common.o -Llib/ -lpci
++	(cd lib; [ -e libpci.so ] || rm libpci.so)
+ 
+ pcimodules: pcimodules.o common.o lib/$(PCILIB)
+ 	(cd lib; ln -sf libpci.so.2 libpci.so)
+-	gcc -o $@ pcimodules.o common.o -Llib/ -lpci
+-	(cd lib; rm libpci.so)
++	$(CC) -o $@ pcimodules.o common.o -Llib/ -lpci
++	(cd lib; [ -e libpci.so ] || rm libpci.so)
+ 
+ lspci.o: lspci.c pciutils.h
+ setpci.o: setpci.c pciutils.h
+@@ -72,7 +72,7 @@
+ install: all
+ # -c is ignored on Linux, but required on FreeBSD
+ 	$(DIRINSTALL) -m 755 $(SBINDIR) $(SHAREDIR) $(DESTDIR)/$(MANDIR)/man8 $(DESTDIR)/$(LIBDIR)
+-	$(INSTALL) -c -m 755 -s lspci setpci pcimodules $(DESTDIR)/$(SBINDIR)
++	$(INSTALL) -c -m 755 lspci setpci pcimodules $(DESTDIR)/$(SBINDIR)
+ 	$(INSTALL) -c -m 755 lib/$(PCILIB) $(DESTDIR)/$(LIBDIR)/$(PCILIB)
+ 	$(INSTALL) -c -m 755 update-pciids $(DESTDIR)/$(SBINDIR)
+ 	$(INSTALL) -c -m 644 pci.ids $(DESTDIR)/$(SHAREDIR)

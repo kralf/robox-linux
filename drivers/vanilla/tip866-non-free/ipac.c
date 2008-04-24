@@ -58,7 +58,7 @@
 */
 #undef IGNORE_CRC_ERROR
 
-#undef DEBUG_CC
+#define DEBUG_CC
 #define DEBUG_NAME  "IPAC_CC : "
 
 
@@ -187,12 +187,12 @@ static void cc_unlock(void)
 int carrier_register_driver(struct carrier_driver  *drv)
 {
     if (drv == NULL) {
-        printk(KERN_WARNING "\n%s <carrier_register_driver> invalid drv pointer\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s <carrier_register_driver> invalid drv pointer\n", DEBUG_NAME);
         return -1;
     }
 
 #ifdef DEBUG_CC
-    printk("\n%s carrier driver <%s> registered\n", DEBUG_NAME, drv->name);
+    printk("%s carrier driver <%s> registered\n", DEBUG_NAME, drv->name);
 #endif
 
     /* add the new driver entry at the end of the list */
@@ -229,7 +229,7 @@ int carrier_unregister_driver(struct carrier_driver  *drv)
     }
 
     if (drv_expect != drv) {
-        printk(KERN_WARNING "\n%s unregister of unknown carrier driver not possible\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s unregister of unknown carrier driver not possible\n", DEBUG_NAME);
         return -1;
     }
 
@@ -273,7 +273,7 @@ int carrier_unregister_driver(struct carrier_driver  *drv)
     cc_unlock();
 
 #ifdef DEBUG_CC
-    printk("\n%s carrier driver <%s> removed\n", DEBUG_NAME, drv->name);
+    printk("%s carrier driver <%s> removed\n", DEBUG_NAME, drv->name);
 #endif
 
     TP_MOD_DEC_USE_COUNT;
@@ -302,7 +302,6 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
     int  ip_okay=FALSE;
     int  driver_found = FALSE;
 
-
     /*  check if the carrier driver is already registered */
     list_for_each(ptr, &carrier_driver_root) {
         drv_expect = list_entry(ptr, struct carrier_driver, node);
@@ -311,16 +310,16 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
 
     if (drv_expect != drv) {
         if (drv != 0) {
-            printk(KERN_WARNING "\n%s carrier driver <%s> not registered\n", DEBUG_NAME, drv->name);
+            printk(KERN_WARNING "%s carrier driver <%s> not registered\n", DEBUG_NAME, drv->name);
         }
         else {
-            printk(KERN_WARNING "\n%s <carrier_register_slot> invalid drv pointer\n", DEBUG_NAME);
+            printk(KERN_WARNING "%s <carrier_register_slot> invalid drv pointer\n", DEBUG_NAME);
         }
         return -1;
     }
 
     if (slot == NULL) {
-        printk(KERN_WARNING "\n%s <carrier_register_slot> invalid slot pointer\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s <carrier_register_slot> invalid slot pointer\n", DEBUG_NAME);
         return -1;
     }
 
@@ -380,7 +379,7 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
                 /* byte lanes are correct */
                 ip_okay = TRUE;
 #ifdef DEBUG_CC
-    printk("\n%s UCHAR access  [byte lanes correct]\n", DEBUG_NAME);
+    printk("%s UCHAR access  [byte lanes correct]\n", DEBUG_NAME);
 #endif
             }
             else if ((align.l & *((unsigned long*)IPAC_UCHAR_MASK_SWAP)) == *((unsigned long*)IPAC_UCHAR_PATTERN_SWAP)) {
@@ -392,12 +391,17 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
                 entry->slot.MEM16_space.attribute |= IPAC_ATTR_UCHAR_SWAP;
                 ip_okay = TRUE;
 #ifdef DEBUG_CC
-    printk("\n%s UCHAR access  [byte lanes must be swapped]\n", DEBUG_NAME);
+    printk("%s UCHAR access  [byte lanes must be swapped]\n", DEBUG_NAME);
 #endif
             }
             else {
                 /* Illegal pattern read. IP seems to be bad */
                 ip_okay = FALSE;
+
+#ifdef DEBUG_CC
+    printk("%s UCHAR access  [illegal pattern read]\n", DEBUG_NAME);
+#endif
+
                 break;
             }
 
@@ -411,7 +415,7 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
                 /* byte lanes are correct */
                 ip_okay = TRUE;
 #ifdef DEBUG_CC
-    printk("\n%s USHORT access [byte lanes are correct]\n", DEBUG_NAME);
+    printk("%s USHORT access [byte lanes are correct]\n", DEBUG_NAME);
 #endif
             }
             else if ((align.l & *((unsigned long*)IPAC_USHORT_MASK_SWAP)) == *((unsigned long*)IPAC_USHORT_PATTERN_SWAP)) {
@@ -422,12 +426,17 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
                 entry->slot.MEM16_space.attribute |= IPAC_ATTR_USHORT_SWAP;
                 ip_okay = TRUE;
 #ifdef DEBUG_CC
-    printk("\n%s USHORT access [byte lanes must be swapped]\n", DEBUG_NAME);
+    printk("%s USHORT access [byte lanes must be swapped]\n", DEBUG_NAME);
 #endif
             }
             else {
                 /* Illegal pattern read. IP seems to be bad */
                 ip_okay = FALSE;
+
+#ifdef DEBUG_CC
+    printk("%s USHORT access  [illegal pattern read]\n", DEBUG_NAME);
+#endif
+
                 break;
             }
 
@@ -441,7 +450,7 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
                 /* byte and word lanes are correct */
                 ip_okay = TRUE;
 #ifdef DEBUG_CC
-    printk("\n%s ULONG access  [byte and word lanes are correct]\n", DEBUG_NAME);
+    printk("%s ULONG access  [byte and word lanes are correct]\n", DEBUG_NAME);
 #endif
             }
             else if ((align.l & IPAC_ULONG_MASK_BSWAP) == IPAC_ULONG_PATTERN_BSWAP) {
@@ -452,7 +461,7 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
                 entry->slot.MEM16_space.attribute |= IPAC_ATTR_ULONG_BYTE_SWAP;
                 ip_okay = TRUE;
 #ifdef DEBUG_CC
-    printk("\n%s ULONG access  [byte lanes must be swapped]\n", DEBUG_NAME);
+    printk("%s ULONG access  [byte lanes must be swapped]\n", DEBUG_NAME);
 #endif
             }
             else if ((align.l & IPAC_ULONG_MASK_WSWAP) == IPAC_ULONG_PATTERN_WSWAP) {
@@ -463,7 +472,7 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
                 entry->slot.MEM16_space.attribute |= IPAC_ATTR_ULONG_WORD_SWAP;
                 ip_okay = TRUE;
 #ifdef DEBUG_CC
-    printk("\n%s ULONG access  [word lanes must be swapped]\n", DEBUG_NAME);
+    printk("%s ULONG access  [word lanes must be swapped]\n", DEBUG_NAME);
 #endif
             }
             else if ((align.l & IPAC_ULONG_MASK_BWSWAP) == IPAC_ULONG_PATTERN_BWSWAP) {
@@ -474,18 +483,22 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
                 entry->slot.MEM16_space.attribute |= IPAC_ATTR_ULONG_BYTE_SWAP | IPAC_ATTR_ULONG_WORD_SWAP;
                 ip_okay = TRUE;
 #ifdef DEBUG_CC
-    printk("\n%s ULONG access  [byte and word lanes must be swapped]\n", DEBUG_NAME);
+    printk("%s ULONG access  [byte and word lanes must be swapped]\n", DEBUG_NAME);
 #endif
             }
             else {
                 /* Illegal pattern read. IP seems to be bad */
                 ip_okay = FALSE;
+
+#ifdef DEBUG_CC
+    printk("%s ULONG access  [illegal pattern read]\n", DEBUG_NAME);
+#endif
+
                 break;
             }
 
             break;
         }
-
 
         if (ip_okay) {
             /*  now since the access mechanism seems to clear we check the contents of the IDPROM */
@@ -504,7 +517,7 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
                 entry->module_id.model_number = ipac_read_uchar(id_space, IPAC_OFF_MODEL);
 
 #ifdef DEBUG_CC
-    printk("\n%s IPAC (manufacturer=%02lX, model=%02lX) recognized (slot=%d, carrier=<%s>) \n", DEBUG_NAME,
+    printk("%s IPAC (manufacturer=%02lX, model=%02lX) recognized (slot=%d, carrier=<%s>) \n", DEBUG_NAME,
         entry->module_id.manufacturer, entry->module_id.model_number, entry->slot.slot_index, drv->name);
 #endif
 
@@ -552,14 +565,14 @@ int carrier_register_slot(struct carrier_driver  *drv, struct carrier_slot  *slo
             }
             else {
 #ifdef DEBUG_CC
-    printk("\n%s illegal IPAC CRC (slot=%d, carrier=<%s>) \n", DEBUG_NAME, entry->slot.slot_index, drv->name);
+    printk("%s illegal IPAC CRC (slot=%d, carrier=<%s>) \n", DEBUG_NAME, entry->slot.slot_index, drv->name);
 #endif
             }
         }
     }
     else {
 #ifdef DEBUG_CC
-    printk("\n%s IPAC access failed (slot=%d, carrier=<%s>) \n", DEBUG_NAME, entry->slot.slot_index, drv->name);
+    printk("%s IPAC access failed (slot=%d, carrier=<%s>) \n", DEBUG_NAME, entry->slot.slot_index, drv->name);
 #endif
 
     }
@@ -630,7 +643,7 @@ static int allocate_ipac_module(struct ipac_module *ipac, struct ipac_driver *dr
     ipac->ipac_drv = drv;
 
 #ifdef DEBUG_CC
-    printk("\n%s Call probe function of <%s> for module [%ld/%ld]\n",
+    printk("%s Call probe function of <%s> for module [%ld/%ld]\n",
 		DEBUG_NAME, drv->name, ipac->module_id.manufacturer, ipac->module_id.model_number);
 #endif
 
@@ -675,7 +688,7 @@ int ipac_register_driver(struct ipac_driver  *drv)
         cc_unlock();
 
 #ifdef DEBUG_CC
-    printk("\n%s IPAC driver <%s> registered\n", DEBUG_NAME, drv->name);
+    printk("%s IPAC driver <%s> registered\n", DEBUG_NAME, drv->name);
 #endif
         /*
         **  walk through the list IPAC module types supported by this driver
@@ -684,6 +697,8 @@ int ipac_register_driver(struct ipac_driver  *drv)
         */
         for (id_table = drv->id_table; id_table->manufacturer != 0; id_table++) {
 
+            printk("Vendor %x model %x\n", id_table->manufacturer,
+              id_table->model_number);
             /* walk through the list of known IPAC modules */
             list_for_each(ptr, &ipac_module_root) {
 
@@ -692,6 +707,9 @@ int ipac_register_driver(struct ipac_driver  *drv)
                 **  to structure that contains it
                 */
                 entry = list_entry(ptr, struct ipac_module, node);
+
+                printk("Entry vendor %x model %x\n", entry->module_id.manufacturer,
+                  entry->module_id.model_number);
 
                 if (entry->ipac_drv == NULL
                     && entry->module_id.manufacturer == id_table->manufacturer
@@ -748,7 +766,7 @@ int ipac_unregister_driver(struct ipac_driver  *drv)
     }
 
 #ifdef DEBUG_CC
-    printk("\n%s IPAC driver <%s> unregistered\n", DEBUG_NAME, drv->name);
+    printk("%s IPAC driver <%s> unregistered\n", DEBUG_NAME, drv->name);
 #endif
 
     /*  remove the IPAC port driver from the list */
@@ -775,7 +793,7 @@ struct addr_space_desc *ipac_map_space(struct ipac_module  *ipac, int  space_id)
     struct addr_space_desc  *desc;
 
     if (ipac == NULL) {
-        printk(KERN_WARNING "\n%s <addr_space_desc> invalid ipac pointer\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s <addr_space_desc> invalid ipac pointer\n", DEBUG_NAME);
 		return NULL;
     }
 
@@ -853,7 +871,7 @@ struct addr_space_desc *ipac_map_space(struct ipac_module  *ipac, int  space_id)
     }
 
 #ifdef DEBUG_CC
-	if (!desc) printk("\n%s IPAC space <%d> mapping failed\n", DEBUG_NAME, space_id);
+	if (!desc) printk("%s IPAC space <%d> mapping failed\n", DEBUG_NAME, space_id);
 #endif
 
     return desc;
@@ -896,7 +914,7 @@ void ipac_unswap_space(struct addr_space_desc *space)
 unsigned char ipac_read_uchar(struct addr_space_desc *space, unsigned long  offset)
 {
     if (space == NULL) {
-        printk(KERN_WARNING "\n%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
 		return 0xff;
     }
 
@@ -921,7 +939,7 @@ unsigned short ipac_read_ushort(struct addr_space_desc *space, unsigned long  of
     unsigned short value;
 
     if (space == NULL) {
-        printk(KERN_WARNING "\n%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
 		return 0xffff;
     }
 
@@ -951,7 +969,7 @@ unsigned long ipac_read_ulong(struct addr_space_desc *space, unsigned long  offs
     unsigned long  value;
 
     if (space == NULL) {
-        printk(KERN_WARNING "\n%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
 		return 0xffffffff;
     }
 
@@ -993,7 +1011,7 @@ unsigned long ipac_read_ulong(struct addr_space_desc *space, unsigned long  offs
 void ipac_write_uchar(struct addr_space_desc *space, unsigned long offset, unsigned char value)
 {
     if (space == NULL) {
-        printk(KERN_WARNING "\n%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
         return;
     }
 
@@ -1016,7 +1034,7 @@ void ipac_write_uchar(struct addr_space_desc *space, unsigned long offset, unsig
 void ipac_write_ushort(struct addr_space_desc *space, unsigned long offset, unsigned short value)
 {
     if (space == NULL) {
-        printk(KERN_WARNING "\n%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
         return;
     }
 
@@ -1043,7 +1061,7 @@ void ipac_write_ushort(struct addr_space_desc *space, unsigned long offset, unsi
 void ipac_write_ulong(struct addr_space_desc *space, unsigned long offset, unsigned long value)
 {
     if (space == NULL) {
-        printk(KERN_WARNING "\n%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s Block access via an invalid IPAC space desc\n", DEBUG_NAME);
         return;
     }
 
@@ -1091,7 +1109,7 @@ void ipac_write_ulong(struct addr_space_desc *space, unsigned long offset, unsig
 int ipac_check_access(struct addr_space_desc  *space)
 {
     if (space == NULL) {
-        printk(KERN_WARNING "\n%s <ipac_check_access> invalid IPAC space desc\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s <ipac_check_access> invalid IPAC space desc\n", DEBUG_NAME);
         return 0;
     }
 
@@ -1532,7 +1550,7 @@ static int ipac_class_init(void)
 	struct proc_dir_entry *entry;
 
 
-    printk(KERN_INFO "\n%s version %s (%s)\n", ipac_class_name, ipac_class_version, ipac_class_revdate);
+    printk(KERN_INFO "%s version %s (%s)\n", ipac_class_name, ipac_class_version, ipac_class_revdate);
 
 	/*
     **  Initialize driver and IPAC module lists

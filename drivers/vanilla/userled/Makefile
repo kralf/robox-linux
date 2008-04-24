@@ -6,4 +6,4 @@ all: userled.c
 	@$(MAKE) -C $(KERNEL_SRC) SUBDIRS=$(PWD) M=$(PWD) modules
 
 clean:
-	rm -rf *.o *.ko *~
+	rm -rf *.o *.ko *.mod.c .*.cmd .tmp_versions *~

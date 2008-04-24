@@ -44,7 +44,7 @@
 #define __KERNEL__
 #endif
 
-#undef DEBUG_CARRIER
+#define DEBUG_CARRIER
 #define DEBUG_NAME          "SBS PCI  : "
 
 #define DRIVER_NAME         "TEWS TECHNOLOGIES - SBS (Compact)PCI IPAC Carrier"
@@ -461,14 +461,14 @@ static void write_ulong (struct addr_space_desc *space,  unsigned long offset, u
  *****************************************************************************/
 static int carrier_init_one(struct pci_dev *dev, const struct pci_device_id  *id)
 {
-    int  i;
+    int  i, b;
     struct carrier_board_info  *info;
     unsigned long  ipac_base;
 
 
 
 #ifdef DEBUG_CARRIER
-    printk(KERN_DEBUG "\n%s Probe new device (vendor=0x%04X, device=0x%04X, #slots=%ld)\n",
+    printk(KERN_DEBUG "%s Probe new device (vendor=0x%04X, device=0x%04X, #slots=%ld)\n",
         DEBUG_NAME, id->vendor, id->device, id->driver_data);
 #endif
 
@@ -491,7 +491,7 @@ static int carrier_init_one(struct pci_dev *dev, const struct pci_device_id  *id
 
     /* allocate kernel memory for carrier board info structure */
     if (!(info = kmalloc(sizeof(struct carrier_board_info), GFP_KERNEL))) {
-        printk(KERN_WARNING "\n%s unable to allocate memory for carrier board info\n", DEBUG_NAME);
+        printk(KERN_WARNING "%s unable to allocate memory for carrier board info\n", DEBUG_NAME);
         return -1;
     }
 
@@ -500,22 +500,16 @@ static int carrier_init_one(struct pci_dev *dev, const struct pci_device_id  *id
     /* add info structure to the list of known carrier board */
     list_add_tail(&info->node, &carrier_board_root);
 
-
     /* try to occupy memory resource of the carrier board */
-    if ((info->bar[0] = request_mem_region(pci_resource_start(dev, 0), pci_resource_len(dev, 0), "SxPCI")) == 0) {
-        printk(KERN_WARNING "\n%s BAR[%d] memory resource already occupied!?\n", DEBUG_NAME, 0);
-        list_del(&info->node);
-        cleanup_device(info);
-        return -1;
+    for (b = 1; b <=3; b++) {
+      printk("Resource %d at 0x%x-0x%x, len 0x%x\n", b, pci_resource_start(dev, b), pci_resource_end(dev, b), pci_resource_len(dev, b));
+      if ((info->bar[b] = request_mem_region(pci_resource_start(dev, b), pci_resource_len(dev, b), "SxPCI")) == 0) {
+          printk(KERN_WARNING "%s BAR[%d] memory resource already occupied!?\n", DEBUG_NAME, b);
+          list_del(&info->node);
+          cleanup_device(info);
+          return -1;
+      }
     }
-
-    if ((info->bar[2] = request_mem_region(pci_resource_start(dev, 2), pci_resource_len(dev, 2), "SxPCI")) == 0) {
-        printk(KERN_WARNING "\n%s BAR[%d] memory resource already occupied!?\n", DEBUG_NAME, 2);
-        list_del(&info->node);
-        cleanup_device(info);
-        return -1;
-    }
-
 
     /* make pci device available for access */
     if (pci_enable_device(dev) < 0)
@@ -563,7 +557,7 @@ static int carrier_init_one(struct pci_dev *dev, const struct pci_device_id  *id
     /* register all slots after the structure are completely initialized */
     for (i=0; i<id->driver_data; i++) {
         if (carrier_register_slot(&carrier_car_driver, &info->slot[i]) == -1) {
-            printk(KERN_WARNING "\n%s unable to register IPAC slot [%d]\n", DEBUG_NAME, i);
+            printk(KERN_WARNING "%s unable to register IPAC slot [%d]\n", DEBUG_NAME, i);
             list_del(&info->node);
             cleanup_device(info);
             return -1;
@@ -581,7 +575,6 @@ static int carrier_init_one(struct pci_dev *dev, const struct pci_device_id  *id
     info->saved_intcsr = readl(info->local_control+0x68);
     writel(readl(info->local_control+0x68) | 0x000D0900, info->local_control+0x68);
 
-
     return 0;
 }
 
@@ -594,7 +587,7 @@ static int carrier_init_one(struct pci_dev *dev, const struct pci_device_id  *id
 static void carrier_remove_one(struct pci_dev *dev)
 {
 #ifdef DEBUG_CARRIER
-    printk(KERN_DEBUG "\n%s Remove device (vendor=0x%04X, device=0x%04X)\n",
+    printk(KERN_DEBUG "%s Remove device (vendor=0x%04X, device=0x%04X)\n",
         DEBUG_NAME, dev->vendor, dev->device);
 #endif
 }
@@ -710,7 +703,7 @@ static int carrier_init(void)
 {
     int retval;
 
-    printk(KERN_INFO "\n%s version %s (%s)\n", DRIVER_NAME, IPAC_CARRIER_DRIVER_VERSION, IPAC_CARRIER_DRIVER_REVDATE);
+    printk(KERN_INFO "%s version %s (%s)\n", DRIVER_NAME, IPAC_CARRIER_DRIVER_VERSION, IPAC_CARRIER_DRIVER_REVDATE);
 
 
     INIT_LIST_HEAD(&carrier_board_root);
@@ -726,7 +719,7 @@ static int carrier_init(void)
     }
     else {
 #ifdef DEBUG_CARRIER
-    printk(KERN_DEBUG "\n%s Register carrier driver failed\n", DEBUG_NAME);
+    printk(KERN_DEBUG "%s Register carrier driver failed\n", DEBUG_NAME);
 #endif
         return -ENODEV;
     }
@@ -746,7 +739,7 @@ static void carrier_cleanup(void)
     struct carrier_board_info  *info;
 
 #ifdef DEBUG_CARRIER
-    printk(KERN_DEBUG "\n%s Carrier port driver removed\n", DEBUG_NAME);
+    printk(KERN_DEBUG "%s Carrier port driver removed\n", DEBUG_NAME);
 #endif
 
     carrier_unregister_driver(&carrier_car_driver);

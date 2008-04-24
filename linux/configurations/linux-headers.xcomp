@@ -1,3 +1,4 @@
+ALIAS="linux"
 ARCH="$TARGET"
 if [[ "$TARGET" =~ "i[3-6]86" ]]; then
     ARCH="i386"

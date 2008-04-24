@@ -420,7 +420,7 @@ static void receive_chars(struct info_struct *info, int *status)
         *status = tip866_in(info, UART_LSR);
     } while (*status & UART_LSR_DR);
 #ifdef TIP866_DEBUG_XX
-printk("\n#%d\n", fifo_cnt);
+printk("#%d\n", fifo_cnt);
 #endif
     tty_flip_buffer_push(tty);
 }
@@ -1056,7 +1056,7 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
     tip866_out(info, UART_MCR, info->MCR);
 
 #ifdef TIP866_DEBUG_XX1
-    printk("\nefr=%x, mcr=%x, iflag=%ooct, xon=%x, xoff=%x\n", efr, info->MCR, iflag,
+    printk("efr=%x, mcr=%x, iflag=%ooct, xon=%x, xoff=%x\n", efr, info->MCR, iflag,
         info->tty->termios->c_cc[VSTART], info->tty->termios->c_cc[VSTOP]);
 #endif
 
@@ -2321,21 +2321,21 @@ static int tip_probe(struct ipac_module *ipac, const struct ipac_module_id *modu
     int i;
 
     if (module_count >= TIP866_MAX_NUM_MOD) {
-        printk(KERN_INFO "\nMaximum number of TIP866 device exceeded (number=%ld)\n", module_count);
+        printk(KERN_INFO "Maximum number of TIP866 device exceeded (number=%ld)\n", module_count);
         return -ENOMEM;
     }
 
-    printk(KERN_INFO "\n%s Probe new TIP866 mounted on <%s> at slot %c\n",
+    printk(KERN_INFO "%s Probe new TIP866 mounted on <%s> at slot %c\n",
 	    TIP866_DBG_NAME, ipac->carrier_drv->name, 'A'+ipac->slot.slot_index);
 
     /*  first try to map the IPAC IO space */
     if ((io_space = ipac_map_space(ipac, IPAC_IO_SPACE)) == 0) {
-        printk("\n%s unable to map IPAC IO space\n", TIP866_DBG_NAME);
+        printk("%s unable to map IPAC IO space\n", TIP866_DBG_NAME);
         return -1;
     }
 
     if ((id_space = ipac_map_space(ipac, IPAC_ID_SPACE)) == 0) {
-        printk("\n%s unable to map IPAC ID space\n", TIP866_DBG_NAME);
+        printk("%s unable to map IPAC ID space\n", TIP866_DBG_NAME);
         return -1;
     }
 
@@ -2378,7 +2378,7 @@ static int tip_probe(struct ipac_module *ipac, const struct ipac_module_id *modu
         mod->state[i].flags = 0;
         mod->state[i].type = ipac_read_uchar(id_space, TIP_BOARD_OPTION);
 #ifdef TIP866_DEBUG_XX2
-		printk("\nModuletype TIP866-%d\n", mod->state[i].type);
+		printk("Moduletype TIP866-%d\n", mod->state[i].type);
 #endif
         mod->state[i].line = line_base + i;
         mod->state[i].xmit_fifo_size = 64;
@@ -2601,7 +2601,7 @@ static int __init t866_init(void)
     callout_driver.name = "cuaTIP866_";
 #endif /* CONFIG_DEVFS_FS */
 
-	callout_driver.major = TIP866_CUA_MAJOR;
+    callout_driver.major = TIP866_CUA_MAJOR;
     callout_driver.minor_start = 0;
     callout_driver.subtype = SERIAL_TYPE_CALLOUT;
     callout_driver.read_proc = 0;

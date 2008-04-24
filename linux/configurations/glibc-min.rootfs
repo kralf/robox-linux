@@ -1,3 +1,4 @@
+ALIAS="glibc"
 BUILDDIR="./build"
 CONFIGURE="../configure --prefix=/usr --build=$HOST-linux --host=$TARGET-linux --with-headers=$XCROOT/usr/include --disable-profile"
 MAKEINSTALL="make $MAKEOPTS install_root=$ROOT install"

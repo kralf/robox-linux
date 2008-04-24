@@ -1,0 +1,14 @@
+ARCH="$TARGET"
+if [[ "$TARGET" =~ "i[3-6]86" ]]; then
+    ARCH="i386"
+fi
+if [[ "$TARGET" == "powerpc" ]]; then
+    ARCH="ppc"
+fi
+CONFIGURE=("cd lib"
+           "./configure /usr/share 0.0 $ARCH"
+           "cd ..")
+MAKEBUILD=("make -C lib $MAKEOPTS"
+           "make $MAKEOPTS")
+MAKEINSTALL="make DESTDIR=$ROOT install"
+COMMENT="yet another quick build"

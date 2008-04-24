@@ -1,3 +1,4 @@
+ALIAS="gcc"
 PATH="$ROOT/bin:$PATH"
 CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --target=$TARGET-linux --enable-languages=c --disable-shared --disable-threads --disable-multilib --disable-nls"
 MAKEBUILD="make $MAKEOPTS all-gcc"
