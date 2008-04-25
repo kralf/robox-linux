@@ -2,7 +2,39 @@
 #
 
 # User LED device
-KERNEL=="userled", SUBSYSTEM="userled"				NAME="%k"
+KERNEL=="userled", SUBSYSTEM="userled"                  NAME="%k"
 
 # ICP-multi devices
-KERNEL=="icp[0-9]*[da][io][0-9]*", SUBSYSTEM=="icp"		NAME="icp/%k"
+KERNEL=="icp[0-9]*[da][io][0-9]*", SUBSYSTEM=="icp"     NAME="icp/%k"
+
+# Mapping to RoboX devices
+## Battery
+KERNEL=="icp0ai0", SUBSYSTEM=="icp"                     NAME="robox/battery"
+
+## Security
+KERNEL=="icp0di0", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/stop/emergency"
+KERNEL=="icp0di1", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/stop/supervisor"
+KERNEL=="icp0di2", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/brake/disengaged"
+KERNEL=="icp0di7", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/detection/check"
+
+KERNEL=="icp0do0", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/watchdog"
+KERNEL=="icp0do1", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/brake/disengage"
+KERNEL=="icp0do2", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/detection/ok"
+KERNEL=="icp0do3", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/power"
+KERNEL=="icp0do4", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/sensors"
+KERNEL=="icp0do6", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/flashlight"
+KERNEL=="icp0do7", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/enable"
+
+## Motors
+KERNEL=="icp0ao0", SUBSYSTEM=="icp"                     SYMLINK+="robox/motors/right"
+KERNEL=="icp0ao1", SUBSYSTEM=="icp"                     SYMLINK+="robox/motors/left"
+
+## Bumpers
+KERNEL=="icp0di8", SUBSYSTEM=="icp"                     SYMLINK+="robox/bumpers/right"
+KERNEL=="icp0di9", SUBSYSTEM=="icp"                     SYMLINK+="robox/bumpers/rightback"
+KERNEL=="icp0di10", SUBSYSTEM=="icp"                    SYMLINK+="robox/bumpers/back"
+KERNEL=="icp0di11", SUBSYSTEM=="icp"                    SYMLINK+="robox/bumpers/leftback"
+KERNEL=="icp0di12", SUBSYSTEM=="icp"                    SYMLINK+="robox/bumpers/left"
+KERNEL=="icp0di13", SUBSYSTEM=="icp"                    SYMLINK+="robox/bumpers/leftfront"
+KERNEL=="icp0di14", SUBSYSTEM=="icp"                    SYMLINK+="robox/bumpers/front"
+KERNEL=="icp0di15", SUBSYSTEM=="icp"                    SYMLINK+="robox/bumpers/rightfront"

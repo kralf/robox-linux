@@ -98,6 +98,7 @@
 #define ICPMULTI_DEVNAME_AO "ao"
 #define ICPMULTI_DEVNAME_DI "di"
 #define ICPMULTI_DEVNAME_DO "do"
+#define ICPMULTI_FORMAT "%d"
 
 /*
 ==============================================================================
@@ -215,6 +216,8 @@ static struct pci_driver icpmulti_driver = {
 static int icpmulti_reset(icpmulti_device* icp_dev);
 static int init_ao_channels(icpmulti_device* icp_dev);
 static int init_do_channels(icpmulti_device* icp_dev);
+static int reset_ao_channels(icpmulti_device* icp_dev);
+static int reset_do_channels(icpmulti_device* icp_dev);
 static void setup_channel_list(icpmulti_device* icp_dev);
 
 /*
@@ -376,6 +379,10 @@ void icpmulti_remove(struct pci_dev *pdev) {
   icpmulti_device *icp_dev = pci_get_drvdata(pdev);
 
   if (icp_dev) {
+    // reset
+    reset_ao_channels(icp_dev);
+    reset_do_channels(icp_dev);
+
     // unregister char devices
     icpmulti_unregister_cdevs(icp_dev->dev_class, &icp_dev->cdev);
 
@@ -447,7 +454,7 @@ int icpmulti_read_dev_di(icpmulti_device* icp_dev, int channel, unsigned char
 
   icpmulti_debugk("EDBG: END: icpmulti_read_dev_di(...)\n");
 
-  return 1;
+  return 0;
 }
 
 int icpmulti_read_di(int channel, unsigned char *value) {
@@ -473,7 +480,7 @@ int icpmulti_read_dev_do(icpmulti_device* icp_dev, int channel, unsigned char
   *value = icp_dev->do_data[channel];
 
   up(&icp_dev->do_sem);
-  return 1;
+  return 0;
 }
 
 int icpmulti_read_do(int channel, unsigned char *value) {
@@ -515,7 +522,7 @@ int icpmulti_write_dev_do(icpmulti_device* icp_dev, int channel, unsigned char
 
   icpmulti_debugk("EDBG: END: icpmulti_write_dev_do(...)\n");
 
-  return 1;
+  return 0;
 }
 
 int icpmulti_write_do(int channel, unsigned char value) {
@@ -618,7 +625,7 @@ conv_finish:
   icpmulti_debugk("EDBG: END: icpmulti_read_dev_ai(...) n=%d\n", n);
 
   up(&icp_dev->ai_sem);
-  return 1;
+  return 0;
 }
 
 int icpmulti_read_ai(int channel, short *value) {
@@ -643,7 +650,7 @@ int icpmulti_read_dev_ao(icpmulti_device* icp_dev, int channel, short *value) {
   *value = icp_dev->ao_data[channel];
 
   up(&icp_dev->ao_sem);
-  return 1;
+  return 0;
 }
 
 int icpmulti_read_ao(int channel, short *value) {
@@ -742,7 +749,7 @@ dac_ready:
   icpmulti_debugk("EDBG: END: icpmulti_write_dev_ao(...) n=%d\n", n);
 
   up(&icp_dev->ao_sem);
-  return 1;
+  return 0;
 }
 
 int icpmulti_write_ao(int channel, short value) {
@@ -922,6 +929,65 @@ static int init_do_channels(icpmulti_device* icp_dev) {
   return 0;
 }
 
+static int reset_ao_channels(icpmulti_device* icp_dev) {
+  int chan;
+  int reset_value = 2048;
+  int range = 0x30;
+
+  icpmulti_debugk("EDBG: BGN: reset_ao_channels(...)\n");
+
+  for (chan = 0; chan < icp_dev->n_aochan; chan++) {
+    icp_dev->DacCmdStatus &= 0xfccf;
+    icp_dev->DacCmdStatus |= range;
+    icp_dev->DacCmdStatus |= (chan << 8);
+
+    writew(icp_dev->DacCmdStatus, icp_dev->iobase+ICPMULTI_DAC_CSR);
+
+    // Write data to analog output data register
+    writew(reset_value*0x10, icp_dev->iobase+ICPMULTI_AO);
+
+    // Set DAC_ST bit to write the data to selected channel
+    icp_dev->DacCmdStatus |= DAC_ST;
+
+    writew(icp_dev->DacCmdStatus, icp_dev->iobase+ICPMULTI_DAC_CSR);
+    icp_dev->DacCmdStatus &= ~DAC_ST;
+
+    // Save analog output data
+    icp_dev->ao_data[chan] = reset_value;
+
+    mdelay(1);
+  }
+
+  icpmulti_debugk("EDBG: END: reset_ao_channels(...)\n");
+
+  return 0;
+}
+
+static int reset_do_channels(icpmulti_device* icp_dev) {
+  int chan;
+  int reset_value = 0;
+  unsigned short bit = 0;
+
+  icpmulti_debugk("EDBG: BGN: reset_do_channels(...)\n");
+
+  for (chan = 0; chan < icp_dev->n_dochan; chan++) {
+    bit = 0x01 << chan;
+    icp_dev->do_state &= ~bit;
+    if (reset_value) icp_dev->do_state |= bit;
+
+    writew(icp_dev->do_state, icp_dev->iobase+ICPMULTI_DO);
+
+    // Save digital output data
+    icp_dev->do_data[chan] = reset_value;
+
+    mdelay(1);
+  }
+
+  icpmulti_debugk("EDBG: END: reset_do_channels(...)\n");
+
+  return 0;
+}
+
 /*
 ==============================================================================
         Read/write char devices
@@ -975,73 +1041,52 @@ int icpmulti_device_read(struct file *file, char *buff, size_t len,
   unsigned int chan = iminor(file->f_dentry->d_inode);
   short short_val;
   unsigned char char_val;
+  char out[256];
+  unsigned int out_len;
 
   icpmulti_debugk("EDBG: BGN: icpmulti_device_read(...)\n");
 
   if (chan < icp_dev->n_aichan) {
-    if (len >= sizeof(short_val)) {
-      result = icpmulti_read_dev_ai(icp_dev, chan, &short_val);
-      if (result > 0)
-        if (!copy_to_user(buff, (char*)&short_val, sizeof(short_val)))
-        result = sizeof(short_val);
-    }
+    result = icpmulti_read_dev_ai(icp_dev, chan, &short_val);
+    if (!result) sprintf(out, ICPMULTI_FORMAT, short_val);
 
     goto device_read;
   }
   else chan -= icp_dev->n_aichan;
 
   if (chan < icp_dev->n_aochan) {
-    if (len >= sizeof(short_val)) {
-      result = icpmulti_read_dev_ao(icp_dev, chan, &short_val);
-      if (result > 0)
-        if (!copy_to_user(buff, (char*)&short_val, sizeof(short_val)))
-        result = sizeof(short_val);
-    }
+    result = icpmulti_read_dev_ao(icp_dev, chan, &short_val);
+    if (!result) sprintf(out, ICPMULTI_FORMAT, short_val);
 
     goto device_read;
   }
   else chan -= icp_dev->n_aochan;
 
   if (chan < icp_dev->n_dichan) {
-    if (len >= sizeof(char_val)) {
-      result = icpmulti_read_dev_di(icp_dev, chan, &char_val);
-//       if (result > 0)
-//         if (!copy_to_user(buff, (char*)&char_val, sizeof(char_val)))
-//         result = sizeof(char_val);
-
-      if (result > 0) {
-        mdelay(10);
-        if (char_val > 0) copy_to_user(buff, "1", 1);
-        else copy_to_user(buff, "0", 1);
-
-        result = 1;
-      }
-    }
+    result = icpmulti_read_dev_di(icp_dev, chan, &char_val);
+    if (!result) sprintf(out, ICPMULTI_FORMAT, char_val);
 
     goto device_read;
   }
   else chan -= icp_dev->n_dichan;
 
   if (chan < icp_dev->n_dochan) {
-    if (len >= sizeof(char_val)) {
-      result = icpmulti_read_dev_do(icp_dev, chan, &char_val);
-//       if (result > 0)
-//         if (!copy_to_user(buff, (char*)&char_val, sizeof(char_val)))
-//         result = sizeof(char_val);
-
-      if (result > 0) {
-        mdelay(10);
-        if (char_val > 0) copy_to_user(buff, "1", 1);
-        else copy_to_user(buff, "0", 1);
-
-        result = 1;
-      }
-    }
+    result = icpmulti_read_dev_do(icp_dev, chan, &char_val);
+    if (!result) sprintf(out, ICPMULTI_FORMAT, char_val);
 
     goto device_read;
   }
 
 device_read:
+  if (!result) {
+    mdelay(500);
+    strcat(out, "\n");
+    out_len = strlen(out);
+
+    if (len >= out_len)
+      if (!copy_to_user(buff, out, out_len)) result = out_len;
+  }
+
   icpmulti_debugk("EDBG: END: icpmulti_device_read(...)\n");
 
   return result;
@@ -1052,36 +1097,35 @@ int icpmulti_device_write(struct file *file, const char *buff, size_t len,
   int result = -EFAULT;
   icpmulti_device *icp_dev =  file->private_data;
   unsigned int chan = iminor(file->f_dentry->d_inode);
-  short short_val;
-  unsigned char char_val;
+  char in[len+1];
+  int in_val;
 
   icpmulti_debugk("EDBG: BGN: icpmulti_device_write(...)\n");
 
-  chan -= icp_dev->n_aichan;
-  if (chan < icp_dev->n_aochan) {
-    if (len >= sizeof(short_val)) {
-      if (!copy_from_user((char*)&short_val, buff, sizeof(short_val)))
-        result = icpmulti_write_dev_ao(icp_dev, chan, short_val);
+
+  if (!copy_from_user(in, buff, len)) {
+    in[len] = 0;
+
+    chan -= icp_dev->n_aichan;
+    if (chan < icp_dev->n_aochan) {
+      if (sscanf(in, ICPMULTI_FORMAT, &in_val) > 0)
+        result = icpmulti_write_dev_ao(icp_dev, chan, (short)in_val);
+
+      goto device_written;
     }
+    else chan -= icp_dev->n_aochan+icp_dev->n_dichan;
 
-    goto device_written;
-  }
-  else chan -= icp_dev->n_aochan+icp_dev->n_dichan;
+    if (chan < icp_dev->n_dochan) {
+      if (sscanf(in, ICPMULTI_FORMAT, &in_val) > 0)
+        result = icpmulti_write_dev_do(icp_dev, chan, (unsigned char)in_val);
 
-  if (chan < icp_dev->n_dochan) {
-    if (len >= sizeof(char_val)) {
-      if (!copy_from_user((char*)&char_val, buff, sizeof(char_val))) {
-        if (char_val == '0') char_val = 0;
-        else char_val = 1;
-
-        result = icpmulti_write_dev_do(icp_dev, chan, char_val);
-      }
+      goto device_written;
     }
-
-    goto device_written;
   }
 
 device_written:
+  if (!result) result = len;
+
   icpmulti_debugk("EDBG: END: icpmulti_device_write(...)\n");
 
   return result;
