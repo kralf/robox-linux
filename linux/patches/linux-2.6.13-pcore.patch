@@ -15,7 +15,7 @@ diff -Naur linux-2.6.13/arch/ppc/boot/simple/misc.c linux-2.6.13-pcore/arch/ppc/
  load_kernel(unsigned long load_addr, int num_words, unsigned long cksum,
 diff -Naur linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/platforms/pcore.c
 --- linux-2.6.13/arch/ppc/platforms/pcore.c	2008-04-23 11:39:05.000000000 +0200
-+++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.c	2008-04-23 20:27:47.000000000 +0200
++++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.c	2008-04-25 14:42:00.000000000 +0200
 @@ -51,10 +51,10 @@
  	 *      A       B       C       D
  	 */
@@ -40,3 +40,23 @@ diff -Naur linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/p
  }
  
  static void
+@@ -244,7 +242,18 @@
+ {
+ 	local_irq_disable();
+ 	/* Hard reset */
+-	writeb(0x11, 0xfe000332);
++        // writeb(0x11, 0xfe000332);
++
++        /* Soft reset */
++        __asm__ __volatile__
++        ("\n\
++         lis     3,0xfff0        \n\
++         ori     3,3,0x0100      \n\
++         mtspr   26,3            \n\
++         li      3,0             \n\
++         mtspr   27,3            \n\
++         rfi                     \n\
++        ");
+ 	while(1);
+ }
+ 
