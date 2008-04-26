@@ -118,13 +118,18 @@
 
 #undef TIP866_DEBUG_INTR
 #undef TIP866_DEBUG_OPEN
+#define TIP866_DEBUG_OPEN
 #undef TIP866_DEBUG_FLOW
+#define TIP866_DEBUG_FLOW
 #undef TIP866_DEBUG_RS_WAIT_UNTIL_SENT
 #undef TIP866_DEBUG_PCI
 #undef TIP866_DEBUG_RW
+#define TIP866_DEBUG_RW
 #undef TIP866_DEBUG_XX
 #undef TIP866_DEBUG_XX1
+#define TIP866_DEBUG_XX1
 #undef TIP866_DEBUG_XX2
+#define TIP866_DEBUG_XX2
 #undef TIP866_DEBUG_XX3
 #undef TIP866_DEBUG_FIFO
 #define TIP866_DBG_NAME     "tip866:"
@@ -937,24 +942,30 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
     else if (baud)
         quot = baud_base / baud;
 
+    printk("quot=%d, baud_base=%d, baud=%d\n", quot, baud_base, baud);
+
     /* If the quotient is zero refuse the change */
-    if (!quot && old_termios) {
+    /*if (!quot && old_termios) {
         info->tty->termios->c_cflag &= ~CBAUD;
         info->tty->termios->c_cflag |= (old_termios->c_cflag & CBAUD);
         baud = tty_get_baud_rate(info->tty);
 
         if (!baud) baud = 9600;
 
-        if (baud == 134)
+        if (baud == 134)*/
             /* Special case since 134 is really 134.5 */
-            quot = (2*baud_base / 269);
+            /*quot = (2*baud_base / 269);
         else if (baud)
             quot = baud_base / baud;
-    }
+    }*/
 
+    /* Do not refuse, but set the quotient to 1 and support 500000 bps */
+    if (!quot) quot = 1;
 
     /* As a last resort, if the quotient is zero, default to 9600 bps */
     if (!quot) quot = baud_base / 9600;
+
+    printk("accepted baud=%d\n", tty_get_baud_rate(info->tty));
 
     info->quot = quot;
     info->timeout = ((info->xmit_fifo_size*HZ*bits*quot) / baud_base);
@@ -1039,6 +1050,8 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
         efr |= UART_EFR_CONT3;  /* transmit XON/XOFF */
     }
 
+    /* Disable HW flow control */
+    efr = 0;
     tip866_out(info, UART_EFR, efr);
 
 
@@ -1053,10 +1066,13 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
         info->MCR &= ~UART_MCR_XON_ANY;
     }
 
+    /* reset MCR as we don not use the divider (bit7) */
+    info->MCR = 0;
     tip866_out(info, UART_MCR, info->MCR);
 
 #ifdef TIP866_DEBUG_XX1
-    printk("efr=%x, mcr=%x, iflag=%ooct, xon=%x, xoff=%x\n", efr, info->MCR, iflag,
+    printk("baud=%d, efr=%x, mcr=%x, iflag=%ooct, xon=%x, xoff=%x\n",
+        tty_get_baud_rate(info->tty), efr, info->MCR, iflag,
         info->tty->termios->c_cc[VSTART], info->tty->termios->c_cc[VSTOP]);
 #endif
 
