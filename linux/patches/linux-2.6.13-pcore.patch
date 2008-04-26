@@ -15,8 +15,8 @@ diff -Naur linux-2.6.13/arch/ppc/boot/simple/misc.c linux-2.6.13-pcore/arch/ppc/
  load_kernel(unsigned long load_addr, int num_words, unsigned long cksum,
 diff -Naur linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/platforms/pcore.c
 --- linux-2.6.13/arch/ppc/platforms/pcore.c	2008-04-23 11:39:05.000000000 +0200
-+++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.c	2008-04-25 14:42:00.000000000 +0200
-@@ -51,10 +51,10 @@
++++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.c	2008-04-26 19:26:00.000000000 +0200
+@@ -51,13 +51,13 @@
  	 *      A       B       C       D
  	 */
  	{
@@ -24,13 +24,19 @@ diff -Naur linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/p
 -		{10,	0,	0,	0},	/* IDSEL 25 - DEC 21143 */
 -		{11,	12,	9,	10},	/* IDSEL 26 - PMC I */
 -		{12,	9,	10,	11},	/* IDSEL 27 - PMC II */
-+		{12,	9,	10,	11},	/* IDSEL 24 - DEC 21554 */
-+		{9,	10,	11,	12},	/* IDSEL 25 - DEC 21143 */
-+		{10,	11,	12,	9},	/* IDSEL 26 - PMC I */
-+		{11,	12,	9,	10},	/* IDSEL 27 - PMC II */
- 		{0,	0,	0,	0},	/* IDSEL 28 - unused */
- 		{0,	0,	9,	0},	/* IDSEL 29 - unused */
- 		{0,	0,	0,	0},	/* IDSEL 30 - Winbond */
+-		{0,	0,	0,	0},	/* IDSEL 28 - unused */
+-		{0,	0,	9,	0},	/* IDSEL 29 - unused */
+-		{0,	0,	0,	0},	/* IDSEL 30 - Winbond */
++                {9,     10,     11,     12},    /* IDSEL 24 - DEC 21554 PCI-to-PCI bridge */
++                {9,     0,      0,      0},     /* IDSEL 25 - DEC 21143 Ethernet controller */
++                {11,    12,     9,      10},    /* IDSEL 26 - PMC I */
++                {12,    9,      10,     11},    /* IDSEL 27 - PMC II */
++                {0,     0,      0,      0},     /* IDSEL 28 - unused */
++                {0,     0,      0,      0},     /* IDSEL 29 - unused */
++                {0,     0,      0,      0},     /* IDSEL 30 - Winbond */
+ 		};
+ 	const long min_idsel = 24, max_idsel = 30, irqs_per_slot = 4;
+ 	return PCI_IRQ_TABLE_LOOKUP;
 @@ -235,8 +235,6 @@
  	else
  		printk("680\n");

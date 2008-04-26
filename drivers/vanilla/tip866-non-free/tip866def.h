@@ -45,7 +45,7 @@
 
 #define TIP866_CHAN_PER_MOD    2
 #define TIP866_MAX_NUM_MOD     32
-#define TIP866_CLOCK_RATE      7372800
+#define TIP866_CLOCK_RATE      7987200
 #define TIP866_CHAN_SPAN       0x10
 
 

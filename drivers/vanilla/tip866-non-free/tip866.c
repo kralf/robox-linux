@@ -118,18 +118,13 @@
 
 #undef TIP866_DEBUG_INTR
 #undef TIP866_DEBUG_OPEN
-#define TIP866_DEBUG_OPEN
 #undef TIP866_DEBUG_FLOW
-#define TIP866_DEBUG_FLOW
 #undef TIP866_DEBUG_RS_WAIT_UNTIL_SENT
 #undef TIP866_DEBUG_PCI
 #undef TIP866_DEBUG_RW
-#define TIP866_DEBUG_RW
 #undef TIP866_DEBUG_XX
 #undef TIP866_DEBUG_XX1
-#define TIP866_DEBUG_XX1
 #undef TIP866_DEBUG_XX2
-#define TIP866_DEBUG_XX2
 #undef TIP866_DEBUG_XX3
 #undef TIP866_DEBUG_FIFO
 #define TIP866_DBG_NAME     "tip866:"
@@ -942,8 +937,6 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
     else if (baud)
         quot = baud_base / baud;
 
-    printk("quot=%d, baud_base=%d, baud=%d\n", quot, baud_base, baud);
-
     /* If the quotient is zero refuse the change */
     /*if (!quot && old_termios) {
         info->tty->termios->c_cflag &= ~CBAUD;
@@ -959,18 +952,15 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
             quot = baud_base / baud;
     }*/
 
-    /* Do not refuse, but set the quotient to 1 and support 500000 bps */
+    /* Do not refuse, but set the quotient to 1 and support 460 kbps */
     if (!quot) quot = 1;
 
     /* As a last resort, if the quotient is zero, default to 9600 bps */
     if (!quot) quot = baud_base / 9600;
 
-    printk("accepted baud=%d\n", tty_get_baud_rate(info->tty));
-
     info->quot = quot;
     info->timeout = ((info->xmit_fifo_size*HZ*bits*quot) / baud_base);
     info->timeout += HZ/50;     /* Add .02 seconds of slop */
-
 
     /* CTS flow control flag and modem status interrupts */
     info->IER &= ~UART_IER_MSI;
@@ -1051,7 +1041,6 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
     }
 
     /* Disable HW flow control */
-    efr = 0;
     tip866_out(info, UART_EFR, efr);
 
 
@@ -1067,7 +1056,6 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
     }
 
     /* reset MCR as we don not use the divider (bit7) */
-    info->MCR = 0;
     tip866_out(info, UART_MCR, info->MCR);
 
 #ifdef TIP866_DEBUG_XX1
@@ -1184,8 +1172,6 @@ static int tp_write(struct tty_struct * tty,
 
     int c, ret = 0;
     struct info_struct *info = (struct info_struct *)tty->driver_data;
-
-
 
     if (tip866_paranoia_check(info, info->line, "tp_write"))
         return 0;
