@@ -127,7 +127,7 @@
 #undef TIP866_DEBUG_XX2
 #undef TIP866_DEBUG_XX3
 #undef TIP866_DEBUG_FIFO
-#define TIP866_DBG_NAME     "TIP866 : "
+#define TIP866_DBG_NAME     "tip866:"
 
 #define RS_STROBE_TIME (10*HZ)
 #define RS_ISR_PASS_LIMIT 256
@@ -2536,13 +2536,13 @@ static int __init t866_init(void)
     memset(&tip866_driver, 0, sizeof(struct tty_driver));
     tip866_driver.magic = TTY_DRIVER_MAGIC;
 
-	tip866_driver.driver_name = "tip866serial";
+    tip866_driver.driver_name = "tip866";
 #if defined CONFIG_DEVFS_FS
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
     tip866_driver.name = "ttySTIP866_%d";
 #else
     tip866_driver.name = "ttySTIP866_";
-	tip866_driver.devfs_name = tip866_driver.name;
+    tip866_driver.devfs_name = tip866_driver.name;
 #endif
 #else
     tip866_driver.name = "ttySTIP866_";

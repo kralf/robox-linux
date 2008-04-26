@@ -44,8 +44,8 @@
 #define __KERNEL__
 #endif
 
-#define DEBUG_CARRIER
-#define DEBUG_NAME          "SBS PCI  : "
+#undef DEBUG_CARRIER
+#define DEBUG_NAME          "cpci100a:"
 
 #define DRIVER_NAME         "TEWS TECHNOLOGIES - SBS (Compact)PCI IPAC Carrier"
 
@@ -501,15 +501,20 @@ static int carrier_init_one(struct pci_dev *dev, const struct pci_device_id  *id
     list_add_tail(&info->node, &carrier_board_root);
 
     /* try to occupy memory resource of the carrier board */
-    for (b = 1; b <=3; b++) {
-      printk("Resource %d at 0x%x-0x%x, len 0x%x\n", b, pci_resource_start(dev, b), pci_resource_end(dev, b), pci_resource_len(dev, b));
-      if ((info->bar[b] = request_mem_region(pci_resource_start(dev, b), pci_resource_len(dev, b), "SxPCI")) == 0) {
-          printk(KERN_WARNING "%s BAR[%d] memory resource already occupied!?\n", DEBUG_NAME, b);
-          list_del(&info->node);
-          cleanup_device(info);
-          return -1;
-      }
+    if ((info->bar[0] = request_mem_region(pci_resource_start(dev, 0), pci_resource_len(dev, 0), "SxPCI")) == 0) {
+        printk(KERN_WARNING "%s BAR[%d] memory resource already occupied!?\n", DEBUG_NAME, 0);
+        list_del(&info->node);
+        cleanup_device(info);
+        return -1;
     }
+
+    if ((info->bar[2] = request_mem_region(pci_resource_start(dev, 2), pci_resource_len(dev, 2), "SxPCI")) == 0) {
+        printk(KERN_WARNING "%s BAR[%d] memory resource already occupied!?\n", DEBUG_NAME, 2);
+        list_del(&info->node);
+        cleanup_device(info);
+        return -1;
+    }
+
 
     /* make pci device available for access */
     if (pci_enable_device(dev) < 0)

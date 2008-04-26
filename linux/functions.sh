@@ -734,9 +734,11 @@ function build_packages
     if [ "$PKG" == "" ] || [ ! -r $PKG ]; then
       PKG=`ls $PKGDIR/$ALIAS-[0-9]*.{gz,tgz,bz2} 2> /dev/null`
     fi
+    if [ "$PKG" != "" ]; then
+      PKG=`readlink -m $PKG`
+    fi
 
-    PKG=`readlink -m $PKG`
-    if [ -r $PKG ]; then
+    if [ "$PKG" != "" ] && [ -r $PKG ]; then
       PKGBASENAME=`basename $PKG`
       FULLPKGNAME=${PKGBASENAME%.tar*}
       PKGNAME=${FULLPKGNAME%%-[0-9]*}

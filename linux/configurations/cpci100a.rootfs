@@ -1,0 +1,15 @@
+PKG="../drivers/vanilla/cpci100a-non-free"
+ARCH="$TARGET"
+if [[ "$TARGET" =~ "i[3-6]86" ]]; then
+    ARCH="i386"
+fi
+if [[ "$TARGET" == "powerpc" ]]; then
+    ARCH="ppc"
+fi
+CONFIGURE=""
+MAKEBUILD="make $MAKEOPTS ARCH=$ARCH CC=$CC LD=$LD KERNEL_SRC=$BUILDROOT/linux-modules"
+MODULEROOT="$ROOT/lib/modules/`ls $ROOT/lib/modules`"
+MAKEINSTALL=("mkdir -p $MODULEROOT/extra"
+             "cp -a ipac.ko $MODULEROOT/extra"
+             "cp -a cpci100a.ko $MODULEROOT/extra")
+COMMENT="this will not take long"

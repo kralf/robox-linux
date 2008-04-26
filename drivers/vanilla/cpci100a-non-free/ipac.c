@@ -58,9 +58,8 @@
 */
 #undef IGNORE_CRC_ERROR
 
-#define DEBUG_CC
-#define DEBUG_NAME  "IPAC_CC : "
-
+#undef DEBUG_CC
+#define DEBUG_NAME  "ipac:"
 
 #include <linux/version.h>
 #include <linux/module.h>
@@ -697,8 +696,6 @@ int ipac_register_driver(struct ipac_driver  *drv)
         */
         for (id_table = drv->id_table; id_table->manufacturer != 0; id_table++) {
 
-            printk("Vendor %x model %x\n", id_table->manufacturer,
-              id_table->model_number);
             /* walk through the list of known IPAC modules */
             list_for_each(ptr, &ipac_module_root) {
 
@@ -707,9 +704,6 @@ int ipac_register_driver(struct ipac_driver  *drv)
                 **  to structure that contains it
                 */
                 entry = list_entry(ptr, struct ipac_module, node);
-
-                printk("Entry vendor %x model %x\n", entry->module_id.manufacturer,
-                  entry->module_id.model_number);
 
                 if (entry->ipac_drv == NULL
                     && entry->module_id.manufacturer == id_table->manufacturer
@@ -1533,9 +1527,7 @@ static struct file_operations carrier_file_ops = {
 	.release = seq_release
 };
 
-#define proc_entry_name "tews-ip-carrier"
-
-
+#define proc_entry_name "ipac"
 
 /*****************************************************************************
  *

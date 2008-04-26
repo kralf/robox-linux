@@ -43,14 +43,14 @@
 #ifndef __TIP866DEF_H
 #define __TIP866DEF_H
 
-#define TIP866_CHAN_PER_MOD    8
+#define TIP866_CHAN_PER_MOD    2
 #define TIP866_MAX_NUM_MOD     32
 #define TIP866_CLOCK_RATE      7372800
 #define TIP866_CHAN_SPAN       0x10
 
 
 #define MANUFACTURER_TEWS      0xB3    /* TEWS TECHNOLOGIES */
-#define MODULE_TIP866          0x1D  
+#define MODULE_TIP866          0x1D
 
 #define TIP866_10              10
 #define TIP866_11              11
@@ -92,7 +92,7 @@ struct tip866_state {
 	int	count;
 	unsigned short	    close_delay;
 	unsigned short	    closing_wait; /* time to wait before closing */
-	struct info_icount	icount;	
+	struct info_icount	icount;
 	struct TP_TERMIOS		normal_termios;
 	struct TP_TERMIOS		callout_termios;
 	struct info_struct  *info;
@@ -128,18 +128,18 @@ struct info_struct {
 	int			        xmit_tail;
 	int			        xmit_cnt;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-    /* interrupt bottom-half for Kernel 2.4.x */ 
+    /* interrupt bottom-half for Kernel 2.4.x */
     struct tq_struct    tqueue;
 #else
-    /* interrupt bottom-half for Kernel 2.6.x */ 
+    /* interrupt bottom-half for Kernel 2.6.x */
     struct work_struct  work;
 #endif
     wait_queue_head_t   open_wait;
     wait_queue_head_t   close_wait;
     wait_queue_head_t   delta_msr_wait;
-    
+
 	int                 tx_empty_bit;       /* bit in the FIFO status register for this port */
-	int                 fifo_status_reg;    /* this two parameters describes the corresponding */ 
+	int                 fifo_status_reg;    /* this two parameters describes the corresponding */
 	struct device		*dev;
     spinlock_t			lock;
 	unsigned long		lock_flags;
@@ -243,8 +243,8 @@ struct module_info_struct
 
 /*
  * These are the definitions for the Line Control Register
- * 
- * Note: if the word length is 5 bits (UART_LCR_WLEN5), then setting 
+ *
+ * Note: if the word length is 5 bits (UART_LCR_WLEN5), then setting
  * UART_LCR_STOP will select 1.5 stop bits, not 2 stop bits.
  */
 #define UART_LCR_DLAB   0x80    /* Divisor latch access bit */
