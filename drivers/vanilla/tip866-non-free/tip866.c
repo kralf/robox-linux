@@ -65,7 +65,7 @@
  */
 #define TIP866_ENA_FIFO        1       //  0 = disabled, 1 = enabled
 
-#define TIP866_RX_TRG_DEF   UART_FCR_R_TRIGGER_56
+#define TIP866_RX_TRG_DEF   UART_FCR_R_TRIGGER_60
 #define TIP866_TX_TRG_DEF   UART_FCR_T_TRIGGER_8
 
 
@@ -1040,9 +1040,7 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
         efr |= UART_EFR_CONT3;  /* transmit XON/XOFF */
     }
 
-    /* Disable HW flow control */
     tip866_out(info, UART_EFR, efr);
-
 
     tip866_out(info, UART_LCR, cval);  /* deselect EFR */
 
@@ -2383,7 +2381,7 @@ static int tip_probe(struct ipac_module *ipac, const struct ipac_module_id *modu
 		printk("Moduletype TIP866-%d\n", mod->state[i].type);
 #endif
         mod->state[i].line = line_base + i;
-        mod->state[i].xmit_fifo_size = 64;
+        mod->state[i].xmit_fifo_size = SERIAL_FIFO_SIZE;
         mod->state[i].count = 0;
         mod->state[i].close_delay = 5*HZ/10;
         mod->state[i].closing_wait = 30*HZ;

@@ -12,7 +12,7 @@
  * very much inspired by the comedi ICP-multi driver, but
  * taken out of comedi.
  *
- * char device implementation and none-realtime mutual exclusion
+ * char device implementation and non-realtime mutual exclusion
  * by Ralf Kaestner
  *
  *-------------------------------------------------------------
@@ -90,7 +90,7 @@
 // Useful definitions
 #define	Status_IRQ	0x00ff    // All interrupts
 
-// Character device operations
+// Character devices
 #define ICPMULTI_MAJOR_BASE 210
 #define ICPMULTI_DEVCLASS "icp"
 #define ICPMULTI_DEVNAME "icp"
@@ -164,13 +164,13 @@ typedef struct {
   int n_dichan;	                        // num of DI chans
   int n_dochan;	                        // num of DO chans
 
-  /* mutexes */
+  // mutexes
   struct semaphore ai_sem;              // analog in semaphore
   struct semaphore ao_sem;              // analog out semaphore
   struct semaphore di_sem;              // digital in semaphore
   struct semaphore do_sem;              // digital out semaphore
 
-  /* char device */
+  // char device
   struct class* dev_class;              // device class
   struct cdev cdev;                     // char device
 } icpmulti_device;
@@ -311,7 +311,7 @@ int icpmulti_probe(struct pci_dev *pdev, const struct pci_device_id *ent) {
       // enable memory
       pci_write_config_dword(icp_dev->pdev, 0x04, 0x00000002);
 
-      /* init mutexes */
+      // init mutexes
       sema_init(&icp_dev->ai_sem, 1);
       sema_init(&icp_dev->ao_sem, 1);
       sema_init(&icp_dev->di_sem, 1);

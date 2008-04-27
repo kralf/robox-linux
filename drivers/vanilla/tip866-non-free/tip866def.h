@@ -175,6 +175,12 @@ struct module_info_struct
 #ifndef SERIAL_XMIT_SIZE
 #define SERIAL_XMIT_SIZE 4096
 #endif
+/*
+ * The size of the serial FIFO
+ */
+#ifndef SERIAL_FIFO_SIZE
+#define SERIAL_FIFO_SIZE 64
+#endif
 
 /*
  * Events are used to schedule things to happen at timer-interrupt

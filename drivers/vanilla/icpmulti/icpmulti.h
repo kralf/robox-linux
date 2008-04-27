@@ -1,5 +1,3 @@
-#ifndef ICPMULTI_H
-
 /*-------------------------------------------------------------
  * Linux on RoboX project - ASL EPFL
  *-------------------------------------------------------------
@@ -9,6 +7,9 @@
  *-------------------------------------------------------------
  * $Id: icpmulti.h,v 1.3 2004/01/12 12:54:08 fred Exp $
  *-------------------------------------------------------------*/
+
+#ifndef ICPMULTI_H
+#define ICPMULTI_H
 
 int icpmulti_read_di(int channel, unsigned char *value);
 int icpmulti_read_do(int channel, unsigned char *value);
