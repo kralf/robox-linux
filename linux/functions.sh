@@ -722,6 +722,7 @@ function build_packages
     MAKEINSTALL=("make $MAKEOPTS install")
     COMMENT="this may take a while"
     PKG=""
+    PKGBUILDROOT=$BUILDROOT/$1
 
     message "processing package $1"
     stage_up
@@ -743,7 +744,6 @@ function build_packages
       FULLPKGNAME=${PKGBASENAME%.tar*}
       PKGNAME=${FULLPKGNAME%%-[0-9]*}
       PKGVERSION=${FULLPKGNAME##*-}
-      PKGBUILDROOT=$BUILDROOT/$1
 
       if [ -x $PKGBUILDROOT ]; then
         message "contents of $PKGBASENAME found in $PKGBUILDROOT"
@@ -755,7 +755,7 @@ function build_packages
           message "extracting contents of $PKGBASENAME to $PKGBUILDROOT"
           extract_package $BUILDROOT $PKG
 
-          PATCHES=`ls $PATCHDIR/$ALIAS-[0-9]*.patch 2> /dev/null`
+          PATCHES=`ls $PATCHDIR/$ALIAS-$PKGVERSION*.patch 2> /dev/null`
           if [ "$PATCHES" != "" ]; then
             message "patching package sources"
             stage_up

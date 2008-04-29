@@ -15,7 +15,16 @@ diff -Naur linux-2.6.13/arch/ppc/boot/simple/misc.c linux-2.6.13-pcore/arch/ppc/
  load_kernel(unsigned long load_addr, int num_words, unsigned long cksum,
 diff -Naur linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/platforms/pcore.c
 --- linux-2.6.13/arch/ppc/platforms/pcore.c	2008-04-23 11:39:05.000000000 +0200
-+++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.c	2008-04-27 11:31:15.000000000 +0200
++++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.c	2008-04-29 15:40:40.000000000 +0200
+@@ -43,7 +43,7 @@
+ static int board_type;
+ 
+ static inline int __init
+-pcore_6750_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
++pcore_3750_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
+ {
+ 	static char pci_irq_table[][4] =
+ 	/*
 @@ -51,13 +51,13 @@
  	 *      A       B       C       D
  	 */
@@ -37,7 +46,51 @@ diff -Naur linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/p
  		};
  	const long min_idsel = 24, max_idsel = 30, irqs_per_slot = 4;
  	return PCI_IRQ_TABLE_LOOKUP;
-@@ -235,8 +235,6 @@
+@@ -134,7 +134,7 @@
+ 			PCI_VENDOR_ID,
+ 			&host_bridge);
+ 	if (host_bridge == MPC10X_BRIDGE_106)
+-		board_type = PCORE_TYPE_6750;
++		board_type = PCORE_TYPE_3750;
+ 	else /* MPC10X_BRIDGE_107 */
+ 		board_type = PCORE_TYPE_680;
+ 
+@@ -143,8 +143,8 @@
+ 	ppc_md.pcibios_fixup = pcore_pcibios_fixup;
+ 	ppc_md.pci_swizzle = common_swizzle;
+ 
+-	if (board_type == PCORE_TYPE_6750)
+-		ppc_md.pci_map_irq = pcore_6750_map_irq;
++	if (board_type == PCORE_TYPE_3750)
++		ppc_md.pci_map_irq = pcore_3750_map_irq;
+ 	else /* PCORE_TYPE_680 */
+ 		ppc_md.pci_map_irq = pcore_680_map_irq;
+ 
+@@ -159,13 +159,13 @@
+ {
+ 	seq_printf(m, "vendor\t\t: Force Computers\n");
+ 
+-	if (board_type == PCORE_TYPE_6750)
+-		seq_printf(m, "machine\t\t: PowerCore 6750\n");
++	if (board_type == PCORE_TYPE_3750)
++		seq_printf(m, "machine\t\t: PowerCore 3750\n");
+ 	else /* PCORE_TYPE_680 */
+ 		seq_printf(m, "machine\t\t: PowerCore 680\n");
+ 
+ 	seq_printf(m, "L2\t\t: " );
+-	if (board_type == PCORE_TYPE_6750)
++	if (board_type == PCORE_TYPE_3750)
+ 		switch (readb(PCORE_DCCR_REG) & PCORE_DCCR_L2_MASK)
+ 		{
+ 			case PCORE_DCCR_L2_0KB:
+@@ -230,13 +230,11 @@
+ #endif
+ 
+  	printk(KERN_INFO "Force PowerCore ");
+-	if (board_type == PCORE_TYPE_6750)
+-		printk("6750\n");
++	if (board_type == PCORE_TYPE_3750)
++		printk("3750\n");
  	else
  		printk("680\n");
  	printk(KERN_INFO "Port by MontaVista Software, Inc. (source@mvista.com)\n");
@@ -66,3 +119,15 @@ diff -Naur linux-2.6.13/arch/ppc/platforms/pcore.c linux-2.6.13-pcore/arch/ppc/p
  	while(1);
  }
  
+diff -Naur linux-2.6.13/arch/ppc/platforms/pcore.h linux-2.6.13-pcore/arch/ppc/platforms/pcore.h
+--- linux-2.6.13/arch/ppc/platforms/pcore.h	2008-04-23 11:39:05.000000000 +0200
++++ linux-2.6.13-pcore/arch/ppc/platforms/pcore.h	2008-04-29 15:41:23.000000000 +0200
+@@ -16,7 +16,7 @@
+ 
+ #include <asm/mpc10x.h>
+ 
+-#define PCORE_TYPE_6750			1
++#define PCORE_TYPE_3750			1
+ #define PCORE_TYPE_680			2
+ 
+ #define PCORE_NVRAM_AS0			0x73

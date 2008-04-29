@@ -65,9 +65,8 @@
  */
 #define TIP866_ENA_FIFO        1       //  0 = disabled, 1 = enabled
 
-#define TIP866_RX_TRG_DEF   UART_FCR_R_TRIGGER_60
-#define TIP866_TX_TRG_DEF   UART_FCR_T_TRIGGER_8
-
+#define TIP866_RX_TRG_DEF   16
+#define TIP866_TX_TRG_DEF   8
 
 /*
  * End of tip866 driver configuration section.
@@ -106,7 +105,6 @@
 #include "tpmodule.c"
 #include "tip866def.h"
 #include "ipac.h"
-
 
 
 #undef SERIAL_PARANOIA_CHECK
@@ -209,10 +207,8 @@ static struct semaphore tmp_buf_sem = MUTEX;
 
 #define lock_save(info) \
 	spin_lock_irqsave(&info->lock, info->lock_flags)
-
 #define unlock_restore(info) \
 	spin_unlock_irqrestore(&info->lock, info->lock_flags)
-
 
 /****************************************************************************
  * tip866_paranoia_check  - Check the magic number for the async_structure
@@ -299,7 +295,7 @@ static void tp_start(struct tty_struct *tty)
         info->IER |= UART_IER_THRI;
         tip866_out(info, UART_IER, info->IER);
     }
-	unlock_restore(info);
+    unlock_restore(info);
 }
 
 
@@ -350,7 +346,6 @@ static void receive_chars(struct info_struct *info, int *status)
     int fifo_cnt=0;
 #endif
 
-
     icount = &info->state->icount;
     do {
         ch = tip866_in(info, UART_RX);
@@ -365,8 +360,7 @@ static void receive_chars(struct info_struct *info, int *status)
         printk("DR%02x:%02x...", ch, *status);
 #endif
         flag = 0;
-        if (*status & (UART_LSR_BI | UART_LSR_PE |
-                   UART_LSR_FE | UART_LSR_OE)) {
+        if (*status & (UART_LSR_BI | UART_LSR_PE | UART_LSR_FE | UART_LSR_OE)) {
             /*
              * For statistics only
              */
@@ -415,6 +409,10 @@ static void receive_chars(struct info_struct *info, int *status)
             }
         }
 
+        // To be safe, flush flip buffer
+        if (tty->flip.count >= TTY_FLIPBUF_SIZE)
+          tty_flip_buffer_push(tty);
+
         tty_insert_flip_char(tty, ch, flag);
     ignore_char:
         *status = tip866_in(info, UART_LSR);
@@ -457,7 +455,7 @@ static void transmit_chars(struct info_struct *info, int *intr_done)
     info_istat.port = info->fifo_status_reg;
     info_istat.space = info->space;
 
-	room = info->xmit_fifo_size - info->xmit_fifo_trigger; /* calculate write room */
+    room = info->xmit_fifo_size - info->xmit_fifo_trigger; /* calculate write room */
 
     do {
         tip866_out(info, UART_TX, info->xmit_buf[info->xmit_tail++]);
@@ -562,76 +560,74 @@ static void check_modem_status(struct info_struct *info)
 /*
  * This is the tip866 driver's generic interrupt routine
  */
-TPMODULE_DEFINE_ISR(tp_interrupt)
-{
-	struct module_info_struct *mod = (struct module_info_struct *)((struct uart_interrupt_info *)dev_id)->parent;
-	unsigned long int_number = ((struct uart_interrupt_info *)dev_id)->controller_num;
-	unsigned char ch_min, ch_max;
-    struct info_struct *info;
-    unsigned int status, int_status;
-    int i, retval = IRQ_NONE;
+TPMODULE_DEFINE_ISR(tp_interrupt) {
+  struct module_info_struct *mod = (struct module_info_struct *)((struct uart_interrupt_info *)dev_id)->parent;
+  unsigned long int_number = ((struct uart_interrupt_info *)dev_id)->controller_num;
+  unsigned char ch_min, ch_max;
+  struct info_struct *info;
+  unsigned int status, int_status;
+  int i, retval = IRQ_NONE;
 #if defined (TIP866_DEBUG_FIFO)
-	static long txICounter = 0, rxICounter = 0;
+  static long txICounter = 0, rxICounter = 0;
 #endif
 
-    status = ipac_interrupt_ack(mod->ipac, int_number);  /* clear pending interrupt */
+  status = ipac_interrupt_ack(mod->ipac, int_number);  /* clear pending interrupt */
 
-	if (int_number)
-	{ /* handling 2nd uart controller */
-		ch_min = TIP866_CHAN_PER_MOD >> 1;
-		ch_max = TIP866_CHAN_PER_MOD;
-	}
-	else
-	{ /* handling 1st uart controller */
-		ch_min = 0;
-		ch_max = TIP866_CHAN_PER_MOD >> 1;
-	}
+  if (int_number) {
+    /* handling 2nd uart controller */
+    ch_min = TIP866_CHAN_PER_MOD >> 1;
+    ch_max = TIP866_CHAN_PER_MOD;
+  }
+  else {
+    /* handling 1st uart controller */
+    ch_min = 0;
+    ch_max = TIP866_CHAN_PER_MOD >> 1;
+  }
 
-    for (i = ch_min; i < ch_max; i++)
-	{
-        while (((int_status = tip866_in(&mod->info[i], UART_ISR)) & UART_ISR_NO_INT) != UART_ISR_NO_INT)
-		{
-			retval = IRQ_HANDLED;
+  for (i = ch_min; i < ch_max; i++) {
+    while (((int_status = tip866_in(&mod->info[i], UART_ISR)) & UART_ISR_NO_INT) != UART_ISR_NO_INT) {
+      retval = IRQ_HANDLED;
 #if defined (TIP866_DEBUG_XX3)
-			printk("[IIR(%d)=%02X] \n", i, int_status);
+      printk("[IIR(%d)=%02X] \n", i, int_status);
 #endif
 
 #if defined (TIP866_DEBUG_FIFO)
-			switch(int_status & UART_ISR_EVMASK)
-			{
-			case UART_ISR_THRI:	/* Tx Interrupt */
-				txICounter++;
-				break;
-			case UART_ISR_RDI:	/* Rx Interrupt */
-				rxICounter++;
-				break;
-			}
-			printk("FIFO_DEBUG: Interrupt Counter: Rx: %ld -- Tx: %ld\n", rxICounter, txICounter);
+      switch(int_status & UART_ISR_EVMASK) {
+      case UART_ISR_THRI:	/* Tx Interrupt */
+        txICounter++;
+        break;
+      case UART_ISR_RDI:	/* Rx Interrupt */
+        rxICounter++;
+        break;
+      }
+      printk("FIFO_DEBUG: Interrupt Counter: Rx: %ld -- Tx: %ld\n", rxICounter, txICounter);
 #endif
 
-			/* service this channel interrupt */
-            info = &mod->info[i];
+      /* service this channel interrupt */
+      info = &mod->info[i];
 
-			spin_lock(&info->lock);
+      lock_save(info);
 
-            /*
-            *  Read the modem status register to see if there is something to do
-            */
-            status = tip866_in(info, UART_LSR);
+      /*
+      *  Read the modem status register to see if there is something to do
+      */
+      status = tip866_in(info, UART_LSR);
 
-            if (status & UART_LSR_DR)
-                receive_chars(info, &status);
+      if (status & UART_LSR_DR)
+          receive_chars(info, &status);
 
-            check_modem_status(info);
+      check_modem_status(info);
 
-            if ((int_status & UART_ISR_EVMASK) == UART_ISR_THRI)
-                transmit_chars(info, 0);
+      if ((int_status & UART_ISR_EVMASK) == UART_ISR_THRI)
+          transmit_chars(info, 0);
 
-            info->last_active = jiffies;
-			spin_unlock(&info->lock);
-        }
+      info->last_active = jiffies;
+
+      unlock_restore(info);
     }
-	TP_IRQ_RETURN(retval);
+  }
+
+  TP_IRQ_RETURN(retval);
 }
 
 
@@ -887,7 +883,7 @@ static void shutdown(struct info_struct * info)
 static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termios)
 {
     int quot = 0, baud_base, baud;
-    unsigned cflag, iflag, cval, efr;
+    unsigned cflag, iflag, cval, efr, fcr;
     int bits;
 
     if (!info->tty || !info->tty->termios)
@@ -1053,7 +1049,6 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
         info->MCR &= ~UART_MCR_XON_ANY;
     }
 
-    /* reset MCR as we don not use the divider (bit7) */
     tip866_out(info, UART_MCR, info->MCR);
 
 #ifdef TIP866_DEBUG_XX1
@@ -1062,8 +1057,6 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
         info->tty->termios->c_cc[VSTART], info->tty->termios->c_cc[VSTOP]);
 #endif
 
-
-
     tip866_out(info, UART_LCR, cval | UART_LCR_DLAB);  /* set DLAB */
     tip866_out(info, UART_DLL, quot & 0xff);   /* LS of divisor */
     tip866_out(info, UART_DLM, quot >> 8);     /* MS of divisor */
@@ -1071,31 +1064,45 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
     info->LCR = cval;                           /* Save LCR */
 
 	/* Set up FIFO's */
-    if (TIP866_ENA_FIFO)
-	{
-		tip866_out(info, UART_FCR, UART_FCR_ENABLE_FIFO | UART_FCR_DMA_SELECT |
-                     TIP866_RX_TRG_DEF | TIP866_TX_TRG_DEF);
+    if (TIP866_ENA_FIFO) {
+      fcr = UART_FCR_ENABLE_FIFO | UART_FCR_DMA_SELECT;
 
-		switch (TIP866_TX_TRG_DEF)
-		{
-		case UART_FCR_T_TRIGGER_8:
-			info->xmit_fifo_trigger = 8;
-			break;
-		case UART_FCR_T_TRIGGER_16:
-			info->xmit_fifo_trigger = 16;
-			break;
-		case UART_FCR_T_TRIGGER_32:
-			info->xmit_fifo_trigger = 32;
-			break;
-		case UART_FCR_T_TRIGGER_56:
-			info->xmit_fifo_trigger = 56;
-			break;
-		}
+      switch (info->xmit_fifo_trigger) {
+        case 16:
+          fcr |= UART_FCR_T_TRIGGER_16;
+          break;
+        case 32:
+          fcr |= UART_FCR_T_TRIGGER_32;
+          break;
+        case 56:
+          fcr |= UART_FCR_T_TRIGGER_56;
+          break;
+        default:
+          fcr |= UART_FCR_T_TRIGGER_8;
+          break;
+      }
+
+      switch (info->rcpt_fifo_trigger) {
+        case 8:
+          fcr |= UART_FCR_R_TRIGGER_8;
+          break;
+        case 16:
+          fcr |= UART_FCR_R_TRIGGER_16;
+          break;
+        case 60:
+          fcr |= UART_FCR_R_TRIGGER_60;
+          break;
+        default:
+          fcr |= UART_FCR_R_TRIGGER_56;
+          break;
+      }
+
+      tip866_out(info, UART_FCR, fcr);
     }
     else {
-        /* disable FIFO's */
-        tip866_out(info, UART_FCR, 0);
-		info->xmit_fifo_trigger = info->xmit_fifo_size - 1;
+      /* disable FIFO's */
+      tip866_out(info, UART_FCR, 0);
+      info->xmit_fifo_trigger = info->xmit_fifo_size - 1;
     }
 }
 
@@ -1104,7 +1111,6 @@ static void change_speed(struct info_struct *info, struct TP_TERMIOS *old_termio
 static void tp_put_char(struct tty_struct *tty, unsigned char ch)
 {
     struct info_struct *info = (struct info_struct *)tty->driver_data;
-
 
     if (tip866_paranoia_check(info, info->line, "tp_put_char"))
         return;
@@ -1127,7 +1133,6 @@ static void tp_put_char(struct tty_struct *tty, unsigned char ch)
 static void tp_flush_chars(struct tty_struct *tty)
 {
     struct info_struct *info = (struct info_struct *)tty->driver_data;
-
 
     if (tip866_paranoia_check(info, info->line, "tp_flush_chars"))
         return;
@@ -1230,6 +1235,7 @@ static int tp_write(struct tty_struct * tty,
         info->IER |= UART_IER_THRI;
         tip866_out(info, UART_IER, info->IER);
     }
+
     return ret;
 }
 
@@ -1388,6 +1394,7 @@ static int get_lsr_info(struct info_struct * info, unsigned int *value)
 
     if (copy_to_user(value, &result, sizeof(int)))
         return -EFAULT;
+
     return 0;
 }
 
@@ -1396,8 +1403,6 @@ static int get_modem_info(struct info_struct * info, unsigned int *value)
 {
     unsigned char control, status;
     unsigned int result;
-
-
 
     control = info->MCR;
     status = tip866_in(info, UART_MSR);
@@ -1416,6 +1421,7 @@ static int get_modem_info(struct info_struct * info, unsigned int *value)
 
     if (copy_to_user(value, &result, sizeof(int)))
         return -EFAULT;
+
     return 0;
 }
 
@@ -1471,13 +1477,12 @@ static void tp_break(struct tty_struct *tty, int break_state)
 {
     struct info_struct * info = (struct info_struct *)tty->driver_data;
 
-
-
     if (tip866_paranoia_check(info, info->line, "tp_break"))
         return;
 
     if (!CONFIGURED_SERIAL_PORT(info))
         return;
+
     lock_save(info);
     if (break_state == -1)
         info->LCR |= UART_LCR_SBC;
@@ -1527,8 +1532,8 @@ static int tp_ioctl(struct tty_struct *tty, struct file * file,
 
         case TIOCSERGSTRUCT:
             if (copy_to_user((struct info_struct *) arg,
-                     info, sizeof(struct info_struct)))
-                return -EFAULT;
+                     info, sizeof(struct info_struct))) {
+                return -EFAULT;}
             return 0;
 
         /*
@@ -1615,6 +1620,7 @@ static int tp_ioctl(struct tty_struct *tty, struct file * file,
         default:
             return -ENOIOCTLCMD;
         }
+
     return 0;
 }
 
@@ -1735,7 +1741,7 @@ static void tp_close(struct tty_struct *tty, struct file * filp)
     if (info->closing_wait != ASYNC_CLOSING_WAIT_NONE)
 	{
 		unlock_restore(info);
-        tty_wait_until_sent(tty, info->closing_wait);
+                tty_wait_until_sent(tty, info->closing_wait);
 		lock_save(info);
 	}
     /*
@@ -1796,7 +1802,6 @@ static void tp_wait_until_sent(struct tty_struct *tty, int timeout)
     struct info_struct * info = (struct info_struct *)tty->driver_data;
     unsigned long orig_jiffies, char_time;
     int lsr;
-
 
     if (tip866_paranoia_check(info, info->line, "tp_wait_until_sent"))
         return;
@@ -1943,6 +1948,7 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
         (tty->flags & (1 << TTY_IO_ERROR))) {
         if (info->flags & TIP866_CALLOUT_ACTIVE)
             return -EBUSY;
+
         info->flags |= TIP866_NORMAL_ACTIVE;
         return 0;
     }
@@ -2030,6 +2036,7 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
 #endif
     if (retval)
         return retval;
+
     info->flags |= TIP866_NORMAL_ACTIVE;
     return 0;
 } /* end of block_til_ready */
@@ -2406,6 +2413,8 @@ static int tip_probe(struct ipac_module *ipac, const struct ipac_module_id *modu
         mod->info[i].space = io_space;
         mod->info[i].flags = 0;
         mod->info[i].xmit_fifo_size = mod->state[i].xmit_fifo_size;
+        mod->info[i].xmit_fifo_trigger = TIP866_TX_TRG_DEF;
+        mod->info[i].rcpt_fifo_trigger = TIP866_RX_TRG_DEF;
         mod->info[i].line = line_base + i;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
         /* Kernel 2.4.x */

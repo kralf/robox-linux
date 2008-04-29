@@ -145,6 +145,7 @@ struct info_struct {
 	unsigned long		lock_flags;
 
 	int					xmit_fifo_trigger;	/*	*/
+        int                                     rcpt_fifo_trigger;      /*      */
 };
 
 
@@ -241,7 +242,7 @@ struct module_info_struct
 #define UART_FCR_R_TRIGGER_16   0x40 /* Mask for receive trigger set at 16 */
 #define UART_FCR_R_TRIGGER_56   0x80 /* Mask for receive trigger set at 56 */
 #define UART_FCR_R_TRIGGER_60   0xC0 /* Mask for receive trigger set at 60 */
-#define UART_FCR_T_TRIGGER_MASK 0x30 /* Mask for receive trigger range */
+#define UART_FCR_T_TRIGGER_MASK 0x30 /* Mask for transmit trigger range */
 #define UART_FCR_T_TRIGGER_8    0x00 /* Mask for transmit trigger set at 8 */
 #define UART_FCR_T_TRIGGER_16   0x10 /* Mask for transmit trigger set at 16 */
 #define UART_FCR_T_TRIGGER_32   0x20 /* Mask for transmit trigger set at 32 */
