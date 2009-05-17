@@ -5,7 +5,7 @@ fi
 if [[ "$TARGET" == "powerpc" ]]; then
     ARCH="ppc"
 fi
-CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
+CONFIGURE="cp -ua $CONFDIR/linux.$TARGET .config"
 MAKEBUILD="make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- bzImage"
 MAKEINSTALL=("chmod a-x vmlinux"
              "cp -a vmlinux $ROOT/vmlinux-$VERSION"

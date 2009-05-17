@@ -1,3 +1,4 @@
+#!/bin/bash
 ############################################################################
 #    Copyright (C) 2007 by Ralf 'Decan' Kaestner                           #
 #    ralf.kaestner@gmail.com                                               #
@@ -18,55 +19,49 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-#!/bin/bash
-
 # Create a boot filesystem from scratch
 # This script requires a cross compiling environment to be created first
 # See usage for a description of the arguments
 
-. ./functions.sh
+. functions/global.sh
 
 BLDPKGS="$BLDPKGS linux"
 MAKEOPTS="$MAKEOPTS"
 
-init "create a boot filesystem from scratch" "PKGn" "$BLDPKGS" \
+script_init "create a boot filesystem from scratch" "PKGn" "$BLDPKGS" \
   "list of packages to be added to the image"
 
-set_arg "--root" "DIR" "FSROOT" ".bootfs.root" \
+script_setopt "--root" "DIR" "FSROOT" ".bootfs.root" \
   "temporary root of filesystem"
-set_arg "--image-root" "DIR" "IMGROOT" "images" \
+script_setopt "--image-root" "DIR" "IMGROOT" "images" \
   "root directory of the images"
-set_arg "--build-root" "DIR" "BUILDROOT" ".bootfs.build" \
+script_setopt "--build-root" "DIR" "BUILDROOT" ".bootfs.build" \
   "temporary build root"
-set_arg "--mount-point" "DIR" "MNT" ".rootfs.mount" \
+script_setopt "--mount-point" "DIR" "MNT" ".rootfs.mount" \
   "temporary mount point of root filesystem"
-set_arg "--type" "ext2|ext3|..." "FSTYPE" "ext2" \
+script_setopt "--type" "ext2|ext3|..." "FSTYPE" "ext2" \
   "type of filesystem to be built"
-set_arg "--block-size" "BYTES" "BLOCKSIZE" "1024" \
+script_setopt "--block-size" "BYTES" "BLOCKSIZE" "1024" \
   "size of filesystem blocks in bytes"
-set_arg "--xcompile-root" "DIR" "XCROOT" ".xcomp.root" \
+script_setopt "--xcompile-root" "DIR" "XCROOT" ".xcomp.root" \
   "root directory of the cross compiler"
-set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
+script_setopt "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
   "override host architecture"
-set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
+script_setopt "--target" "i686|powerpc|..." "TARGET" "powerpc" \
   "target architecture"
-set_arg "--cores" "NUM" "CORES" "1" \
-  "number of cores to compile on"
-set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
+script_setopt "--cores" "NUM" "CORES" "1" "number of cores to compile on"
+script_setopt "--package-dir" "DIR" "PKGDIR" "packages" \
   "directory containing packages"
-set_arg "--patch-dir" "DIR" "PATCHDIR" "patches" \
+script_setopt "--patch-dir" "DIR" "PATCHDIR" "patches" \
   "directory containing patches"
-set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "CFGDIR" "configurations" \
   "directory containing build configurations"
-set_arg "--no-build" "" "NOBUILD" "false" \
+script_setopt "--no-build" "" "NOBUILD" "false" \
   "do not build and install any packages"
-set_arg "--install" "" "INSTALL" "false" \
-  "perform install stage only"
-set_arg "--clean" "" "CLEAN" "false" \
-  "remove working directories"
+script_setopt "--install" "" "INSTALL" "false" "perform install stage only"
+script_setopt "--clean" "" "CLEAN" "false" "remove working directories"
 
-check_args $*
-check_uid
+script_checkopts $*
 
 abs_path $FSROOT
 FSROOT="$ABSPATH/$TARGET"
@@ -80,7 +75,7 @@ XCROOT="$ABSPATH/$TARGET"
 PATH="$XCROOT/bin:$PATH"
 MAKEOPTS="$MAKEOPTS -j$CORES"
 
-message "making boot filesystem image $IMAGE"
+message_boldstart "making boot filesystem image $IMAGE"
 
 check_xcomp $TARGET gcc g++ ar as ranlib ld strip
 

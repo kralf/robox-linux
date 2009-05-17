@@ -5,7 +5,7 @@ fi
 if [[ "$TARGET" == "powerpc" ]]; then
     ARCH="ppc"
 fi
-CONFIGURE="cp -ua $CFGDIR/linux.$TARGET .config"
+CONFIGURE="cp -ua $CONFDIR/linux.$TARGET .config"
 MAKEBUILD=("cp -a $ROOTFS arch/$ARCH/boot/images/ramdisk.image"
            "gzip -f arch/$ARCH/boot/images/ramdisk.image"
            "make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- zImage.initrd")

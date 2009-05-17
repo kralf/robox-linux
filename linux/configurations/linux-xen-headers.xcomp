@@ -6,7 +6,7 @@ fi
 if [[ "$TARGET" == "powerpc" ]]; then
     ARCH="ppc"
 fi
-CONFIGURE="cp -ua $CFGDIR/linux-xen.$TARGET .config"
+CONFIGURE="cp -ua $CONFDIR/linux-xen.$TARGET .config"
 MAKEBUILD=("make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/version.h"
 	   "make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/autoconf.h")
 MAKEINSTALL=("mkdir -p $USRROOT/include"

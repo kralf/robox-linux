@@ -1,3 +1,4 @@
+#!/bin/bash
 ############################################################################
 #    Copyright (C) 2007 by Ralf 'Decan' Kaestner                           #
 #    ralf.kaestner@gmail.com                                               #
@@ -18,63 +19,61 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-#!/bin/bash
-
 # Create a cross compile environment
 # See usage for a description of the arguments
 
-. ./functions.sh
+. functions/global.sh
 
-BLDPKGS="$BLDPKGS linux-headers binutils gcc-min glibc gcc"
-MAKEOPTS="$MAKEOPTS"
+XCPKGS="linux-headers binutils gcc-min glibc gcc"
 
-init "make a cross compiling environment" "PKGn" "$BLDPKGS" \
+script_init "make a cross compiling environment" "PKGn" "$XCPKGS" \
   "list of packages to be added to the environment"
 
-set_arg "--root" "DIR" "XCROOT" ".xcomp.root" \
+script_setopt "--root" "DIR" "XCROOT" ".xcomp.root" \
   "root of cross compiling environment"
-set_arg "--build-root" "DIR" "BUILDROOT" ".xcomp.build" \
+script_setopt "--build-root" "DIR" "XCBUILDROOT" ".xcomp.build" \
   "temporary build root"
-set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
+script_setopt "--host" "i686|powerpc|..." "XCHOST" "`uname -m`" \
   "override host architecture"
-set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
+script_setopt "--target" "i686|powerpc|..." "XCTARGET" "`uname -m`" \
   "target architecture"
-set_arg "--cores" "NUM" "CORES" "1" \
-  "number of cores to compile on"
-set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
+script_setopt "--cores" "NUM" "XCCORES" "1" "number of cores to compile on"
+script_setopt "--make-args|-m" "ARGS" "XCMAKEARGS" "" \
+  "additional arguments to be passed to make"
+script_setopt "--package-dir" "DIR" "XCPKGDIR" "packages" \
   "directory containing packages"
-set_arg "--patch-dir" "DIR" "PATCHDIR" "patches" \
-  "directory containing patches"
-set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "XCCONFDIR" "configurations" \
   "directory containing build configurations"
-set_arg "--no-build" "" "NOBUILD" "false" \
+script_setopt "--patch-dir" "DIR" "XCPATCHDIR" "patches" \
+  "directory containing patches"
+script_setopt "--no-build" "" "XCNOBUILD" "false" \
   "do not build and install any packages"
-set_arg "--install" "" "INSTALL" "false" \
-  "perform install stage only"
-set_arg "--clean" "" "CLEAN" "false" \
-  "remove working directories"
+script_setopt "--install" "" "XCINSTALL" "false" "perform install stage only"
+script_setopt "--clean" "" "XCCLEAN" "false" "remove working directories"
 
-check_args $*
+script_checkopts $*
 
-abs_path $BUILDROOT
-BUILDROOT="$ABSPATH/$TARGET"
-XCROOT="$XCROOT/$TARGET"
-MAKEOPTS="$MAKEOPTS -j$CORES"
+XCBUILDROOT="$XCBUILDROOT/$XCTARGET"
+XCROOT="$XCROOT/$XCTARGET"
+XCMAKEOPTS="$XCMAKEOPTS -j$XCCORES"
 
-message "making cross compile environment in $XCROOT"
+message_boldstart "making cross compile environment in $XCROOT"
 
-execute "mkdir -p $XCROOT"
-execute "mkdir -p $BUILDROOT"
+[ -d "$XCROOT" ] || execute "mkdir -p $XCROOT"
+[ -d "$XCBUILDROOT" ] || execute "mkdir -p $XCBUILDROOT"
 
-if [ "$NOBUILD" != "true" ]; then
-  build_packages xcomp $XCROOT "/usr" $BUILDROOT "$MAKEOPTS" $PKGDIR \
-    $PATCHDIR $CFGDIR $HOST $TARGET $INSTALL $PKGn
+if ! true XCNOBUILD; then
+  build_packages "xcomp" $XCPKGDIR $XCCONFDIR $XCPATCHDIR $XCBUILDROOT $XCROOT \
+    $XCHOST $XCTARGET "$XCMAKEOPTS" $XCINSTALL $PKGn
 fi
 
-if [ "$CLEAN" == "true" ]; then
-  clean $BUILDROOT $ROOT $LOGFILE
-else
-  clean $LOGFILE
+if true XCCLEAN; then
+  message_start "cleaning up working directories"
+  execute "rm -rf $XCBUILDROOT"
+  message_end
 fi
 
-message "success"
+log_clean
+
+fs_getdirsize $XCROOT XCSIZE
+message_boldend "success, size of the cross compile environment is ${XCSIZE}kB"
