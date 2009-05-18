@@ -1,7 +1,7 @@
-diff -Naur iputils-20020927/Makefile iputils-20020927-xcomp/Makefile
---- iputils-20020927/Makefile	2008-04-15 09:11:28.000000000 +0200
-+++ iputils-20020927-xcomp/Makefile	2008-04-15 09:23:05.000000000 +0200
-@@ -21,11 +21,11 @@
+diff -Naur iputils-20020927/Makefile iputils-20020927-cross/Makefile
+--- iputils-20020927/Makefile	2002-09-20 20:23:55.000000000 +0200
++++ iputils-20020927-cross/Makefile	2009-05-18 23:27:14.000000000 +0200
+@@ -21,17 +21,17 @@
  #options if you compile with libc5, and without a bind>=4.9.4 libresolv
  # NOT AVAILABLE. Please, use libresolv.
  
@@ -13,5 +13,12 @@ diff -Naur iputils-20020927/Makefile iputils-20020927-xcomp/Makefile
 -CFLAGS=$(CCOPT) $(GLIBCFIX) -I$(KERNEL_INCLUDE) -I../include $(DEFINES) 
 +CFLAGS=$(CCOPT) $(GLIBCFIX) -I../include $(DEFINES) 
  
- IPV4_TARGETS=tracepath ping arping
+ IPV4_TARGETS=tracepath ping clockdiff rdisc arping tftpd rarpd
  IPV6_TARGETS=tracepath6 traceroute6 ping6
+ TARGETS=$(IPV4_TARGETS) $(IPV6_TARGETS)
+ 
+-all: check-kernel $(TARGETS)
++all: $(TARGETS)
+ 
+ 
+ tftpd: tftpd.o tftpsubs.o

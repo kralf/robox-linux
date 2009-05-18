@@ -1,0 +1,12 @@
+diff -Naur ifupdown-0.6.8/Makefile ifupdown-0.6.8-lnf/Makefile
+--- ifupdown-0.6.8/Makefile	2006-09-28 18:44:01.000000000 +0200
++++ ifupdown-0.6.8-lnf/Makefile	2009-05-18 23:39:06.000000000 +0200
+@@ -23,7 +23,7 @@
+ install :
+ 	install -m 0755 -d     ${BASEDIR}/sbin
+ 	install -m 0755 ifup   ${BASEDIR}/sbin
+-	ln ${BASEDIR}/sbin/ifup ${BASEDIR}/sbin/ifdown	
++	ln -f ${BASEDIR}/sbin/ifup ${BASEDIR}/sbin/ifdown	
+ 
+ clean :
+ 	rm -f *.aux *.toc *.log *.bbl *.blg *.ps *.eps *.pdf

@@ -1,4 +1,4 @@
-CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --host=$TARGET-linux CC_FOR_BUILD=cc CFLAGS_FOR_BUILD=-L$ROOT/lib --disable-nls"
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux CC_FOR_BUILD=cc CFLAGS_FOR_BUILD=-L$EPREFIX/lib --disable-nls"
 MAKEINSTALL=("make $MAKEOPTS install"
-             "rm -rf $ROOT/lib/pkgconfig")
+             "rm -rf $EPREFIX/lib/pkgconfig")
 COMMENT="a quick build"

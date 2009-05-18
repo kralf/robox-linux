@@ -1,4 +1,4 @@
 CONFIGURE=""
 MAKEBUILD="make $MAKEOPTS CFLAGS=-I$BUILDROOT/ncurses/include LDFLAGS=-L$BUILDROOT/ncurses/lib CC=$CC"
-MAKEINSTALL="make $MAKEOPTS DESTDIR=$ROOT CC=$CC install"
+MAKEINSTALL="fakeroot make $MAKEOPTS DESTDIR=$EPREFIX CC=$CC ldconfig=true install"
 COMMENT="yet another quick build"

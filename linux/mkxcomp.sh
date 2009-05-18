@@ -53,8 +53,8 @@ script_setopt "--clean" "" "XCCLEAN" "false" "remove working directories"
 
 script_checkopts $*
 
-XCBUILDROOT="$XCBUILDROOT/$XCTARGET"
-XCROOT="$XCROOT/$XCTARGET"
+fs_abspath "$XCBUILDROOT/$XCTARGET" XCBUILDROOT
+fs_abspath "$XCROOT/$XCTARGET" XCROOT
 XCMAKEOPTS="$XCMAKEOPTS -j$XCCORES"
 
 message_boldstart "making cross compile environment in $XCROOT"
@@ -62,7 +62,7 @@ message_boldstart "making cross compile environment in $XCROOT"
 [ -d "$XCROOT" ] || execute "mkdir -p $XCROOT"
 [ -d "$XCBUILDROOT" ] || execute "mkdir -p $XCBUILDROOT"
 
-if ! true XCNOBUILD; then
+if false XCNOBUILD; then
   build_packages "xcomp" $XCPKGDIR $XCCONFDIR $XCPATCHDIR $XCBUILDROOT $XCROOT \
     $XCHOST $XCTARGET "$XCMAKEOPTS" $XCINSTALL $PKGn
 fi
@@ -73,7 +73,7 @@ if true XCCLEAN; then
   message_end
 fi
 
-log_clean
-
 fs_getdirsize $XCROOT XCSIZE
 message_boldend "success, size of the cross compile environment is ${XCSIZE}kB"
+
+log_clean

@@ -1,7 +1,7 @@
 ALIAS="glibc"
 PATH="$PATH:$EPREFIX/bin"
 BUILDDIR="./build"
-CONFIGURE="../configure --prefix=/usr --host=$TARGET-linux --build=$HOST-linux --with-elf"
+CONFIGURE="../configure --prefix=/usr --target=$TARGET-linux --with-elf"
 MAKEBUILD=""
 MAKEINSTALL=("make $MAKEOPTS install_root=$EPREFIX install-headers"
              "cp -a ../include/gnu/stubs.h $PREFIX/include/gnu"

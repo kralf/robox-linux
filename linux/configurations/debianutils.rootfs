@@ -1,11 +1,2 @@
-CONFIGURE="./configure --prefix=$ROOT --exec-prefix=$USRROOT --host=$TARGET-linux"
-if [ "$USRROOT" != "$ROOT" ]; then
-  MAKEINSTALL=("make $MAKEOPTS install"
-               "mkdir -p $ROOT/bin"
-               "mkdir -p $ROOT/sbin"
-               "mv $USRROOT/bin/mktemp $ROOT/bin"
-               "mv $USRROOT/bin/run-parts $ROOT/bin"
-               "mv $USRROOT/bin/tempfile $ROOT/bin"
-               "mv $USRROOT/sbin/installkernel $ROOT/sbin")
-fi
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux"
 COMMENT="this will not take long"

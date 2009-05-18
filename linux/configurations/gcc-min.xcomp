@@ -1,6 +1,6 @@
 ALIAS="gcc"
-PATH="$EPREFIX/bin:$PATH"
-CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --target=$TARGET-linux --with-sysroot=$EPREFIX --enable-languages=c --disable-shared --disable-threads --disable-multilib --disable-nls"
+PATH="$PATH:$EPREFIX/bin"
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --target=$TARGET-linux --with-sysroot=$EPREFIX --with-build-sysroot=$EPREFIX --enable-languages=c --disable-shared --disable-threads --disable-multilib --disable-nls"
 MAKEBUILD="make $MAKEOPTS all-gcc"
 MAKEINSTALL="make $MAKEOPTS install-gcc"
 COMMENT="go grab some coffee"

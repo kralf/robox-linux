@@ -1,5 +1,5 @@
 ALIAS="glibc"
 BUILDDIR="./build"
-CONFIGURE="../configure --prefix=/usr --build=$HOST-linux --host=$TARGET-linux --with-headers=$XCROOT/usr/include --disable-profile"
+CONFIGURE="../configure --prefix=/usr --host=$TARGET-linux --target=$TARGET-linux --build=$HOST-linux --with-headers=$RFSXCROOT/usr/include --with-elf --disable-debug"
 MAKEINSTALL="make $MAKEOPTS install_root=$ROOT install"
 COMMENT="consider leaving for lunch"

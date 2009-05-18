@@ -1,6 +1,6 @@
 CONFIGURE=""
 MAKEBUILD="make $MAKEOPTS CC=$CC"
-MAKEINSTALL=("mkdir -p $ROOT/usr/man/man5"
-             "mkdir -p $ROOT/usr/man/man8"
-             "make $MAKEOPTS BINDIR=$ROOT/sbin MANDIR=$USRROOT/man CC=$CC install")
+MAKEINSTALL=("mkdir -p $PREFIX/man/man5"
+             "mkdir -p $PREFIX/man/man8"
+             "fakeroot make $MAKEOPTS BINDIR=$EPREFIX/sbin MANDIR=$PREFIX/man CC=$CC install")
 COMMENT="won't take long"

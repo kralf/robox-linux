@@ -1,0 +1,3 @@
+CONFIGURE=""
+MAKEBUILD=""
+MAKEINSTALL="install_svn $EPREFIX etc"
