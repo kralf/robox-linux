@@ -24,7 +24,7 @@
 
 . functions/global.sh
 
-XCPKGS="linux-headers binutils gcc-min glibc gcc"
+XCPKGS="linux-headers binutils glibc-headers gcc-min glibc gcc"
 
 script_init "make a cross compiling environment" "PKGn" "$XCPKGS" \
   "list of packages to be added to the environment"

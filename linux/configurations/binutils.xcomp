@@ -1,2 +1,2 @@
-CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --host=$HOST-linux --target=$TARGET-linux --with-sysroot=$ROOT --disable-nls --disable-werror"
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$HOST-linux --target=$TARGET-linux --with-sysroot=$ROOT --disable-nls --disable-werror"
 COMMENT="this usually takes two minutes"

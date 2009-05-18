@@ -1,16 +1,16 @@
 ALIAS="linux-xen"
 ARCH="$TARGET"
-if [[ "$TARGET" =~ "i[3-6]86" ]]; then
+if [[ "$TARGET" =~ i[3-6]86 ]]; then
     ARCH="i386"
 fi
-if [[ "$TARGET" == "powerpc" ]]; then
+if [ "$TARGET" == "powerpc" ]; then
     ARCH="ppc"
 fi
 CONFIGURE="cp -ua $CONFDIR/linux-xen.$TARGET .config"
 MAKEBUILD=("make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/version.h"
 	   "make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- include/linux/autoconf.h")
-MAKEINSTALL=("mkdir -p $USRROOT/include"
-             "cp -aL include/asm-$ARCH $USRROOT/include/asm"
-             "cp -a include/asm-generic $USRROOT/include"
-             "cp -a include/linux $USRROOT/include")
+MAKEINSTALL=("mkdir -p $PREFIX/include"
+             "cp -aL include/asm-$ARCH $PREFIX/include/asm"
+             "cp -a include/asm-generic $PREFIX/include"
+             "cp -a include/linux $PREFIX/include")
 COMMENT="this won't take long"

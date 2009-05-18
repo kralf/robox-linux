@@ -1,10 +1,10 @@
 ALIAS="linux"
 LDFLAGS="$LDFLAGS -S"
 ARCH="$TARGET"
-if [[ "$TARGET" =~ "i[3-6]86" ]]; then
+if [[ "$TARGET" =~ i[3-6]86 ]]; then
     ARCH="i386"
 fi
-if [[ "$TARGET" == "powerpc" ]]; then
+if [ "$TARGET" == "powerpc" ]; then
     ARCH="ppc"
 fi
 CONFIGURE="cp -ua $CONFDIR/linux.$TARGET .config"

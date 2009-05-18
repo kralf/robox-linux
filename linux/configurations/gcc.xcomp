@@ -1,3 +1,3 @@
-PATH="$ROOT/bin:$PATH"
-CONFIGURE="./configure --prefix=$USRROOT --exec-prefix=$ROOT --target=$TARGET-linux --with-sysroot=$ROOT --with-local-prefix=$ROOT --enable-languages=c,c++ --enable-threads=posix --disable-nls"
+PATH="$EPREFIX/bin:$PATH"
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --target=$TARGET-linux --with-sysroot=$EPREFIX --with-local-prefix=$EPREFIX --enable-languages=c,c++ --enable-threads=posix --disable-nls"
 COMMENT="go grab another coffee"

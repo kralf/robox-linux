@@ -1,6 +1,6 @@
-PATH="$PATH:$ROOT/bin"
+PATH="$PATH:$EPREFIX/bin"
 BUILDDIR="./build"
-CONFIGURE="../configure --prefix=/usr --host=$TARGET-linux --build=$HOST-linux --with-headers=$USRROOT/include --disable-debug"
-MAKEINSTALL=("mkdir -p $USRROOT"
-             "make $MAKEOPTS install_root=$ROOT install")
+CONFIGURE="../configure --prefix=/usr --host=$TARGET-linux --build=$HOST-linux --with-headers=$PREFIX/include --with-elf --disable-debug"
+MAKEINSTALL=("mkdir -p $PREFIX"
+             "make $MAKEOPTS install_root=$EPREFIX install")
 COMMENT="consider leaving for lunch"
