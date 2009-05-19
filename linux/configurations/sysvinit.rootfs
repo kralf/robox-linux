@@ -1,8 +1,11 @@
 CONFIGURE=""
 MAKEBUILD=("make $MAKEOPTS -C src ROOT=$EPREFIX CC=$CC"
            "$CC $CFLAGS -o debian/readlink debian/readlink.c")
-MAKEINSTALL=("mkdir -p $EPREFIX/sbin"
+MAKEINSTALL=("mkdir -p $EPREFIX/bin"
+             "mkdir -p $EPREFIX/sbin"
              "mkdir -p $EPREFIX/lib/init"
+             "mkdir -p $PREFIX/bin"
+             "mkdir -p $PREFIX/sbin"
              "mkdir -p $PREFIX/share/man/man1"
              "mkdir -p $PREFIX/share/man/man5"
              "mkdir -p $PREFIX/share/man/man8"

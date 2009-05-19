@@ -1,3 +1,4 @@
+#!/bin/bash
 ############################################################################
 #    Copyright (C) 2007 by Ralf 'Decan' Kaestner                           #
 #    ralf.kaestner@gmail.com                                               #
@@ -18,26 +19,27 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-#!/bin/bash
-
-# Unmount a filesystem
+# Unmount filesystem image
 # See usage for a description of the arguments
 
-. ./functions.sh
+. functions/global.sh
 
-init "unmount a $FS filesystem"
+UMNTFS="root"
 
-set_arg "--mount-point" "DIR" "MNT" ".${FS}fs.mount" \
-  "mount point of $FS filesystem"
+script_init "unmount filesystem image" "FS" "$UMNTFS" \
+  "the filesystem to be unmounted root|boot|..."
 
-check_args $*
-check_uid
+script_setopt "--image" "FILE" "UMNTIMG" "" \
+  "filesystem image to be unmounted"
+script_setopt "--mount-point" "DIR" "UMNTPOINT" "" \
+  "mount point of the filesystem"
 
-message "unmounting $FS filesystem image"
+script_checkopts $*
+script_checkroot
 
-execute "umount $MNT"
-execute "rm -rf $MNT"
+[ -z "$UMNTIMG" ] && UMNTIMG=".bootrd.images/*/${FS}fs.img"
+[ -z "$UMNTPOINT" ] && UMNTPOINT=".${FS}fs.mount"
 
-clean $LOGFILE
+fs_umountimg $UMNTIMG $UMNTPOINT
 
-message "success"
+log_clean

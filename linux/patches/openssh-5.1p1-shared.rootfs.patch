@@ -1,16 +1,15 @@
 diff -Naur openssh-5.1p1/Makefile.in openssh-5.1p1-shared/Makefile.in
 --- openssh-5.1p1/Makefile.in	2008-07-08 16:21:12.000000000 +0200
-+++ openssh-5.1p1-shared/Makefile.in	2009-05-19 11:33:40.000000000 +0200
-@@ -19,7 +19,7 @@
- srcdir=@srcdir@
- top_srcdir=@top_srcdir@
- 
--DESTDIR=
-+DESTDIR=@exec_prefix@
- VPATH=@srcdir@
- SSH_PROGRAM=@bindir@/ssh
- ASKPASS_PROGRAM=$(libexecdir)/ssh-askpass
-@@ -129,46 +129,45 @@
++++ openssh-5.1p1-shared/Makefile.in	2009-05-19 20:05:49.000000000 +0200
+@@ -9,6 +9,7 @@
+ exec_prefix=@exec_prefix@
+ bindir=@bindir@
+ sbindir=@sbindir@
++libdir=@libdir@
+ libexecdir=@libexecdir@
+ datadir=@datadir@
+ datarootdir=@datarootdir@
+@@ -129,46 +130,45 @@
  	(cd openbsd-compat && $(MAKE))
  always:
  
@@ -83,3 +82,13 @@ diff -Naur openssh-5.1p1/Makefile.in openssh-5.1p1-shared/Makefile.in
  
  $(MANPAGES): $(MANPAGES_IN)
  	if test "$(MANTYPE)" = "cat"; then \
+@@ -251,7 +251,8 @@
+ 	$(srcdir)/mkinstalldirs $(DESTDIR)$(mandir)/$(mansubdir)5
+ 	$(srcdir)/mkinstalldirs $(DESTDIR)$(mandir)/$(mansubdir)8
+ 	$(srcdir)/mkinstalldirs $(DESTDIR)$(libexecdir)
+-	(umask 022 ; $(srcdir)/mkinstalldirs $(DESTDIR)$(PRIVSEP_PATH))
++	(umask 022 ; $(srcdir)/mkinstalldirs $(exec_prefix)$(PRIVSEP_PATH))
++	$(INSTALL) -m 0755 $(STRIP_OPT) libssh.so $(DESTDIR)$(libdir)/libssh.so
+ 	$(INSTALL) -m 0755 $(STRIP_OPT) ssh $(DESTDIR)$(bindir)/ssh
+ 	$(INSTALL) -m 0755 $(STRIP_OPT) scp $(DESTDIR)$(bindir)/scp
+ 	$(INSTALL) -m 0755 $(STRIP_OPT) ssh-add $(DESTDIR)$(bindir)/ssh-add

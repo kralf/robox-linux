@@ -1,4 +1,4 @@
 CONFIGURE=""
 MAKEBUILD="make $MAKEOPTS CC=$CC default"
-MAKEINSTALL="make $MAKEOPTS BASEDIR=$PREFIX install"
+MAKEINSTALL="make $MAKEOPTS BASEDIR=$EPREFIX install"
 COMMENT="this will not take long"

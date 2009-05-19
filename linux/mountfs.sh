@@ -1,3 +1,4 @@
+#!/bin/bash
 ############################################################################
 #    Copyright (C) 2007 by Ralf 'Decan' Kaestner                           #
 #    ralf.kaestner@gmail.com                                               #
@@ -18,28 +19,27 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-#!/bin/bash
-
-# Mount a filesystem
+# Mount filesystem image
 # See usage for a description of the arguments
 
-. ./functions.sh
+. functions/global.sh
 
-init "mount a $FS filesystem"
+MNTFS="root"
 
-set_arg "--image|-i" "FILE" "IMAGE" "${FS}fs.img" \
-  "$FS filesystem image to be mounted"
-set_arg "--mount-point" "DIR" "MNT" ".${FS}fs.mount" \
-  "mount point of $FS filesystem"
+script_init "mount filesystem image" "FS" "$MNTFS" \
+  "the filesystem to be mounted root|boot|..."
 
-check_args $*
-check_uid
+script_setopt "--image" "FILE" "MNTIMG" "" \
+  "filesystem image to be mounted"
+script_setopt "--mount-point" "DIR" "MNTPOINT" "" \
+  "mount point of the filesystem"
 
-message "mounting $FS filesystem image to $MNT"
+script_checkopts $*
+script_checkroot
 
-execute "mkdir -p $MNT"
-execute "mount -o loop $IMAGE $MNT"
+[ -z "$MNTIMG" ] && MNTIMG=".bootrd.images/*/${FS}fs.img"
+[ -z "$MNTPOINT" ] && MNTPOINT=".${FS}fs.mount"
 
-clean $LOGFILE
+fs_mountimg $MNTIMG $MNTPOINT
 
-message "success"
+log_clean

@@ -39,14 +39,12 @@ RFSEXDIRS="/man /share /usr/man /usr/info /usr/share /usr/include"
 RFSEXFILES="*.a *.o *.old"
 
 script_init "create a root filesystem from scratch" "PKGn" "$RFSPKGS" \
-  "list of packages to be added to the image"
+  "list of packages to be added to the root filesytem"
 
 script_setopt "--root" "DIR" "RFSROOT" ".rootfs.root" \
   "temporary root of filesystem"
 script_setopt "--build-root" "DIR" "RFSBUILDROOT" ".rootfs.build" \
   "temporary build root"
-script_setopt "--image-root" "DIR" "RFSIMGROOT" "images" \
-  "root directory of the images to be created"
 script_setopt "--xcomp-root" "DIR" "RFSXCROOT" ".xcomp.root" \
   "root directory of the cross compiler"
 
@@ -67,15 +65,6 @@ script_setopt "--patch-dir" "DIR" "RFSPATCHDIR" "patches" \
 script_setopt "--sysinit-dir" "DIR" "RFSSYSINITDIR" "sysinit" \
   "directory containing sysinit files"
 
-script_setopt "--fs-mount-point" "DIR" "RFSMNTPOINT" ".rootfs.mount" \
-  "temporary mount point of root filesystem"
-script_setopt "--fs-type" "ext2|ext3|..." "RFSFSTYPE" "ext2" \
-  "type of filesystem to be built"
-script_setopt "--fs-block-size" "BYTES" "RFSFSBLOCKSIZE" "1024" \
-  "size of filesystem blocks in bytes"
-script_setopt "--fs-space" "BLOCKS" "RFSFSSPACE" "128" \
-  "number of free filesystem blocks"
-
 script_setopt "--no-build" "" "RFSNOBUILD" "false" \
   "do not build and install any packages"
 script_setopt "--debug" "" "RFSDEBUG" "false" \
@@ -83,7 +72,7 @@ script_setopt "--debug" "" "RFSDEBUG" "false" \
 script_setopt "--no-strip" "" "RFSNOSTRIP" "false" \
   "do not strip symbols from binary objects"
 script_setopt "--no-excludes" "" "RFSNOEXCLUDES" "false" \
-  "do not exclude any files from image"
+  "do not exclude any files from filesystem"
 script_setopt "--install" "" "RFSINSTALL" "false" "perform install stage only"
 script_setopt "--clean" "" "RFSCLEAN" "false" "remove working directories"
 
@@ -96,59 +85,39 @@ RFSMAKEOPTS="$RFSMAKEOPTS -j$RFSCORES"
 
 PATH="$PATH:$RFSXCROOT/bin"
 
+message_boldstart "making root filesystem in $RFSROOT"
+
+build_checktools $RFSTARGET gcc g++ ar as ranlib ld strip
+build_setenv $RFSXCROOT $RFSTARGET $RFSDEBUG
+
+[ -d "$RFSROOT" ] || execute "mkdir -p $RFSROOT"
+[ -d "$RFSBUILDROOT" ] || execute "mkdir -p $RFSBUILDROOT"
+fs_abspath $RFSROOT RFSROOT
+fs_abspath $RFSBUILDROOT RFSBUILDROOT
+
+[ -n "$RFSMKDIRS" ] && fs_mkdirs $RFSROOT $RFSMKDIRS
+[ -n "$RFSMKFILES" ] && fs_mkfiles $RFSROOT $RFSMKFILES
+
 if false RFSNOBUILD; then
-  message_boldstart "making root filesystem in $RFSROOT"
-
-  build_checktools $RFSTARGET gcc g++ ar as ranlib ld strip
-  build_setenv $RFSXCROOT $RFSTARGET $RFSDEBUG
-
-  [ -d "$RFSROOT" ] || execute "mkdir -p $RFSROOT"
-  [ -d "$RFSBUILDROOT" ] || execute "mkdir -p $RFSBUILDROOT"
-  [ -d "$RFSIMGROOT" ] || execute "mkdir -p $RFSIMGROOT"
-  fs_abspath $RFSROOT RFSROOT
-  fs_abspath $RFSBUILDROOT RFSBUILDROOT
-  fs_abspath $RFSIMGROOT RFSIMGROOT
-
-  [ -n "$RFSMKDIRS" ] && fs_mkdirs $RFSROOT $RFSMKDIRS
-  [ -n "$RFSMKFILES" ] && fs_mkfiles $RFSROOT $RFSMKFILES
-
   build_packages "rootfs" $RFSPKGDIR $RFSCONFDIR $RFSPATCHDIR $RFSBUILDROOT \
     $RFSROOT $RFSHOST $RFSTARGET "$RFSMAKEOPTS" $RFSINSTALL $PKGn
-
-  if false RFSNOSTRIP; then
-    build_stripsyms $RFSROOT
-  fi
-  if false RFSNOEXCLUDES; then
-    fs_rmdirs $RFSROOT $RFSEXDIRS
-    fs_rmfiles $RFSROOT $RFSEXFILES
-  fi
-
-  if true RFSCLEAN; then
-    message_start "cleaning up working directories"
-    execute "rm -rf $RFSBUILDROOT"
-    message_end
-  fi
-
-  fs_getdirsize $RFSROOT RFSSIZE
-  message_boldend "success, size of the root filesystem is ${RFSSIZE}kB"
 fi
 
+if false RFSNOSTRIP; then
+  build_stripsyms $RFSROOT
+fi
+if false RFSNOEXCLUDES; then
+  fs_rmdirs $RFSROOT $RFSEXDIRS
+  fs_rmfiles $RFSROOT $RFSEXFILES
+fi
+
+if true RFSCLEAN; then
+  message_start "cleaning up working directories"
+  execute "rm -rf $RFSBUILDROOT"
+  message_end
+fi
+
+fs_getdirsize $RFSROOT RFSSIZE
+message_boldend "success, size of the root filesystem is ${RFSSIZE}kB"
+
 log_clean
-
-
-# abs_path $FSROOT
-# FSROOT="$ABSPATH/$TARGET"
-# FSUSRDIR=""
-# if [ "$NOARCH" != "true" ]; then
-#   FSUSRDIR="/usr"
-# fi
-# abs_path $IMGROOT
-# IMGROOT="$ABSPATH/$TARGET"
-# IMAGE="$IMGROOT/rootfs.img"
-# abs_path $BUILDROOT
-# BUILDROOT="$ABSPATH/$TARGET"
-# abs_path $XCROOT
-# XCROOT="$ABSPATH/$TARGET"
-
-# chown_dirs $FSROOT etc root:root
-# mk_image $IMAGE $FSROOT $MNT $FSTYPE $BLOCKSIZE $FSSPACE

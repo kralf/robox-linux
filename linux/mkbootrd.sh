@@ -1,3 +1,4 @@
+#!/bin/bash
 ############################################################################
 #    Copyright (C) 2007 by Ralf 'Decan' Kaestner                           #
 #    ralf.kaestner@gmail.com                                               #
@@ -18,79 +19,108 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-#!/bin/bash
-
-# Create a boot ramdisk image from scratch
-# This script requires a cross compiling environment and a root filesystem
-# to be created first
+# Create a boot ramdisk from scratch
+# This script requires a cross compiling environment to be created first
 # See usage for a description of the arguments
 
-. ./functions.sh
+. functions/global.sh
 
-BLDPKGS="$BLDPKGS linux"
-MAKEOPTS="$MAKEOPTS"
+BRDPKGS="linux"
 
-init "create a boot ramdisk image from scratch" "PKGn" "$BLDPKGS" \
-  "list of packages to be added to the image"
+BRDCPDEVS="console initctl kmsg mem null ram[0-6] rtc tty[0-6] ttyS[0-3]"
 
-set_arg "--image-root" "DIR" "IMGROOT" "images" \
-  "root directory of the images"
-set_arg "--build-root" "DIR" "BUILDROOT" ".bootrd.build" \
+BRDRFSCHOWN="/=root:root"
+BRDRFSCHMOD=""
+
+script_init "create a boot ramdisk from scratch" "PKGn" "$BRDPKGS" \
+  "list of packages to be added to the boot ramdisk"
+
+script_setopt "--build-root" "DIR" "BRDBUILDROOT" ".bootrd.build" \
   "temporary build root"
-set_arg "--xcompile-root" "DIR" "XCROOT" ".xcomp.root" \
+script_setopt "--image-root" "DIR" "BRDIMGROOT" ".bootrd.images" \
+  "boot ramdisk image root directory"
+script_setopt "--xcomp-root" "DIR" "BRDXCROOT" ".xcomp.root" \
   "root directory of the cross compiler"
-set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
+script_setopt "--rootfs-root" "DIR" "BRDRFSROOT" ".rootfs.root" \
+  "root directory of the root filesystem"
+
+script_setopt "--rootfs-mount-point" "DIR" "BRDRFSMOUNTPOINT" ".rootfs.mount" \
+  "temporary mount point of root filesystem"
+script_setopt "--rootfs-type" "ext2|ext3|..." "BRDRFSTYPE" "ext2" \
+  "type of root filesystem to be built"
+script_setopt "--rootfs-block-size" "BYTES" "BRDRFSBLOCKSIZE" "1024" \
+  "size of root filesystem blocks in bytes"
+script_setopt "--rootfs-space" "BLOCKS" "BRDRFSSPACE" "128" \
+  "number of free root filesystem blocks"
+
+script_setopt "--host" "i686|powerpc|..." "BRDHOST" "`uname -m`" \
   "override host architecture"
-set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
+script_setopt "--target" "i686|powerpc|..." "BRDTARGET" "`uname -m`" \
   "target architecture"
-set_arg "--cores" "NUM" "CORES" "1" \
-  "number of cores to compile on"
-set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
+script_setopt "--cores" "NUM" "BRDCORES" "1" "number of cores to compile on"
+script_setopt "--make-args|-m" "ARGS" "BRDMAKEARGS" "" \
+  "additional arguments to be passed to make"
+
+script_setopt "--package-dir" "DIR" "BRDPKGDIR" "packages" \
   "directory containing packages"
-set_arg "--patch-dir" "DIR" "PATCHDIR" "patches" \
-  "directory containing patches"
-set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "BRDCONFDIR" "configurations" \
   "directory containing build configurations"
-set_arg "--no-build" "" "NOBUILD" "false" \
-  "do not build any packages"
-set_arg "--clean" "" "CLEAN" "false" \
-  "remove working directories"
+script_setopt "--patch-dir" "DIR" "BRDPATCHDIR" "patches" \
+  "directory containing patches"
 
-check_args $*
-check_uid
+script_setopt "--no-build" "" "BRDNOBUILD" "false" \
+  "do not build and install any packages"
+script_setopt "--clean" "" "BRDCLEAN" "false" "remove working directories"
 
-abs_path .
-FSROOT=$ABSPATH
-abs_path $IMGROOT
-IMGROOT="$ABSPATH/$TARGET"
-ROOTFS="$IMGROOT/rootfs.img"
-IMAGE="$IMGROOT/bootrd.img"
-abs_path $BUILDROOT
-BUILDROOT="$ABSPATH/$TARGET"
-abs_path $XCROOT
-XCROOT="$ABSPATH/$TARGET"
-PATH="$XCROOT/bin:$PATH"
-MAKEOPTS="$MAKEOPTS -j$CORES"
+script_checkopts $*
+script_checkroot
 
-message "making boot ramdisk image $IMAGE"
+BRDBUILDROOT="$BRDBUILDROOT/$BRDTARGET"
+BRDIMGROOT="$BRDIMGROOT/$BRDTARGET"
+fs_abspath "$BRDXCROOT/$BRDTARGET" BRDXCROOT
+fs_abspath "$BRDRFSROOT/$BRDTARGET" BRDRFSROOT
+BRDMAKEOPTS="$BRDMAKEOPTS -j$BRDCORES"
 
-check_xcomp $TARGET gcc g++ ar as ranlib ld strip
-check_image $ROOTFS
+PATH="$PATH:$BRDXCROOT/bin"
 
-execute "mkdir -p $BUILDROOT"
+message_boldstart "making boot ramdisk in $BRDROOT"
 
-set_xcomp $TARGET $XCROOT $FSROOT true
+build_checktools $BRDTARGET gcc g++ ar as ranlib ld strip
+build_setenv $BRDXCROOT $BRDTARGET $BRDDEBUG
 
-if [ "$NOBUILD" != "true" ]; then
-  build_packages bootrd $FSROOT "" $BUILDROOT "$MAKEOPTS" $PKGDIR $PATCHDIR \
-    $CFGDIR $HOST $TARGET false $PKGn
-fi
+[ -d "$BRDBUILDROOT" ] || execute "mkdir -p $BRDBUILDROOT"
+[ -d "$BRDIMGROOT" ] || execute "mkdir -p $BRDIMGROOT"
+fs_abspath $BRDBUILDROOT BRDBUILDROOT
+fs_abspath $BRDIMGROOT BRDIMGROOT
 
-if [ "$CLEAN" == "true" ]; then
-  clean $BUILDROOT $LOGFILE
+BRDIMG="$BRDIMGROOT/bootrd.img"
+BRDRFSIMG="$BRDIMGROOT/rootfs.img"
+
+if [ -d "$BRDRFSROOT" ]; then
+  fs_mkimg $BRDRFSIMG $BRDRFSROOT $BRDRFSMOUNTPOINT $BRDRFSTYPE \
+    $BRDRFSBLOCKSIZE $BRDRFSSPACE
+
+  fs_mountimg $BRDRFSIMG $BRDRFSMOUNTPOINT
+  fs_chowndirs $BRDRFSMOUNTPOINT "$BRDRFSCHOWN"
+  fs_chmoddirs $BRDRFSMOUNTPOINT "$BRDRFSCHMOD"
+  fs_cpdevices $BRDRFSMOUNTPOINT $BRDCPDEVS
+  fs_umountimg $BRDRFSIMG $BRDRFSMOUNTPOINT
 else
-  clean $LOGFILE
+  message_exit "root filesystem seems to be missing"
 fi
 
-get_filesize $IMAGE
-message "success, size of the boot ramdisk is ${SIZE}kB"
+if false BRDNOBUILD; then
+  build_packages "bootrd" $BRDPKGDIR $BRDCONFDIR $BRDPATCHDIR $BRDBUILDROOT \
+    $BRDBUILDROOT $BRDHOST $BRDTARGET "$BRDMAKEOPTS" false $PKGn
+fi
+
+if true BRDCLEAN; then
+  message_start "cleaning up working directories"
+  execute "rm -rf $BRDBUILDROOT"
+  message_end
+fi
+
+fs_getfilesize $BRDIMG BRDIMGSIZE
+message_boldend "success, size of the boot ramdisk is ${BRDIMGSIZE}kB"
+
+log_clean

@@ -6,11 +6,11 @@ if [ "$TARGET" == "powerpc" ]; then
     ARCH="ppc"
 fi
 CONFIGURE="cp -ua $CONFDIR/linux.$TARGET .config"
-MAKEBUILD=("cp -a $ROOTFS arch/$ARCH/boot/images/ramdisk.image"
+MAKEBUILD=("cp -a $BRDRFSIMG arch/$ARCH/boot/images/ramdisk.image"
            "gzip -f arch/$ARCH/boot/images/ramdisk.image"
            "make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- zImage.initrd")
 if [ "$TARGET" == "powerpc" ]; then
-  MAKEINSTALL="cp -a arch/$ARCH/boot/images/zImage.initrd.pcore $IMAGE"
+  MAKEINSTALL="cp -a arch/$ARCH/boot/images/zImage.initrd.pcore $BRDIMG"
 else
   MAKEINSTALL=""
 fi
