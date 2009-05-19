@@ -6,7 +6,6 @@ if [ "$TARGET" == "powerpc" ]; then
     ARCH="linux-ppc"
 fi
 CONFIGURE="./Configure $ARCH --prefix=$PREFIX --openssldir=$PREFIX/lib/ssl shared"
-MAKEBUILD="make $MAKEOPTS -j1 CC=$CC all"
-MAKEINSTALL=("find $1 -name '*.so' -exec $STRIP -s {} \;"
-             "make $MAKEOPTS -j1 CC=$CC install_sw")
+MAKEBUILD="make $MAKEOPTS -j1 CC=$CC AR=\"$AR r\" RANLIB=$RANLIB all"
+MAKEINSTALL="make $MAKEOPTS -j1 CC=$CC install_sw"
 COMMENT="about 2 minutes"

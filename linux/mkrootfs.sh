@@ -29,6 +29,7 @@ RFSPKGS="coreutils glibc-min ncurses readline bash pcre grep sed"
 RFSPKGS="$RFSPKGS zlib sysvinit e2fsprogs util-linux module-init-tools"
 RFSPKGS="$RFSPKGS udev procps hostname sysklogd shadow dpkg linux-modules"
 RFSPKGS="$RFSPKGS net-tools iputils ifupdown debianutils openssl openssh"
+RFSPKGS="$RFSPKGS robox-linux"
 
 RFSMKDIRS="/proc /sys /dev /mnt /etc /boot /home /root /tmp /usr"
 RFSMKDIRS="$RFSMKDIRS /var/lock /var/log /var/mail /var/run /var/spool"
@@ -88,8 +89,8 @@ script_setopt "--clean" "" "RFSCLEAN" "false" "remove working directories"
 
 script_checkopts $*
 
-fs_abspath "$RFSROOT/$RFSTARGET" RFSROOT
-fs_abspath "$RFSBUILDROOT/$RFSTARGET" RFSBUILDROOT
+RFSROOT="$RFSROOT/$RFSTARGET"
+RFSBUILDROOT="$RFSBUILDROOT/$RFSTARGET"
 fs_abspath "$RFSXCROOT/$RFSTARGET" RFSXCROOT
 RFSMAKEOPTS="$RFSMAKEOPTS -j$RFSCORES"
 
@@ -104,6 +105,9 @@ if false RFSNOBUILD; then
   [ -d "$RFSROOT" ] || execute "mkdir -p $RFSROOT"
   [ -d "$RFSBUILDROOT" ] || execute "mkdir -p $RFSBUILDROOT"
   [ -d "$RFSIMGROOT" ] || execute "mkdir -p $RFSIMGROOT"
+  fs_abspath $RFSROOT RFSROOT
+  fs_abspath $RFSBUILDROOT RFSBUILDROOT
+  fs_abspath $RFSIMGROOT RFSIMGROOT
 
   [ -n "$RFSMKDIRS" ] && fs_mkdirs $RFSROOT $RFSMKDIRS
   [ -n "$RFSMKFILES" ] && fs_mkfiles $RFSROOT $RFSMKFILES

@@ -1,0 +1,85 @@
+diff -Naur openssh-5.1p1/Makefile.in openssh-5.1p1-shared/Makefile.in
+--- openssh-5.1p1/Makefile.in	2008-07-08 16:21:12.000000000 +0200
++++ openssh-5.1p1-shared/Makefile.in	2009-05-19 11:33:40.000000000 +0200
+@@ -19,7 +19,7 @@
+ srcdir=@srcdir@
+ top_srcdir=@top_srcdir@
+ 
+-DESTDIR=
++DESTDIR=@exec_prefix@
+ VPATH=@srcdir@
+ SSH_PROGRAM=@bindir@/ssh
+ ASKPASS_PROGRAM=$(libexecdir)/ssh-askpass
+@@ -129,46 +129,45 @@
+ 	(cd openbsd-compat && $(MAKE))
+ always:
+ 
+-libssh.a: $(LIBSSH_OBJS)
+-	$(AR) rv $@ $(LIBSSH_OBJS)
+-	$(RANLIB) $@
++libssh.so: $(LIBSSH_OBJS)
++	$(CC) -shared -o $@ $(LIBSSH_OBJS)
+ 
+-ssh$(EXEEXT): $(LIBCOMPAT) libssh.a $(SSHOBJS)
+-	$(LD) -o $@ $(SSHOBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
++ssh$(EXEEXT): $(LIBCOMPAT) libssh.so $(SSHOBJS)
++	$(CC) -o $@ $(SSHOBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
+ 
+-sshd$(EXEEXT): libssh.a	$(LIBCOMPAT) $(SSHDOBJS)
+-	$(LD) -o $@ $(SSHDOBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(SSHDLIBS) $(LIBS)
++sshd$(EXEEXT): libssh.so	$(LIBCOMPAT) $(SSHDOBJS)
++	$(CC) -o $@ $(SSHDOBJS) $(LDFLAGS) -lssh -lopenbsd-compat $(SSHDLIBS) $(LIBS)
+ 
+-scp$(EXEEXT): $(LIBCOMPAT) libssh.a scp.o progressmeter.o
+-	$(LD) -o $@ scp.o progressmeter.o bufaux.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
++scp$(EXEEXT): $(LIBCOMPAT) libssh.so scp.o progressmeter.o
++	$(CC) -o $@ scp.o progressmeter.o bufaux.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
+ 
+-ssh-add$(EXEEXT): $(LIBCOMPAT) libssh.a ssh-add.o
+-	$(LD) -o $@ ssh-add.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
++ssh-add$(EXEEXT): $(LIBCOMPAT) libssh.so ssh-add.o
++	$(CC) -o $@ ssh-add.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
+ 
+-ssh-agent$(EXEEXT): $(LIBCOMPAT) libssh.a ssh-agent.o
+-	$(LD) -o $@ ssh-agent.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
++ssh-agent$(EXEEXT): $(LIBCOMPAT) libssh.so ssh-agent.o
++	$(CC) -o $@ ssh-agent.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
+ 
+-ssh-keygen$(EXEEXT): $(LIBCOMPAT) libssh.a ssh-keygen.o
+-	$(LD) -o $@ ssh-keygen.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
++ssh-keygen$(EXEEXT): $(LIBCOMPAT) libssh.so ssh-keygen.o
++	$(CC) -o $@ ssh-keygen.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
+ 
+-ssh-keysign$(EXEEXT): $(LIBCOMPAT) libssh.a ssh-keysign.o
+-	$(LD) -o $@ ssh-keysign.o readconf.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
++ssh-keysign$(EXEEXT): $(LIBCOMPAT) libssh.so ssh-keysign.o
++	$(CC) -o $@ ssh-keysign.o readconf.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
+ 
+-ssh-keyscan$(EXEEXT): $(LIBCOMPAT) libssh.a ssh-keyscan.o
+-	$(LD) -o $@ ssh-keyscan.o $(LDFLAGS) -lssh -lopenbsd-compat -lssh $(LIBS)
++ssh-keyscan$(EXEEXT): $(LIBCOMPAT) libssh.so ssh-keyscan.o
++	$(CC) -o $@ ssh-keyscan.o $(LDFLAGS) -lssh -lopenbsd-compat -lssh $(LIBS)
+ 
+-sftp-server$(EXEEXT): $(LIBCOMPAT) libssh.a sftp.o sftp-common.o sftp-server.o sftp-server-main.o
+-	$(LD) -o $@ sftp-server.o sftp-common.o sftp-server-main.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
++sftp-server$(EXEEXT): $(LIBCOMPAT) libssh.so sftp.o sftp-common.o sftp-server.o sftp-server-main.o
++	$(CC) -o $@ sftp-server.o sftp-common.o sftp-server-main.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
+ 
+-sftp$(EXEEXT): $(LIBCOMPAT) libssh.a sftp.o sftp-client.o sftp-common.o sftp-glob.o progressmeter.o
+-	$(LD) -o $@ progressmeter.o sftp.o sftp-client.o sftp-common.o sftp-glob.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(LIBEDIT)
++sftp$(EXEEXT): $(LIBCOMPAT) libssh.so sftp.o sftp-client.o sftp-common.o sftp-glob.o progressmeter.o
++	$(CC) -o $@ progressmeter.o sftp.o sftp-client.o sftp-common.o sftp-glob.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS) $(LIBEDIT)
+ 
+-ssh-rand-helper${EXEEXT}: $(LIBCOMPAT) libssh.a ssh-rand-helper.o
+-	$(LD) -o $@ ssh-rand-helper.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
++ssh-rand-helper${EXEEXT}: $(LIBCOMPAT) libssh.so ssh-rand-helper.o
++	$(CC) -o $@ ssh-rand-helper.o $(LDFLAGS) -lssh -lopenbsd-compat $(LIBS)
+ 
+ # test driver for the loginrec code - not built by default
+-logintest: logintest.o $(LIBCOMPAT) libssh.a loginrec.o
+-	$(LD) -o $@ logintest.o $(LDFLAGS) loginrec.o -lopenbsd-compat -lssh $(LIBS)
++logintest: logintest.o $(LIBCOMPAT) libssh.so loginrec.o
++	$(CC) -o $@ logintest.o $(LDFLAGS) loginrec.o -lopenbsd-compat -lssh $(LIBS)
+ 
+ $(MANPAGES): $(MANPAGES_IN)
+ 	if test "$(MANTYPE)" = "cat"; then \

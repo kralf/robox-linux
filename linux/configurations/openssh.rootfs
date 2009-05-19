@@ -1,0 +1,6 @@
+CFLAGS="$CFLAGS -I$BUILDROOT/zlib -I$BUILDROOT/openssl/include"
+LDFLAGS="$LDFLAGS -L$BUILDROOT/zlib -L$BUILDROOT/openssl"
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux --sysconfdir=/etc/ssh --disable-strip"
+MAKEBUILD="make $MAKEOPTS AR=$AR all"
+MAKEINSTALL="make $MAKEOPTS install-nokeys"
+COMMENT="just 2 more minutes"

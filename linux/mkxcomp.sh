@@ -53,14 +53,16 @@ script_setopt "--clean" "" "XCCLEAN" "false" "remove working directories"
 
 script_checkopts $*
 
-fs_abspath "$XCBUILDROOT/$XCTARGET" XCBUILDROOT
-fs_abspath "$XCROOT/$XCTARGET" XCROOT
+XCBUILDROOT="$XCBUILDROOT/$XCTARGET"
+XCROOT="$XCROOT/$XCTARGET"
 XCMAKEOPTS="$XCMAKEOPTS -j$XCCORES"
 
 message_boldstart "making cross compile environment in $XCROOT"
 
 [ -d "$XCROOT" ] || execute "mkdir -p $XCROOT"
 [ -d "$XCBUILDROOT" ] || execute "mkdir -p $XCBUILDROOT"
+fs_abspath $XCBUILDROOT XCBUILDROOT
+fs_abspath $XCROOT XCROOT
 
 if false XCNOBUILD; then
   build_packages "xcomp" $XCPKGDIR $XCCONFDIR $XCPATCHDIR $XCBUILDROOT $XCROOT \
