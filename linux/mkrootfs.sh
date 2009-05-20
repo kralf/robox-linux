@@ -62,8 +62,6 @@ script_setopt "--config-dir" "DIR" "RFSCONFDIR" "configurations" \
   "directory containing build configurations"
 script_setopt "--patch-dir" "DIR" "RFSPATCHDIR" "patches" \
   "directory containing patches"
-script_setopt "--sysinit-dir" "DIR" "RFSSYSINITDIR" "sysinit" \
-  "directory containing sysinit files"
 
 script_setopt "--no-build" "" "RFSNOBUILD" "false" \
   "do not build and install any packages"

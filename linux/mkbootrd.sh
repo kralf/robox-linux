@@ -70,6 +70,7 @@ script_setopt "--patch-dir" "DIR" "BRDPATCHDIR" "patches" \
 
 script_setopt "--no-build" "" "BRDNOBUILD" "false" \
   "do not build and install any packages"
+script_setopt "--install" "" "BRDINSTALL" "false" "perform install stage only"
 script_setopt "--clean" "" "BRDCLEAN" "false" "remove working directories"
 
 script_checkopts $*
@@ -111,7 +112,7 @@ fi
 
 if false BRDNOBUILD; then
   build_packages "bootrd" $BRDPKGDIR $BRDCONFDIR $BRDPATCHDIR $BRDBUILDROOT \
-    $BRDBUILDROOT $BRDHOST $BRDTARGET "$BRDMAKEOPTS" false ${PKGn[@]}
+    $BRDBUILDROOT $BRDHOST $BRDTARGET "$BRDMAKEOPTS" $BRDINSTALL ${PKGn[@]}
 fi
 
 if true BRDCLEAN; then

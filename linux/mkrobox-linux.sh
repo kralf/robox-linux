@@ -1,3 +1,4 @@
+#!/bin/bash
 ############################################################################
 #    Copyright (C) 2007 by Ralf 'Decan' Kaestner                           #
 #    ralf.kaestner@gmail.com                                               #
@@ -18,67 +19,58 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-#!/bin/bash
-
 # Create robox-linux cross compiling environment and boot image
 # See usage for a description of the arguments
 
-. ./functions.sh
+. functions/global.sh
 
-BLDPKGS="$BLDPKGS carmen"
+script_init "create robox-linux cross compiling environment and boot ramdisk"
 
-init "create robox-linux cross compiling environment and boot image"
-
-set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
+script_setopt "--host" "i686|powerpc|..." "RLHOST" "`uname -m`" \
   "override host architecture"
-set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
+script_setopt "--target" "i686|powerpc|..." "RLTARGET" "`uname -m`" \
   "target architecture"
-set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
+script_setopt "--cores" "NUM" "RLCORES" "1" "number of cores to compile on"
+script_setopt "--make-args|-m" "ARGS" "RLMAKEARGS" "" \
+  "additional arguments to be passed to make"
+
+script_setopt "--package-dir" "DIR" "RLPKGDIR" "packages" \
   "directory containing packages"
-set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "RLCONFDIR" "configurations" \
   "directory containing build configurations"
-set_arg "--tftp-server" "ADDRESS" "TFTPSERVER" "shantipc1" \
+script_setopt "--patch-dir" "DIR" "RLPATCHDIR" "patches" \
+  "directory containing patches"
+
+script_setopt "--tftp-host" "ADDRESS" "RLTFTPHOST" "shantipc0" \
   "ip or dns name of the tftp server"
-set_arg "--tftp-user" "LOGIN" "TFTPUSER" "tftp" \
+script_setopt "--tftp-user" "LOGIN" "RLTFTPUSER" "tftp" \
   "login name of the tftp user"
-set_arg "--tftp-root" "DIR" "TFTPROOT" "~" \
+script_setopt "--tftp-root" "DIR" "RLTFTPROOT" "~" \
   "tftp root directory"
-set_arg "--no-build" "" "NOBUILD" "false" \
+
+script_setopt "--no-build" "" "RLNOBUILD" "false" \
   "do not build and install any packages"
-set_arg "--install" "" "INSTALL" "false" \
-  "perform install stage only"
-set_arg "--clean" "" "CLEAN" "false" \
-  "remove working directories"
+script_setopt "--install" "" "RLINSTALL" "false" "perform install stage only"
+script_setopt "--clean" "" "RLCLEAN" "false" "remove working directories"
 
-check_args $*
-check_uid
+script_checkopts $*
+script_checkroot
 
-STAGE=0
-export STAGE
+RLBRDIMAGE=".bootrd.images/$RLTARGET/bootrd.img"
 
-CALLARGS="--host $HOST --target $TARGET"
-CALLARGS="$CALLARGS --package-dir $PKGDIR --config-dir $CFGDIR"
+RLARGS="--host $RLHOST --target $RLTARGET"
+RLARGS="$RLARGS --package-dir $RLPKGDIR --config-dir $RLCONFDIR"
+true RLNOBUILD && RLARGS="$RLARGS --no-build"
+true RLINSTALL && RLARGS="$RLARGS --install"
+true RLCLEAN && RLARGS="$RLARGS --clean"
 
-if [ "$NOBUILD" == "true" ]; then
-  CALLARGS="$CALLARGS --no-build"
-fi
-if [ "$INSTALL" == "true" ]; then
-  CALLARGS="$CALLARGS --install"
-fi
-if [ "$CLEAN" == "true" ]; then
-  CALLARGS="$CALLARGS --clean"
-fi
+message_boldstart "making robox-linux"
 
-message "making robox-linux"
-stage_up
+STAGE=$STAGE ./mkxcomp.sh $RLARGS && \
+STAGE=$STAGE ./mkrootfs.sh $RLARGS && \
+STAGE=$STAGE ./mkbootrd.sh $RLARGS && 
+network_upfiles $RLTFTPUSER $RLTFTPHOST $RLTFTPROOT $RLBRDIMAGE 
 
-./mkxcomp.sh $CALLARGS && ./mkrootfs.sh $CALLARGS && \
-  ./mkbootrd.sh $CALLARGS
+message_boldend "success"
 
-if [ $? = 0 ]; then
-  upload_image "bootrd.img" $TFTPSERVER $TFTPUSER $TFTPROOT
-
-  stage_down
-  clean $LOGFILE
-  message "success"
-fi
+log_clean
