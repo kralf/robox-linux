@@ -1,14 +1,14 @@
 BUILDDIR="./src"
-if [[ "$TARGET" =~ "i[3-6]86" ]]; then
+if [[ "$TARGET" =~ i[3-6]86 ]]; then
     PROC="x86"
 else
     PROC="$TARGET"
 fi
 CONFIGURE=("rm -rf laser"
-           "./configure --prefix=$USRROOT --nographics --nojoystick")
-MAKEBUILD="make $MAKEOPTS CARMEN_HOME=$PKGBUILDROOT PROCESSOR=$PROC"
-MAKEINSTALL=("mkdir -p $USRROOT/bin"
-             "cp -a laser/laser $USRROOT/bin"
-             "cp -a laser/sick_laser_test $USRROOT/bin")
+           "./configure --prefix=$PREFIX --nographics --nojoystick")
+MAKEBUILD="make $MAKEOPTS -j1 CARMEN_HOME=$PKGBUILDROOT PROCESSOR=$PROC"
+MAKEINSTALL=("mkdir -p $PREFIX/bin"
+             "cp -a laser/laser $PREFIX/bin"
+             "cp -a laser/sick_laser_test $PREFIX/bin")
 COMMENT="takes just 2 minutes"
 

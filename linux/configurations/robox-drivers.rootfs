@@ -1,0 +1,13 @@
+MODULEROOT="$RFSROOT/lib/modules/$PKGVERSION"
+MODULEMAKEOPTS="$MAKEOPTS ARCH=$ARCH CC=$CC LD=$LD KERNEL_SRC=$BUILDROOT/linux-modules"
+CONFIGURE=""
+MAKEBUILD=("make -C userled $MODULEMAKEOPTS"
+           "make -C icpmulti $MODULEMAKEOPTS"
+           "make -C cpci100a-non-free $MODULEMAKEOPTS"
+           "make -C tip866-non-free $MODULEMAKEOPTS")
+MAKEINSTALL=("mkdir -p $MODULEROOT/extra"
+             "cp -a userled/*.ko $MODULEROOT/extra"
+             "cp -a icpmulti/*.ko $MODULEROOT/extra"
+             "cp -a cpci100a-non-free/*.ko $MODULEROOT/extra"
+             "cp -a tip866-non-free/*.ko $MODULEROOT/extra")
+COMMENT="this will not take long"
