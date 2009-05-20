@@ -1,0 +1,105 @@
+#!/bin/sh -e
+
+[ -x /sbin/ifup ] || exit 0
+[ -x /sbin/ifdown ] || exit 0
+
+MYNAME="${0##*/}"
+report() { echo "${MYNAME}: $*" ; }
+report_err() { report "Error: $*" >&2 ; }
+RUN_DIR=/etc/network/run
+[ -r /etc/default/ifupdown ] && . /etc/default/ifupdown
+
+# Note: The state file location is hardcoded in ifup|ifdown
+IFSTATE=/etc/network/run/ifstate
+
+myreadlink () {
+  dest="${1%/}"
+  extras=""
+
+  while [ "$dest" != "" ]; do
+    if [ -d "$dest" ]; then
+      cd "$dest"
+      dest=$(/bin/pwd)
+      break
+    fi
+
+    if [ -L "$dest" ]; then
+      d2=$(readlink "$dest")
+      if [ "${d2#/}" = "$d2" ]; then
+        dest="${dest%/*}/$d2"
+      else
+        dest="$d2"
+      fi
+    fi
+
+    while [ ! -e "$dest" ]; do
+      extras="${dest##*/}/$extras"
+      if [ "${extras%%/*}" = ".." ]; then return 1; fi
+      destx="${dest%/*}"
+      if [ "$destx" = "$dest" ]; then destx=""; fi
+      dest="$destx"
+    done
+  done
+  dest="$dest/$extras"
+  echo "${dest%/}"
+}
+
+case "$1" in
+  start|restart)
+    if [ "$2" ]; then
+      report_err "Arguments to '$1' command not accepted"
+      exit 3
+    fi
+    echo -n "Setting up networking..."
+
+    # if /etc/network/run is a symlink to a directory that doesn't exist,
+    # create it.
+
+    if [ -L "$RUN_DIR" ] && [ ! -d "$RUN_DIR" ] ; then
+      runmkdir="$(myreadlink "$RUN_DIR")"
+      if [ ! "$runmkdir" ] ; then
+        echo "failed."
+        report_err "Cannot create target of /etc/network/run"
+        exit 1
+      fi
+      if ! mkdir -p "$runmkdir"; then
+        echo "failed."
+        report_err "Failure creating directory $runmkdir"
+        exit 1
+      fi
+    fi
+
+    # Create the state file
+    # Doing this also signals that ifupdown is available for use
+    if [ ! -r "$IFSTATE" ]; then
+      if ! : > "$IFSTATE" ; then
+        echo "failed."
+        report_err "Failure initializing $IFSTATE"
+        exit 1
+      fi 
+    fi
+
+    echo "done."
+    exit 0
+    ;;
+
+  stop)
+    if [ "$2" ]; then
+      report_err "Arguments to '$1' command not accepted"
+      exit 3
+    fi
+    if [ -x /etc/init.d/ifupdown-clean ]; then
+      /etc/init.d/ifupdown-clean start
+    fi
+    ;;
+
+  force-reload)
+    ;;
+
+  *)
+    echo "Usage: $0 {start|stop|restart|force-reload}" >&2
+    exit 3
+    ;;
+esac
+
+exit 0

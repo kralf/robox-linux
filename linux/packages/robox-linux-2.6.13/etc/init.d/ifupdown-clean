@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# ifupdown-clean
+#
+
+set -e
+
+MYNAME="${0##*/}"
+PATH=/sbin:/bin
+[ -r /etc/default/ifupdown ] && . /etc/default/ifupdown
+
+# Note: The state file location is hardcoded in ifup|ifdown
+# it is used as a variable in this script order to ease transitions
+# to other locations by the package (not by the sysadmin), if you want
+# to setup an alternate location please use a symlink
+IFSTATE=/etc/network/run/ifstate
+
+case "$1" in
+  start)
+    echo -n "Cleaning up ifupdown..."
+    if [ -f $IFSTATE -a ! -L $IFSTATE ]; then
+      rm -f "$IFSTATE"
+    elif [ -f $IFSTATE ]; then
+      # This is kinda bad :(
+      >$IFSTATE
+    fi
+    echo "done."
+    exit 0
+    ;;
+
+  stop|restart|force-reload)
+    exit 0
+    ;;
+
+  *)
+    echo "Usage: $0 {start|stop|restart|force-reload}" >&2
+    exit 3
+    ;;
+esac
+
