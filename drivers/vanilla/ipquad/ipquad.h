@@ -11,6 +11,9 @@
 #ifndef IPQUAD_H
 #define IPQUAD_H
 
-int ipquad_read_channel(int channel);
+int ipquad_read_channel(int channel, int* value);
+int ipquad_write_channel(int channel, int value);
+
+int ipquad_invert_channel(int channel, int invert);
 
 #endif

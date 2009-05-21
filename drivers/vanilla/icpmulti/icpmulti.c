@@ -40,7 +40,7 @@
 
 // IDs and names
 #define ICPMULTI_VENDORID       0x104c  // Vendor ID
-#define ICPMULTI_DEVICEID	0x8000	// Device ID
+#define ICPMULTI_DEVICEID	      0x8000	// Device ID
 #define ICPMULTI_NAME           "ICP-multi composite A&D I/O board"
 #define ICPMULTI_DRVNAME        "icpmulti"
 

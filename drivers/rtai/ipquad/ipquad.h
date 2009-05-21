@@ -13,5 +13,4 @@
 
 int ipquad_read_channel(int channel);
 
-
 #endif

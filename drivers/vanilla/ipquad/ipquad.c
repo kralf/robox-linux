@@ -33,15 +33,62 @@
 */
 
 // IDs and names
-#define IPQUAD_VENDORID       0xFO  // Vendor ID
-#define IPQUAD_DEVICEID       0x41  // Device ID
-#define IPQUAD_NAME           "SBS Technologies IP Quadrature decoder"
-#define IPQUAD_DRVNAME        "ipquad"
+#define IPQUAD_VENDORID               0xF0  // Vendor ID
+#define IPQUAD_DEVICEID               0x41  // Device ID
+#define IPQUAD_NAME                   "SBS Technologies IP Quadrature decoder"
+#define IPQUAD_DRVNAME                "ipquad"
+#define IPQUAD_DRVBINVERSION          0x00001
+
+// Hardware limits
+#define IPQUAD_NUM_CHANNELS           4
 
 // Character devices
-#define IPQUAD_MAJOR_BASE 212
-#define IPQUAD_DEVCLASS "ipquad"
-#define IPQUAD_DEVNAME "ipquad"
+#define IPQUAD_MAJOR_BASE             212
+#define IPQUAD_DEVCLASS               "ipquad"
+#define IPQUAD_DEVNAME                "ipquad"
+#define IPQUAD_FORMAT                 "%d"
+
+// Register offsets and access masks
+#define IPQUAD_CTRLSTAT_OFFSET        0x31
+#define IPQUAD_INTVECT_OFFSET         0x35
+
+#define IPQUAD_CHAN_SPAN              4
+
+#define IPQUAD_CHAN_OLPCR_OFFSET      0x01
+#define IPQUAD_CHAN_CTRLSTAT_OFFSET   0x03
+#define IPQUAD_CHAN_COUNTERCTRL_MASK  0x00
+#define IPQUAD_CHAN_INCTRL_MASK       0x40
+#define IPQUAD_CHAN_OUTCTRL_MASK      0x80
+#define IPQUAD_CHAN_QUADCTRL_MASK     0xC0
+#define IPQUAD_CHAN_CONF_OFFSET       0x21
+
+// Control chars
+#define IPQUAD_TERM1_ENABLE           0xF9
+#define IPQUAD_TERM1_DISABLE          0xF8
+#define IPQUAD_TERM2_ENABLE           0xFA
+#define IPQUAD_TERM2_DISABLE          0xF8
+#define IPQUAD_INTVEC_INIT            0x0F
+
+#define IPQUAD_CHAN_MASTER_RESET      0x20
+
+#define IPQUAD_CHAN_READ_OL           0x03
+#define IPQUAD_CHAN_WRITE_PCR         0x01
+#define IPQUAD_CHAN_TRANSFER_PC       0x08
+
+#define IPQUAD_CHAN_COUNTER_DISABLE   0x00
+#define IPQUAD_CHAN_COUNTER_ENABLE    0x08
+
+#define IPQUAD_CHAN_INT_BORROW        0x10
+#define IPQUAD_CHAN_INT_MATCH         0x30
+
+#define IPQUAD_CHAN_QUAD_DISABLE      0x00
+#define IPQUAD_CHAN_QUAD_X1           0x01
+#define IPQUAD_CHAN_QUAD_X2           0x02
+#define IPQUAD_CHAN_QUAD_X4           0x03
+
+#define IPQUAD_CHAN_X_INVERT          0x01
+#define IPQUAD_CHAN_Y_INVERT          0x02
+#define IPQUAD_CHAN_Z_INVERT          0x04
 
 /*
 ==============================================================================
@@ -67,7 +114,47 @@ static int debug;
 ==============================================================================
 */
 
+static struct class* ipquad_class;    // device class
 
+int ipquad_device_open(struct inode *inode, struct file *file);
+int ipquad_device_release(struct inode *inode, struct file *file);
+int ipquad_device_read(struct file *file, char *buff, size_t len,
+  loff_t *f_pos);
+int ipquad_device_write(struct file *file, const char *buff, size_t len,
+  loff_t *off);
+
+static struct file_operations ipquad_fops = {
+  .open = ipquad_device_open,
+  .release = ipquad_device_release,
+  .read = ipquad_device_read,
+  .write = ipquad_device_write,
+};
+
+struct ipac_module_id ipquad_id[] = {
+  {
+    manufacturer: IPQUAD_VENDORID,
+    model_number: IPQUAD_DEVICEID,
+    slot_config:  IPAC_INT0_EN | IPAC_INT1_EN | IPAC_LEVEL_SENS | IPAC_CLK_8MHZ,
+    mem_size:     0,
+    private_data: 0,
+  },
+  {
+    manufacturer: 0,
+    model_number: 0,
+  }
+};
+
+typedef struct {
+  struct addr_space_desc *io_space;
+
+  struct semaphore sem;                 // semaphore
+
+  // char device
+  struct class* dev_class;              // device class
+  struct cdev cdev;                     // char device
+} ipquad_device;
+
+static ipquad_device* ipquad_dev = 0;
 
 /*
 ==============================================================================
@@ -83,429 +170,388 @@ MODULE_PARM_DESC(debug, "Debug enabled or not");
 
 /*
 ==============================================================================
+  More forward declarations
+==============================================================================
+*/
+
+int ipquad_init_device();
+int ipquad_init_channel(int channel);
+
+/*
+==============================================================================
+        Char device registration and release
+==============================================================================
+*/
+
+static void ipquad_register_cdevs(struct class* cdev_class, struct cdev*
+  reg_cdev, unsigned int cdev_major, unsigned int device, const char* 
+  cdev_bname) {
+  unsigned int cdev_minor = reg_cdev->count;
+  int i;
+
+  if (!cdev_add(reg_cdev, MKDEV(cdev_major, cdev_minor),
+    reg_cdev->count+IPQUAD_NUM_CHANNELS)) {
+    ipquad_printk("Registering %d channel char devices at %s[%d-%d]\n",
+      IPQUAD_NUM_CHANNELS, cdev_bname, 0, IPQUAD_NUM_CHANNELS-1);
+
+    for(i = 0; i < IPQUAD_NUM_CHANNELS; i++) {
+      char cdev_fname[256];
+      sprintf(cdev_fname, "%s%d", cdev_bname, i);
+
+      class_device_create(cdev_class, MKDEV(cdev_major, cdev_minor+i),
+        NULL, cdev_fname);
+
+      ipquad_debugk("Channel %d at %s (major %d, minor %d)\n", 
+        i, cdev_fname, cdev_major, cdev_minor+i);
+    }
+  }
+  else ipquad_alertk("Could not register channel char devices\n");
+}
+
+static void ipquad_unregister_cdevs(struct class* cdev_class, struct cdev*
+  unreg_cdev) {
+  int i;
+
+  if (unreg_cdev->count) {
+    for(i = 0; i < unreg_cdev->count; i++)
+    class_device_destroy(cdev_class, unreg_cdev->dev+i);
+
+    cdev_del(unreg_cdev);
+
+    ipquad_printk("Unregistered all char devices\n");
+  }
+}
+
+/*
+==============================================================================
         Device initialization and removal
 ==============================================================================
 */
+
+static int ipquad_probe(struct ipac_module *ipac, const struct ipac_module_id 
+  *module_id) {
+  int result = 0;
+  struct addr_space_desc *io_space;
+  int i;
+
+  if (ipquad_dev) {
+      ipquad_printk("This driver supports a single device only\n");
+      return -1;
+  }
+
+  ipquad_printk("Probe new IPQuad decoder mounted on <%s> at slot %c\n",
+    ipac->carrier_drv->name, 'A'+ipac->slot.slot_index);
+
+  //  first try to map the IPAC IO space
+  if ((io_space = ipac_map_space(ipac, IPAC_IO_SPACE)) == 0) {
+      ipquad_printk("Unable to map IPAC IO space\n");
+      return -1;
+  }
+
+  // init driver structure
+  ipquad_dev = kmalloc(sizeof(ipquad_device), GFP_KERNEL);
+
+  ipquad_dev->io_space = io_space;
+  ((struct ipac_module_id*)module_id)->private_data = (unsigned long)ipquad_dev;
+  ipquad_debugk("Device at 0x%x enabled\n", io_space->physical_address);
+
+  // init mutex
+  sema_init(&ipquad_dev->sem, 1);
+
+  // init device and channels
+  if (ipquad_init_device())
+    return -1;
+
+  for (i = 0; i < IPQUAD_NUM_CHANNELS; ++i)
+    if (ipquad_init_channel(i))
+    return -1;
+
+  // register char devices
+  ipquad_dev->dev_class = ipquad_class;
+  cdev_init(&ipquad_dev->cdev, &ipquad_fops);
+
+  ipquad_register_cdevs(ipquad_dev->dev_class, &ipquad_dev->cdev,
+    IPQUAD_MAJOR_BASE+IPQUAD_NUM_CHANNELS, IPQUAD_NUM_CHANNELS, 
+    IPQUAD_DEVNAME);
+
+  return 0;
+}
+
+struct ipac_driver ipquad_drv = {
+    name:       IPQUAD_DRVNAME,
+    version:    IPQUAD_DRVBINVERSION,
+    id_table:   ipquad_id,
+    probe:      ipquad_probe,
+};
 
 static int __init ipquad_init(void) {
   // create device class
   ipquad_class = class_create(THIS_MODULE, IPQUAD_DEVCLASS);
 
   // find devices and register driver
-  ipquad_num_devs = 0;
-  ipquad_default = 0;
-  return pci_module_init(&ipquad_driver);
+  if (ipac_register_driver(&ipquad_drv) == -1)
+    return -ENODEV;
+
+  return 0;
 }
 
-static void __exit ipquad_exit(void) {
+static void ipqad_cleanup(void) {
+  // unregister char devices
+  ipquad_unregister_cdevs(ipquad_dev->dev_class, &ipquad_dev->cdev);
+
   // unregister driver
-  pci_unregister_driver(&ipquad_driver);
+  ipac_unregister_driver(&ipquad_drv);
 
   // destroy device class
   class_destroy(ipquad_class);
+
+  // free memory
+  kfree(ipquad_dev);
+  ipquad_dev = 0;  
 }
 
 module_init(ipquad_init);
-module_exit(ipquad_exit);
+module_exit(ipqad_cleanup);
 
+/*
+==============================================================================
 
+        Name:   ipquad_init_device
 
+        Description:
+                Initialize decoder device.
 
+==============================================================================
+*/
 
+int ipquad_init_device() {
+  ipquad_debugk("Initializing device\n");
 
+  down(&ipquad_dev->sem);
+  ipac_write_uchar(ipquad_dev->io_space, IPQUAD_CTRLSTAT_OFFSET, 
+    IPQUAD_TERM1_DISABLE | IPQUAD_TERM2_DISABLE);
+  ipac_write_uchar(ipquad_dev->io_space, IPQUAD_INTVECT_OFFSET, 
+    IPQUAD_INTVEC_INIT);
+  up(&ipquad_dev->sem);
 
-
-
-
-
-
-
-/*****************************************************************************
- *
- * tip_probe() - This function initializes all 8 channel of a TIP866 module
- *               and all required data structures
- *
- *****************************************************************************/
-
-static int tip_probe(struct ipac_module *ipac, const struct ipac_module_id *module_id)
-{
-    struct module_info_struct *mod;
-    struct addr_space_desc  *io_space, *id_space;
-    int line_base;
-    int result = 0;
-    int i;
-
-    if (module_count >= TIP866_MAX_NUM_MOD) {
-        printk(KERN_INFO "Maximum number of TIP866 device exceeded (number=%ld)\n", module_count);
-        return -ENOMEM;
-    }
-
-    printk(KERN_INFO "%s Probe new TIP866 mounted on <%s> at slot %c\n",
-	    TIP866_DBG_NAME, ipac->carrier_drv->name, 'A'+ipac->slot.slot_index);
-
-    /*  first try to map the IPAC IO space */
-    if ((io_space = ipac_map_space(ipac, IPAC_IO_SPACE)) == 0) {
-        printk("%s unable to map IPAC IO space\n", TIP866_DBG_NAME);
-        return -1;
-    }
-
-    if ((id_space = ipac_map_space(ipac, IPAC_ID_SPACE)) == 0) {
-        printk("%s unable to map IPAC ID space\n", TIP866_DBG_NAME);
-        return -1;
-    }
-
-    /*
-	**	Setup Interrupt Vector in the device; necessary on VMEbus carrier
-	*/
-    ipac_write_uchar(io_space, TIP_VECTOR, ipac->slot.module_interrupt_vector);
-
-    /*
-     *  The first module we found contains line 0..7, the second line 8..15 and so on
-     */
-    line_base = module_count * 8;
-
-    /*
-     *  Allocate a module info structure for this TIP866 module and
-     *  initialze it with 0.
-     */
-
-    mod = kmalloc(sizeof(struct module_info_struct), GFP_KERNEL);
-
-    if (!mod) {
-        return -ENOMEM;
-    }
-    memset(mod, 0, sizeof(struct module_info_struct));
-
-    module_table[module_count++] = mod;
-    mod->ipac = ipac;
-
-    /*
-     *  Initialize each channel in the module info structure with appropriate values
-     */
-    for (i=0; i<TIP866_CHAN_PER_MOD; i++) {
-        /*
-         *  port state structure
-         */
-        mod->state[i].baud_base = TIP866_CLOCK_RATE / 16;
-        mod->state[i].port = i * TIP866_CHAN_SPAN;
-        mod->state[i].space = io_space;
-        mod->state[i].irq = ipac->slot.system_interrupt_vector;
-        mod->state[i].flags = 0;
-        mod->state[i].type = ipac_read_uchar(id_space, TIP_BOARD_OPTION);
-#ifdef TIP866_DEBUG_XX2
-		printk("Moduletype TIP866-%d\n", mod->state[i].type);
-#endif
-        mod->state[i].line = line_base + i;
-        mod->state[i].xmit_fifo_size = SERIAL_FIFO_SIZE;
-        mod->state[i].count = 0;
-        mod->state[i].close_delay = 5*HZ/10;
-        mod->state[i].closing_wait = 30*HZ;
-        mod->state[i].callout_termios = callout_driver.init_termios;
-        mod->state[i].normal_termios = tip866_driver.init_termios;
-        mod->state[i].icount.cts = mod->state[i].icount.dsr =
-        mod->state[i].icount.rng = mod->state[i].icount.dcd = 0;
-        mod->state[i].icount.rx = mod->state[i].icount.tx = 0;
-        mod->state[i].icount.frame = mod->state[i].icount.parity = 0;
-        mod->state[i].icount.overrun = mod->state[i].icount.brk = 0;
-        mod->state[i].info = &mod->info[i];
-
-        /*
-         *  info structure
-         */
-        init_waitqueue_head(&mod->info[i].open_wait);
-        init_waitqueue_head(&mod->info[i].close_wait);
-        init_waitqueue_head(&mod->info[i].delta_msr_wait);
-
-        mod->info[i].magic = TIP866_MAGIC;
-        mod->info[i].port = i * TIP866_CHAN_SPAN;
-        mod->info[i].space = io_space;
-        mod->info[i].flags = 0;
-        mod->info[i].xmit_fifo_size = mod->state[i].xmit_fifo_size;
-        mod->info[i].line = line_base + i;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-        /* Kernel 2.4.x */
-        INIT_TQUEUE( &mod->info[i].tqueue, do_softint, (void*)(&mod->info[i]) );
-#else
-        /* Kernel 2.6.x */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
-        INIT_WORK( &mod->info[i].work, do_softint, (void*)(&mod->info[i]) );
-#else
-        INIT_WORK( &mod->info[i].work, do_softint );
-#endif
-#endif
-        spin_lock_init(&mod->info[i].lock);
-
-
-		mod->info[i].state = &mod->state[i];
-
-        /* We can only determine if the transmit FIFO is able to accept new */
-        /* data if we use this hardware wired flags.                        */
-        mod->info[i].fifo_status_reg = i<4 ? TIP_FRR14 : TIP_FRR58;
-        mod->info[i].tx_empty_bit = 1 << (i & 3);
-
-        /*
-         * Reset this UART
-         */
-        tip866_out(&mod->info[i], UART_FCR, (UART_FCR_ENABLE_FIFO |
-                                              UART_FCR_CLEAR_RCVR |
-                                              UART_FCR_CLEAR_XMIT));
-        tip866_out(&mod->info[i], UART_FCR, 0);
-        (void)tip866_in(&mod->info[i], UART_RX);
-        tip866_out(&mod->info[i], UART_IER, 0);
-
-		/* Create a tty and a cua DEVFS node per channel */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-		tty_register_devfs(&tip866_driver, 0,
-				   tip866_driver.minor_start + mod->state[i].line);
-		tty_register_devfs(&callout_driver, 0,
-				   callout_driver.minor_start + mod->state[i].line);
-#else
-		tty_register_device(&tip866_driver,
-			tip866_driver.minor_start + mod->state[i].line,
-			mod->info[i].dev);
-#endif
-    }
-
-
-    /*
-     *  Register the ISRs for this TIP866 module
-     */
-	mod->_1st_uart.parent = (void *)mod;
-	mod->_1st_uart.controller_num = 0;
-	result = ipac_request_irq(ipac, ipac->slot.system_interrupt_vector, tp_interrupt, 0, "TIP866", (void *)&mod->_1st_uart);
-
-    if (result != 0) {
-        printk("Couldn't allocate tip866 interrupt (IRQ=%d)\n", ipac->slot.system_interrupt_vector);
-        /*
-         *  Free all resources allocated by this device
-         */
-        kfree(mod);
-        module_count--;
-    }
-
-	mod->_2nd_uart.parent = (void *)mod;
-	mod->_2nd_uart.controller_num = 1;
-    result = ipac_request_irq(ipac, ipac->slot.system_interrupt_vector+1, tp_interrupt, 0, "TIP866", (void *)&mod->_2nd_uart);
-
-    if (result != 0) {
-        printk("Couldn't allocate tip866 interrupt (IRQ=%d)\n", ipac->slot.system_interrupt_vector+1);
-        /*
-         *  Free all resources allocated by this device
-         */
-        ipac_free_irq(ipac, ipac->slot.system_interrupt_vector, (void *)&mod->_1st_uart);
-        kfree(mod);
-        module_count--;
-    }
-
-	return result;
+  return 0;
 }
 
+/*
+==============================================================================
 
+        Name:   ipquad_init_channel
 
-/*****************************************************************************
- *
- * The tip866 driver initialization code!
- *
- *****************************************************************************/
+        Description:
+                Initializes decoder channel.
+
+==============================================================================
+*/
+
+int ipquad_init_channel(int channel) {
+  if ((channel < 0) || (channel >= IPQUAD_NUM_CHANNELS)) 
+    return -ENODEV;
+
+  ipquad_debugk("Initializing channel %d\n", channel);
+
+  unsigned int chan_ctrlstat_offset = IPQUAD_CHAN_CTRLSTAT_OFFSET+
+    IPQUAD_CHAN_SPAN*channel;
+
+  down(&ipquad_dev->sem);
+  ipac_write_uchar(ipquad_dev->io_space, chan_ctrlstat_offset, 
+    IPQUAD_CHAN_COUNTERCTRL_MASK | IPQUAD_CHAN_MASTER_RESET);
+
+  ipac_write_uchar(ipquad_dev->io_space, chan_ctrlstat_offset, 
+    IPQUAD_CHAN_OUTCTRL_MASK | IPQUAD_CHAN_INT_BORROW);
+  ipac_write_uchar(ipquad_dev->io_space, chan_ctrlstat_offset, 
+    IPQUAD_CHAN_QUADCTRL_MASK | IPQUAD_CHAN_QUAD_X4);
+  ipac_write_uchar(ipquad_dev->io_space, chan_ctrlstat_offset, 
+    IPQUAD_CHAN_INCTRL_MASK | IPQUAD_CHAN_COUNTER_ENABLE);
+
+  up(&ipquad_dev->sem);
+
+  return 0;
+}
 
 /*
-**  Supported TIP modules by this driver and their initialization values
-*/
-struct ipac_module_id tip866_id[] = {
-    {
-        manufacturer:   MANUFACTURER_TEWS,
-        model_number:   MODULE_TIP866,
-        slot_config:    IPAC_INT0_EN | IPAC_INT1_EN | IPAC_LEVEL_SENS | IPAC_CLK_8MHZ,
-        mem_size:       0,
-        private_data:   0,
-    },
-    {
-        manufacturer:   0,      /* end of list */
-        model_number:   0,
-    }
-};
+==============================================================================
 
+        Name:   ipquad_read_channel
+
+        Description:
+                Reads decoder channel.
+
+==============================================================================
+*/
+
+int ipquad_read_channel(int channel, int* value) {
+  if ((channel < 0) || (channel >= IPQUAD_NUM_CHANNELS)) 
+    return -ENODEV;
+
+  ipquad_debugk("Reading channel %d\n", channel);
+
+  unsigned int chan_ctrlstat_offset = IPQUAD_CHAN_CTRLSTAT_OFFSET+
+    IPQUAD_CHAN_SPAN*channel;
+  unsigned int chan_olpcr_offset = IPQUAD_CHAN_OLPCR_OFFSET+
+    IPQUAD_CHAN_SPAN*channel;
+  unsigned char *uchar_val = (unsigned char*)value;
+  
+  down(&ipquad_dev->sem);
+  ipac_write_uchar(ipquad_dev->io_space, chan_ctrlstat_offset, 
+    IPQUAD_CHAN_COUNTERCTRL_MASK | IPQUAD_CHAN_READ_OL);
+
+  uchar_val[3] = ipac_read_uchar(ipquad_dev->io_space, chan_olpcr_offset);
+  uchar_val[2] = ipac_read_uchar(ipquad_dev->io_space, chan_olpcr_offset);
+  uchar_val[1] = ipac_read_uchar(ipquad_dev->io_space, chan_olpcr_offset);
+  uchar_val[0] = 0;
+
+  up(&ipquad_dev->sem);
+
+  return 0;
+}
 
 /*
-**  Device driver register structure
+==============================================================================
+
+        Name:   ipquad_write_channel
+
+        Description:
+                Writes decoder channel.
+
+==============================================================================
 */
-struct ipac_driver tip866_drv = {
 
-    name:       DRIVER_NAME,
-    version:    DRIVER_BIN_VERSION,
-    id_table:   tip866_id,
-    probe:      tip_probe,
-};
+int ipquad_write_channel(int channel, int value) {
+  if ((channel < 0) || (channel >= IPQUAD_NUM_CHANNELS)) 
+    return -ENODEV;
 
+  ipquad_debugk("Writing channel %d\n", channel);
 
-static int __init t866_init(void)
-{
-    int i;
-    int result;
+  unsigned int chan_ctrlstat_offset = IPQUAD_CHAN_CTRLSTAT_OFFSET+
+    IPQUAD_CHAN_SPAN*channel;
+  unsigned int chan_olpcr_offset = IPQUAD_CHAN_OLPCR_OFFSET+
+    IPQUAD_CHAN_SPAN*channel;
+  unsigned char *uchar_val = (unsigned char*)&value;
+  
+  down(&ipquad_dev->sem);
+  ipac_write_uchar(ipquad_dev->io_space, chan_ctrlstat_offset, 
+    IPQUAD_CHAN_COUNTERCTRL_MASK | IPQUAD_CHAN_WRITE_PCR);
 
+  ipac_write_uchar(ipquad_dev->io_space, chan_olpcr_offset, uchar_val[3]);
+  ipac_write_uchar(ipquad_dev->io_space, chan_olpcr_offset, uchar_val[2]);
+  ipac_write_uchar(ipquad_dev->io_space, chan_olpcr_offset, uchar_val[1]);
 
-    show_tip866_version();
+  ipac_write_uchar(ipquad_dev->io_space, chan_ctrlstat_offset, 
+    IPQUAD_CHAN_COUNTERCTRL_MASK | IPQUAD_CHAN_TRANSFER_PC);
 
-    /* Initialize the tty_driver structure */
+  up(&ipquad_dev->sem);
 
-    memset(&tip866_driver, 0, sizeof(struct tty_driver));
-    tip866_driver.magic = TTY_DRIVER_MAGIC;
+  return 0;
+}
 
-    tip866_driver.driver_name = "tip866";
-#if defined CONFIG_DEVFS_FS
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-    tip866_driver.name = "ttySTIP866_%d";
-#else
-    tip866_driver.name = "ttySTIP866_";
-    tip866_driver.devfs_name = tip866_driver.name;
-#endif
-#else
-    tip866_driver.name = "ttySTIP866_";
-#endif /* CONFIG_DEVFS_FS */
-    tip866_driver.major = TIP866_TTY_MAJOR;
-    tip866_driver.minor_start = 0;
-    tip866_driver.num = NR_PORTS;
-    tip866_driver.type = TTY_DRIVER_TYPE_SERIAL;
-    tip866_driver.subtype = SERIAL_TYPE_NORMAL;
-    tip866_driver.init_termios = tty_std_termios;
-    tip866_driver.init_termios.c_cflag = B9600 | CS8 | CREAD | HUPCL | CLOCAL;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18)
-    tip866_driver.flags = TTY_DRIVER_REAL_RAW  | TTY_DRIVER_NO_DEVFS;
-#else
-    tip866_driver.flags = TTY_DRIVER_REAL_RAW  | TTY_DRIVER_DYNAMIC_DEV;
-#endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-    tip866_driver.refcount = &tip866_refcount;
-    tip866_driver.table = tip866_table;
-#else
-	tip866_driver.ttys = tip866_table;
-	tip866_driver.owner = THIS_MODULE;
-#endif
-	tip866_driver.termios = tip866_termios;
-    tip866_driver.termios_locked = tip866_termios_locked;
+/*
+==============================================================================
 
-    tip866_driver.open = tip866_open;
-    tip866_driver.close = tp_close;
-    tip866_driver.write = tp_write;
-    tip866_driver.put_char = tp_put_char;
-    tip866_driver.flush_chars = tp_flush_chars;
-    tip866_driver.write_room = tp_write_room;
-    tip866_driver.chars_in_buffer = tp_chars_in_buffer;
-    tip866_driver.flush_buffer = tp_flush_buffer;
-    tip866_driver.ioctl = tp_ioctl;
-    tip866_driver.throttle = tp_throttle;
-    tip866_driver.unthrottle = tp_unthrottle;
-    tip866_driver.set_termios = tp_set_termios;
-    tip866_driver.stop = tp_stop;
-    tip866_driver.start = tp_start;
-    tip866_driver.hangup = tp_hangup;
-    tip866_driver.break_ctl = tp_break;
-    tip866_driver.send_xchar = tp_send_xchar;
-    tip866_driver.wait_until_sent = tp_wait_until_sent;
-    tip866_driver.read_proc = tp_read_proc;
+        Name:   ipquad_invert_channel
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-    /*
-     * The callout device is just like normal device except for
-     * major number and the subtype code.
-     */
-    callout_driver = tip866_driver;
-#if defined CONFIG_DEVFS_FS
-    callout_driver.name = "cuaTIP866_%d";
-#else
-    callout_driver.name = "cuaTIP866_";
-#endif /* CONFIG_DEVFS_FS */
+        Description:
+                Inverts decoder channel.
 
-    callout_driver.major = TIP866_CUA_MAJOR;
-    callout_driver.minor_start = 0;
-    callout_driver.subtype = SERIAL_TYPE_CALLOUT;
-    callout_driver.read_proc = 0;
-    callout_driver.proc_entry = 0;
+==============================================================================
+*/
 
-    if ((result = tty_register_driver(&callout_driver)) < 0)
-        printk("%s(%d):Couldn't register TIP866 callout driver (%d)\n",__FILE__,__LINE__,result);
-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0) */
+int ipquad_invert_channel(int channel, int invert) {
+  if ((channel < 0) || (channel >= IPQUAD_NUM_CHANNELS)) 
+    return -ENODEV;
 
-	if ((result = tty_register_driver(&tip866_driver)) < 0)
-        printk("%s(%d):Couldn't register TIP866 serial driver (%d)\n",__FILE__,__LINE__,result);
+  ipquad_debugk("Inverting channel %d\n", channel);
 
+  unsigned int chan_conf_offset = IPQUAD_CHAN_CONF_OFFSET+
+    IPQUAD_CHAN_SPAN*channel;
+  
+  down(&ipquad_dev->sem);
+  ipac_write_uchar(ipquad_dev->io_space, chan_conf_offset, 
+    (invert) ? IPQUAD_CHAN_X_INVERT | IPQUAD_CHAN_Y_INVERT : 0x00);
+  up(&ipquad_dev->sem);
+  
+  return 0;
+}
 
+/*
+==============================================================================
+        Read/write char devices
+==============================================================================
+*/
 
-    /*
-     *  Init the module table
-     *  This driver supports up to #TIP866_MAX_NUM_MOD TIP866 modules, each with 8 channels
-     */
-    for (i=0; i<TIP866_MAX_NUM_MOD; i++) module_table[i] = NULL;
+int ipquad_device_open(struct inode *inode, struct file *file) {
+  ipquad_device *ipquad_dev;
+  unsigned int chan = iminor(inode);
 
-    module_count = 0;
-
-
-    if (ipac_register_driver(&tip866_drv) == -1) {
-        /*
-        **  Unregister the driver if we found no TIP866 modules or if an error
-        **  occured during minor device initialization
-        */
-        if (tty_unregister_driver(&tip866_driver) < 0)
-            printk("%s(%d): failed to unregister TIP866 serial driver\n",__FILE__,__LINE__);
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-        if (tty_unregister_driver(&callout_driver) < 0)
-            printk("%s(%d): failed to unregister TIP866 callout driver\n",__FILE__,__LINE__);
-#endif
-        return -ENODEV;
-    }
-
+  if (chan < IPQUAD_NUM_CHANNELS) {
+    // find and associate device with file
+    ipquad_dev = container_of(inode->i_cdev, ipquad_device, cdev);
+    file->private_data = ipquad_dev;
+  
     return 0;
+  }
+  else
+    return -EINVAL;
 }
 
+int ipquad_device_release(struct inode *inode, struct file *file) {
+  // nothing to do here
 
-/*****************************************************************************
- *
- * Called to remove the driver
- *
- *****************************************************************************/
-static void t866_cleanup(void)
-{
-    int result;
-    int i, j;
+  return 0;
+}
 
-	if ((result = tty_unregister_driver(&tip866_driver)) < 0)
-        printk("%s(%d): failed to unregister TIP866 serial driver (%d)\n",__FILE__,__LINE__,result);
+int ipquad_device_read(struct file *file, char *buff, size_t len, 
+  loff_t *f_pos) {
+  int result = 0;
+  ipquad_device *ipquad_dev =  file->private_data;
+  unsigned int chan = iminor(file->f_dentry->d_inode);
+  int val;
+  char out[256];
+  unsigned int out_len;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-    if ((result = tty_unregister_driver(&callout_driver)) < 0)
-        printk("%s(%d): failed to unregister TIP866 callout driver (%d)\n",__FILE__,__LINE__,result);
-#endif
+  if (!ipquad_read_channel(chan, &val))
+    sprintf(out, IPQUAD_FORMAT, val);
+  else
+    result = -EFAULT;
 
-    /*
-     *  Free all allocated resources
-     *  Note. At this time all interrupt sources on the modules are disabled
-     *        and all IRQ's are freed
-     */
-    for (i=0; i<module_count; i++) {
+  if (!result) {
+    mdelay(500);
+    strcat(out, "\n");
+    out_len = strlen(out);
 
-        ipac_free_irq(module_table[i]->ipac, module_table[i]->state[0].irq, (void *)&module_table[i]->_1st_uart);
-        ipac_free_irq(module_table[i]->ipac, module_table[i]->state[0].irq+1, (void *)&module_table[i]->_2nd_uart);
+    if (len >= out_len)
+      if (!copy_to_user(buff, out, out_len)) result = out_len;
+  }
 
-		/* Remove DEVFS nodes */
-	    for (j = 0; j < TIP866_CHAN_PER_MOD; j++)
-		{
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-			tty_unregister_devfs(&tip866_driver,
-					   tip866_driver.minor_start + module_table[i]->state[j].line);
-			tty_unregister_devfs(&callout_driver,
-					   callout_driver.minor_start + module_table[i]->state[j].line);
-#else
-			tty_unregister_device(&tip866_driver,
-					   tip866_driver.minor_start + module_table[i]->state[j].line);
-#endif
-		}
-        kfree(module_table[i]);
+  return result;
+}
+
+int ipquad_device_write(struct file *file, const char *buff, size_t len,
+  loff_t *off) {
+  ipquad_device *ipquad_dev =  file->private_data;
+  unsigned int chan = iminor(file->f_dentry->d_inode);
+  int val;
+  char in[len+1];
+
+  if (!copy_from_user(in, buff, len)) {
+    if ((len == 2) && ((buff[0] == '+') || (buff[0] == '-'))) {
+      if (!ipquad_invert_channel(chan, (buff[0] == '-')))
+        return len;
+      else 
+        return -EFAULT;
     }
-
-    ipac_unregister_driver(&tip866_drv);
+    else {
+      if ((sscanf(in, IPQUAD_FORMAT, &val) == 1) &&
+        !ipquad_write_channel(chan, val))
+        return len;
+      else 
+        return -EFAULT;
+    }
+  }
+  else
+    return -EFAULT;
 }
-
-
-module_init(t866_init);
-module_exit(t866_cleanup);

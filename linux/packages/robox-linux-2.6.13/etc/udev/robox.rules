@@ -2,52 +2,55 @@
 #
 
 # User LED device
-KERNEL=="userled", SUBSYSTEM="userled"                  NAME="%k"
+SUBSYSTEM="userled", KERNEL=="userled", NAME="%k"
 
 # ICP-multi devices
-KERNEL=="icp[0-9]*[da][io][0-9]*", SUBSYSTEM=="icp"     NAME="icp/%k"
+SUBSYSTEM=="icp", KERNEL=="icp[0-9]*[da][io][0-9]*", NAME="icp/%k"
 
 # TIP866 devices
-KERNEL=="ttySTIP866_0", SUBSYSTEM=="tty"                NAME="ttyS1"
-KERNEL=="ttySTIP866_1", SUBSYSTEM=="tty"                NAME="ttyS2"
+SUBSYSTEM=="tty", KERNEL=="ttySTIP866_0", NAME="ttyS1"
+SUBSYSTEM=="tty", KERNEL=="ttySTIP866_1", NAME="ttyS2"
+
+# IPQuad devices
+SUBSYSTEM=="ipquad", KERNEL=="ipquad[0-9]*", NAME="ipquad/%k"
 
 # Mapping to RoboX devices
 ## Power
-KERNEL=="icp0ai0", SUBSYSTEM=="icp"                     SYMLINK+="robox/power/battery"
-KERNEL=="icp0do3", SUBSYSTEM=="icp"                     SYMLINK+="robox/power/engage"
+SUBSYSTEM=="icp", KERNEL=="icp0ai0", SYMLINK+="robox/power/battery"
+SUBSYSTEM=="icp", KERNEL=="icp0do3", SYMLINK+="robox/power/engage"
 
 ## Security
-KERNEL=="icp0do0", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/watchdog"
-KERNEL=="icp0do6", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/flashlight"
+SUBSYSTEM=="icp", KERNEL=="icp0do0", SYMLINK+="robox/security/watchdog"
+SUBSYSTEM=="icp", KERNEL=="icp0do6", SYMLINK+="robox/security/flashlight"
 
 ### Stop
-KERNEL=="icp0di0", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/stop/emergency"
-KERNEL=="icp0di1", SUBSYSTEM=="icp"                     SYMLINK+="robox/security/stop/supervisor"
+SUBSYSTEM=="icp", KERNEL=="icp0di0", SYMLINK+="robox/security/stop/emergency"
+SUBSYSTEM=="icp", KERNEL=="icp0di1", SYMLINK+="robox/security/stop/supervisor"
 
 ## Drive
 ### Brake
-KERNEL=="icp0di2", SUBSYSTEM=="icp"                     SYMLINK+="robox/drive/brake/disengaged"
-KERNEL=="icp0do1", SUBSYSTEM=="icp"                     SYMLINK+="robox/drive/brake/disengage"
+SUBSYSTEM=="icp", KERNEL=="icp0di2", SYMLINK+="robox/drive/brake/disengaged"
+SUBSYSTEM=="icp", KERNEL=="icp0do1", SYMLINK+="robox/drive/brake/disengage"
 
 ### Motor
-KERNEL=="icp0ao0", SUBSYSTEM=="icp"                     SYMLINK+="robox/drive/motor/right"
-KERNEL=="icp0ao1", SUBSYSTEM=="icp"                     SYMLINK+="robox/drive/motor/left"
-KERNEL=="icp0do7", SUBSYSTEM=="icp"                     SYMLINK+="robox/drive/motor/enable"
+SUBSYSTEM=="icp", KERNEL=="icp0ao0", SYMLINK+="robox/drive/motor/right"
+SUBSYSTEM=="icp", KERNEL=="icp0ao1", SYMLINK+="robox/drive/motor/left"
+SUBSYSTEM=="icp", KERNEL=="icp0do7", SYMLINK+="robox/drive/motor/enable"
 
 ## Sensors
-KERNEL=="icp0di7", SUBSYSTEM=="icp"                     SYMLINK+="robox/sensors/check"
-KERNEL=="icp0do2", SUBSYSTEM=="icp"                     SYMLINK+="robox/sensors/ok"
+SUBSYSTEM=="icp", KERNEL=="icp0di7", SYMLINK+="robox/sensors/check"
+SUBSYSTEM=="icp", KERNEL=="icp0do2", SYMLINK+="robox/sensors/ok"
 
 ### Bumper
-KERNEL=="icp0di8", SUBSYSTEM=="icp"                     SYMLINK+="robox/sensors/bumper/right"
-KERNEL=="icp0di9", SUBSYSTEM=="icp"                     SYMLINK+="robox/sensors/bumper/rightback"
-KERNEL=="icp0di10", SUBSYSTEM=="icp"                    SYMLINK+="robox/sensors/bumper/back"
-KERNEL=="icp0di11", SUBSYSTEM=="icp"                    SYMLINK+="robox/sensors/bumper/leftback"
-KERNEL=="icp0di12", SUBSYSTEM=="icp"                    SYMLINK+="robox/sensors/bumper/left"
-KERNEL=="icp0di13", SUBSYSTEM=="icp"                    SYMLINK+="robox/sensors/bumper/leftfront"
-KERNEL=="icp0di14", SUBSYSTEM=="icp"                    SYMLINK+="robox/sensors/bumper/front"
-KERNEL=="icp0di15", SUBSYSTEM=="icp"                    SYMLINK+="robox/sensors/bumper/rightfront"
+SUBSYSTEM=="icp", KERNEL=="icp0di8", SYMLINK+="robox/sensors/bumper/right"
+SUBSYSTEM=="icp", KERNEL=="icp0di9", SYMLINK+="robox/sensors/bumper/rightback"
+SUBSYSTEM=="icp", KERNEL=="icp0di10", SYMLINK+="robox/sensors/bumper/back"
+SUBSYSTEM=="icp", KERNEL=="icp0di11", SYMLINK+="robox/sensors/bumper/leftback"
+SUBSYSTEM=="icp", KERNEL=="icp0di12", SYMLINK+="robox/sensors/bumper/left"
+SUBSYSTEM=="icp", KERNEL=="icp0di13", SYMLINK+="robox/sensors/bumper/leftfront"
+SUBSYSTEM=="icp", KERNEL=="icp0di14", SYMLINK+="robox/sensors/bumper/front"
+SUBSYSTEM=="icp", KERNEL=="icp0di15", SYMLINK+="robox/sensors/bumper/rightfront"
 
 ### Laser
-KERNEL=="ttySTIP866_1", SUBSYSTEM=="tty"                SYMLINK+="robox/sensors/laser/front"
-KERNEL=="ttySTIP866_0", SUBSYSTEM=="tty"                SYMLINK+="robox/sensors/laser/back"
+SUBSYSTEM=="tty", KERNEL=="ttySTIP866_1", SYMLINK+="robox/sensors/laser/front"
+SUBSYSTEM=="tty", KERNEL=="ttySTIP866_0", SYMLINK+="robox/sensors/laser/back"

@@ -1,3 +1,4 @@
+PWD := $(shell pwd)
 KERNEL_SRC ?= /usr/src/linux-source-`uname -r`
 
 obj-m := cpci100a.o
