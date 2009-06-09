@@ -41,6 +41,10 @@ SUBSYSTEM=="icp", KERNEL=="icp0do7", SYMLINK+="robox/drive/motor/enable"
 SUBSYSTEM=="icp", KERNEL=="icp0di7", SYMLINK+="robox/sensors/check"
 SUBSYSTEM=="icp", KERNEL=="icp0do2", SYMLINK+="robox/sensors/ok"
 
+### Wheel encoders
+SUBSYSTEM=="ipquad", KERNEL=="ipquad0", SYMLINK+="robox/sensors/encoders/left"
+SUBSYSTEM=="ipquad", KERNEL=="ipquad1", SYMLINK+="robox/sensors/encoders/right"
+
 ### Bumper
 SUBSYSTEM=="icp", KERNEL=="icp0di8", SYMLINK+="robox/sensors/bumper/right"
 SUBSYSTEM=="icp", KERNEL=="icp0di9", SYMLINK+="robox/sensors/bumper/rightback"
