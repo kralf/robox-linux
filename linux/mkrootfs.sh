@@ -29,7 +29,7 @@ RFSPKGS="coreutils glibc-min ncurses readline bash pcre grep sed"
 RFSPKGS="$RFSPKGS zlib sysvinit e2fsprogs util-linux module-init-tools"
 RFSPKGS="$RFSPKGS udev procps hostname sysklogd shadow dpkg linux-modules"
 RFSPKGS="$RFSPKGS net-tools iputils ifupdown debianutils openssl openssh"
-RFSPKGS="$RFSPKGS robox-drivers robox-linux carmen"
+RFSPKGS="$RFSPKGS carmen robox-drivers robox-linux robox-posix robox-carmen"
 
 RFSMKDIRS="/proc /sys /dev /mnt /etc /boot /home /root /tmp /usr"
 RFSMKDIRS="$RFSMKDIRS /var/lock /var/log /var/mail /var/run /var/spool"

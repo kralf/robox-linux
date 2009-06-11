@@ -8,7 +8,5 @@ CONFIGURE=("rm -rf laser"
            "./configure --prefix=$PREFIX --nographics --nojoystick")
 MAKEBUILD="make $MAKEOPTS -j1 CARMEN_HOME=$PKGBUILDROOT PROCESSOR=$PROC"
 MAKEINSTALL=("mkdir -p $PREFIX/bin"
-             "cp -a laser/laser $PREFIX/bin"
-             "cp -a laser/sick_laser_test $PREFIX/bin")
+             "cp -a laser/laser $PREFIX/bin")
 COMMENT="takes just 2 minutes"
-
