@@ -1,5 +1,10 @@
-#! /bin/sh
-# Start the CARMEN RoboX base module
+#! /bin/sh -e
+### BEGIN INIT INFO
+# Provides:          robox
+# Default-Start:     2 3 4 5
+# Default-Stop:      1
+# Short-Description: Start the CARMEN RoboX base module
+### END INIT INFO
 
 CARMEN="/etc/init.d/carmen.sh"
 ROBOXBASE="/usr/bin/robox"
