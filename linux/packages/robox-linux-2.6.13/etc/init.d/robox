@@ -7,10 +7,12 @@
 ### END INIT INFO
 
 CARMEN="/etc/init.d/carmen.sh"
-ROBOXBASE="/usr/bin/robox"
+
+MODULE_NAME="RoboX base"
+MODULE_BIN="/usr/bin/robox"
 
 [ -e "$CARMEN" ] || exit 0
-[ -e "$ROBOXBASE" ] || exit 0
+[ -e "$MODULE_BIN" ] || exit 0
 
 . $CARMEN
 
@@ -18,23 +20,23 @@ ROBOXBASE="/usr/bin/robox"
 
 case "$1" in
   start)
-    echo -n "Starting RoboX base module"
-    carmen_start_module "$ROBOXBASE"    
+    echo -n "Starting $MODULE_NAME module"
+    carmen_start_module "$MODULE_BIN"    
     echo "."
 	;;
   stop)
-    echo -n "Stopping RoboX base module"
-    carmen_stop_module "$ROBOXBASE"    
+    echo -n "Stopping $MODULE_NAME module"
+    carmen_stop_module "$MODULE_BIN"    
     echo "."
 	;;
   restart)
-    echo -n "Restarting RoboX base module"
-    carmen_restart_module "$ROBOXBASE"    
+    echo -n "Restarting $MODULE_NAME module"
+    carmen_restart_module "$MODULE_BIN"    
     echo "."
   ;;
 
   *)
-	  echo "Usage: /etc/init.d/robox {start|stop|restart}"
+	  echo "Usage: $0 {start|stop|restart}"
 	  exit 1
 esac
 

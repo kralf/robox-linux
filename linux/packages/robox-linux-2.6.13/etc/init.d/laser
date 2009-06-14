@@ -7,10 +7,12 @@
 ### END INIT INFO
 
 CARMEN="/etc/init.d/carmen.sh"
-LASER="/usr/bin/laser"
+
+MODULE_NAME="laser"
+MODULE_BIN="/usr/bin/laser"
 
 [ -e "$CARMEN" ] || exit 0
-[ -e "$LASER" ] || exit 0
+[ -e "$MODULE_BIN" ] || exit 0
 
 . $CARMEN
 
@@ -18,23 +20,23 @@ LASER="/usr/bin/laser"
 
 case "$1" in
   start)
-    echo -n "Starting laser module"
-    carmen_start_module "$LASER"    
+    echo -n "Starting $MODULE_NAME module"
+    carmen_start_module "$MODULE_BIN"    
     echo "."
 	;;
   stop)
-    echo -n "Stopping laser module"
-    carmen_stop_module "$LASER"    
+    echo -n "Stopping $MODULE_NAME module"
+    carmen_stop_module "$MODULE_BIN"    
     echo "."
 	;;
   restart)
-    echo -n "Restarting laser module"
-    carmen_restart_module "$LASER"    
+    echo -n "Restarting $MODULE_NAME module"
+    carmen_restart_module "$MODULE_BIN"    
     echo "."
   ;;
 
   *)
-	  echo "Usage: /etc/init.d/laser {start|stop|restart}"
+	  echo "Usage: $0 {start|stop|restart}"
 	  exit 1
 esac
 
