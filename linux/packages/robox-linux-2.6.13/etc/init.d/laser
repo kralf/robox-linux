@@ -1,0 +1,36 @@
+#! /bin/sh
+# Start the CARMEN laser module
+
+CARMEN="/etc/init.d/carmen.sh"
+LASER="/usr/bin/laser"
+
+[ -e "$CARMEN" ] || exit 0
+[ -e "$LASER" ] || exit 0
+
+. $CARMEN
+
+[ "$CARMEN_START_LASER" == 1 ] || exit 0
+
+case "$1" in
+  start)
+    echo -n "Starting laser module"
+    carmen_start_module "$LASER"    
+    echo "."
+	;;
+  stop)
+    echo -n "Stopping laser module"
+    carmen_stop_module "$LASER"    
+    echo "."
+	;;
+  restart)
+    echo -n "Restarting laser module"
+    carmen_restart_module "$LASER"    
+    echo "."
+  ;;
+
+  *)
+	  echo "Usage: /etc/init.d/laser {start|stop|restart}"
+	  exit 1
+esac
+
+exit 0

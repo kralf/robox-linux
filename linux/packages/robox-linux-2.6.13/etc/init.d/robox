@@ -9,6 +9,8 @@ ROBOXBASE="/usr/bin/robox"
 
 . $CARMEN
 
+[ "$CARMEN_START_BASE" == 1 ] || exit 0
+
 case "$1" in
   start)
     echo -n "Starting RoboX base module"
