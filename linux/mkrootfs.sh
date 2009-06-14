@@ -26,7 +26,7 @@
 . functions/global.sh
 
 RFSPKGS="coreutils glibc-min ncurses readline bash pcre grep sed"
-RFSPKGS="$RFSPKGS zlib sysvinit e2fsprogs util-linux module-init-tools"
+RFSPKGS="$RFSPKGS zlib sysvinit e2fsprogs util-linux module-init-tools nano"
 RFSPKGS="$RFSPKGS udev procps hostname sysklogd shadow dpkg linux-modules"
 RFSPKGS="$RFSPKGS net-tools iputils ifupdown debianutils openssl openssh"
 RFSPKGS="$RFSPKGS carmen robox-drivers robox-linux robox-posix robox-carmen"
@@ -35,7 +35,9 @@ RFSMKDIRS="/proc /sys /dev /mnt /etc /boot /home /root /tmp /usr"
 RFSMKDIRS="$RFSMKDIRS /var/lock /var/log /var/mail /var/run /var/spool"
 RFSMKFILES="/var/run/utmp /var/log/lastlog /var/log/wtmp /var/log/btmp"
 
-RFSEXDIRS="/man /share /usr/man /usr/info /usr/share /usr/include"
+RFSEXDIRS="/man /share /usr/man /usr/info /usr/share/man /usr/share/info"
+RFSEXDIRS="$RFSEXDIRS /usr/share/doc /usr/share/i18n /usr/share/locale"
+RFSEXDIRS="$RFSEXDIRS /usr/include"
 RFSEXFILES="*.a *.o *.old"
 
 script_init "create a root filesystem from scratch" "PKGn" "$RFSPKGS" \
