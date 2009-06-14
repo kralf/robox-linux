@@ -519,7 +519,7 @@ int ipquad_device_read(struct file *file, char *buff, size_t len,
     result = -EFAULT;
 
   if (!result) {
-    mdelay(500);
+    // mdelay(500);
     strcat(out, "\n");
     out_len = strlen(out);
 
