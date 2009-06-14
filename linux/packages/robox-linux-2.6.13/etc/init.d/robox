@@ -10,6 +10,7 @@ CARMEN="/etc/init.d/carmen.sh"
 
 MODULE_NAME="RoboX base"
 MODULE_BIN="/usr/bin/robox"
+MODULE_OPTS=""
 
 [ -e "$CARMEN" ] || exit 0
 [ -e "$MODULE_BIN" ] || exit 0
@@ -21,17 +22,17 @@ MODULE_BIN="/usr/bin/robox"
 case "$1" in
   start)
     echo -n "Starting $MODULE_NAME module"
-    carmen_start_module "$MODULE_BIN"    
+    carmen_start_module "$MODULE_BIN" "$MODULE_OPTS"
     echo "."
 	;;
   stop)
     echo -n "Stopping $MODULE_NAME module"
-    carmen_stop_module "$MODULE_BIN"    
+    carmen_stop_module "$MODULE_BIN"
     echo "."
 	;;
   restart)
     echo -n "Restarting $MODULE_NAME module"
-    carmen_restart_module "$MODULE_BIN"    
+    carmen_restart_module "$MODULE_BIN" "$MODULE_OPTS"
     echo "."
   ;;
 
