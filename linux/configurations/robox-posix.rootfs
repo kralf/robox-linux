@@ -1,9 +1,11 @@
 CONFIGURE=""
 MAKEBUILD=("make -C config $MAKEOPTS"
            "make -C timer $MAKEOPTS"
-           "make -C thread $MAKEOPTS HAVE_LIBGCC_S=0")
+           "make -C thread $MAKEOPTS HAVE_LIBGCC_S=0"
+           "make -C serial $MAKEOPTS")
 MAKEINSTALL=("mkdir -p $PREFIX/lib"
              "make -C config $MAKEOPTS PREFIX=$PREFIX install"
              "make -C timer $MAKEOPTS PREFIX=$PREFIX install"
-             "make -C thread $MAKEOPTS PREFIX=$PREFIX install")
+             "make -C thread $MAKEOPTS PREFIX=$PREFIX install"
+             "make -C serial $MAKEOPTS PREFIX=$PREFIX install")
 COMMENT="this will not take long"
