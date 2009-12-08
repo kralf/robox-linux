@@ -1,0 +1,31 @@
+#!/bin/sh
+
+module="tdrv001drv"
+devicename="tdrv001"
+MODE="666"
+
+# remove old device nodes (only modules 0..3 with channels 0..3)
+rm -f /dev/${devicename}_[0-8]_[0-3]
+
+# extract current major device numbers
+major=`cat /proc/devices | awk "\\$2==\"$module\" {print \\$1}"`
+echo "Major-Number: $major"
+
+# create special device nodes for TDRV001 devices 0..3, channels 0..3
+
+modlist="0 1 2 3"
+chanlist="0 1 2 3"
+count=0
+
+for module in $modlist 
+do 
+  for channel in $chanlist
+  do
+  echo "Creating ${devicename}_${module}_${channel}"
+  mknod "/dev/${devicename}_${module}_${channel}" c $major $count
+  chmod ${MODE} /dev/${devicename}_${module}_${channel}
+  count=`expr $count + 1`
+  done
+done
+
+ls -la /dev/${devicename}*
