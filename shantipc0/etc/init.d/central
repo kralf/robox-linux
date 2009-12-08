@@ -1,0 +1,43 @@
+#! /bin/sh -e
+### BEGIN INIT INFO
+# Provides:          central
+# Default-Start:     2 3 4 5
+# Default-Stop:      1
+# Short-Description: Start the CARMEN central module
+### END INIT INFO
+
+CARMEN="/etc/init.d/carmen.sh"
+
+[ -e "$CARMEN" ] || exit 0
+. $CARMEN
+[ "$CARMEN_START_CENTRAL" == 1 ] || exit 0
+
+MODULE_NAME="central"
+MODULE_BIN="/usr/bin/central"
+MODULE_OPTS=""
+
+[ -e "$MODULE_BIN" ] || exit 0
+
+case "$1" in
+  start)
+    echo -n "Starting $MODULE_NAME module"
+    carmen_start_module "$MODULE_BIN" "$MODULE_OPTS"
+    echo "."
+	;;
+  stop)
+    echo -n "Stopping $MODULE_NAME module"
+    carmen_stop_module "$MODULE_BIN"
+    echo "."
+	;;
+  restart)
+    echo -n "Restarting $MODULE_NAME module"
+    carmen_restart_module "$MODULE_BIN" "$MODULE_OPTS"
+    echo "."
+  ;;
+
+  *)
+	  echo "Usage: $0 {start|stop|restart}"
+	  exit 1
+esac
+
+exit 0
