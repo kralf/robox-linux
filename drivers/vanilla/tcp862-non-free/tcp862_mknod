@@ -1,0 +1,21 @@
+#!/bin/sh
+MAXDEVICES=4
+module="tcp862"
+ttydevice="tcp862"
+ttyname="ttySTCP862_"
+MODE="666"
+
+# remove old device nodes
+rm -f /dev/${ttyname}*
+
+
+# extract current major device numbers
+ttymajor=`cat /proc/devices | awk "\\$2==\"$ttydevice\" {print \\$1}"`
+
+
+# create special device nodes for TIP866 tty devices 0..MAXDEVICES-1
+for ((minor=0;minor<MAXDEVICES;minor++))
+do
+    mknod /dev/${ttyname}${minor} c $ttymajor ${minor}
+    chmod ${MODE} /dev/${ttyname}${minor}
+done

@@ -1,0 +1,4 @@
+# This file creates device nodes of TCP862 serial interface devices according
+# to Ubuntu policy.  See udev(7) for syntax.
+
+KERNEL=="tcp862", GROUP="plugdev"
