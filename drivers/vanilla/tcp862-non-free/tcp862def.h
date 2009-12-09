@@ -76,8 +76,8 @@ typedef void* devfs_handle_t; /* avoid #if defined... inside structure declarati
 #define TX_DATA_QUEUE_SIZE                  30
 
 
-#define TP862_DEFAULT_TX_TIMEOUT            1000
-#define TP862_DEFAULT_RX_TIMEOUT            10000000
+#define TP862_DEFAULT_TX_TIMEOUT            100
+#define TP862_DEFAULT_RX_TIMEOUT            100
 
 
 #define SCC_MAX_REG                         0x58

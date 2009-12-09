@@ -99,7 +99,7 @@
 
 // Character devices
 #define TCP862_DEVCLASS "tcp862"
-#define TCP862_DEVNAME "ttySTCP862"
+#define TCP862_DEVNAME "tcp862S"
 
 #if defined(MODULE_DESCRIPTION)
 MODULE_DESCRIPTION("TCP862 - 4 Channel Serial IP");
@@ -370,7 +370,7 @@ static ssize_t tp862_read (struct file *filp, char *buff, size_t count, loff_t *
     long  timeout;
     wait_queue_t  wait;
 
-    printk("tp862_read()\n");
+    // printk("tp862_read()\n");
     timeout = pCCB->RxTimeout;
 
     if (timeout)
@@ -435,7 +435,7 @@ static ssize_t tp862_read (struct file *filp, char *buff, size_t count, loff_t *
             return -EFAULT;
         }
 
-        printk("tp862_read: %dB '%p'\n",nbytes,buff);
+        // printk("tp862_read: %dB '%p'\n",nbytes,buff);
 
         if (remaining > 0)
         {
@@ -501,7 +501,7 @@ static ssize_t tp862_write (struct file *filp, const char *buff, size_t count, l
 
     if (pCCB->tx_free < 2)
     {
-        printk("tp862_write: we have to wait for a descriptor\n");
+        // printk("tp862_write: we have to wait for a descriptor\n");
         /*
         ** let's go to sleep until a descriptor is free for us
         */
@@ -549,7 +549,7 @@ static ssize_t tp862_write (struct file *filp, const char *buff, size_t count, l
             pci_free_consistent(pCCB->dev, nbytes+1, pBuffer, Buffer_dma);
             return -EBUSY;
         } else {
-            printk("tp862_write: Ok, let's go. Time remaining = %ld\n", timeout);
+            // printk("tp862_write: Ok, let's go. Time remaining = %ld\n", timeout);
         }
 
     }
@@ -557,7 +557,7 @@ static ssize_t tp862_write (struct file *filp, const char *buff, size_t count, l
 
 
     //pBuffer[count] = '\0';
-    printk("tp862_write: %dB '%p'\n", count, buff);
+    // printk("tp862_write: %dB '%p'\n", count, buff);
 
     /*
     ** get pointer to current insert-descriptor
@@ -597,7 +597,7 @@ static ssize_t tp862_write (struct file *filp, const char *buff, size_t count, l
         pCCB->TxTimeRemaining = pCCB->DeviceWriteTimeout;
     }
 
-    printk("tp862_write: count=%d\n",count);
+    // printk("tp862_write: count=%d\n",count);
     return count;
 }
 
@@ -630,7 +630,7 @@ static int tp862_ioctl (struct inode *inode, struct file *filp, unsigned int cmd
     pCCB = filp->private_data;
 
 
-    printk("%s IOCTL called (0x%X)\n", DEBUG_NAME, cmd);
+    // printk("%s IOCTL called (0x%X)\n", DEBUG_NAME, cmd);
 
     /*
     * extract the type and number bitfields, and don't decode
