@@ -97,6 +97,9 @@
 #define TRUE !FALSE
 #endif
 
+// Character devices
+#define TCP862_DEVCLASS "tcp862"
+#define TCP862_DEVNAME "ttySTCP862"
 
 #if defined(MODULE_DESCRIPTION)
 MODULE_DESCRIPTION("TCP862 - 4 Channel Serial IP");
@@ -111,16 +114,15 @@ MODULE_LICENSE("GPL");
 
 
 /*****************************************************************************
- definitions of configurable module parameters
- *****************************************************************************/
+definitions of configurable module parameters
+*****************************************************************************/
 static unsigned long rx_timeout = TP862_DEFAULT_RX_TIMEOUT;
 module_param(rx_timeout, ulong, 1);
 MODULE_PARM_DESC(rx_timeout, "receive timeout");
 
-
 /*****************************************************************************
- definitions of device access functions
- *****************************************************************************/
+definitions of device access functions
+*****************************************************************************/
 static int      tp862_open  (struct inode *inode, struct file *filp);
 static int      tp862_close (struct inode *inode, struct file *filp);
 static int      tp862_ioctl (struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg);
@@ -128,8 +130,8 @@ static ssize_t  tp862_write (struct file *filp, const char *buff, size_t count, 
 static ssize_t  tp862_read  (struct file *filp, char *buff, size_t count, loff_t *offp);
 
 /*****************************************************************************
- definitions of our own helper functions
- *****************************************************************************/
+definitions of our own helper functions
+*****************************************************************************/
 void            set_cpld_clocksource            ( TP862_CCB* pCCB, unsigned long option );
 void            set_cpld_transceivermode        ( TP862_CCB* pCCB, TRANSCEIVER_MODE mode );
 void            set_cpld_dcedte                 ( TP862_CCB* pCCB, DCEDTE dce_dte  );
@@ -149,18 +151,22 @@ void            timeout_function                ( unsigned long data );
 void            start_receiver                  ( TP862_CCB* pCCB );
 void            stop_receiver                   ( TP862_CCB* pCCB );
 static void     cleanup_device                  ( TP862_DCB* pDCB );
-
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 void            timeout_remove                  ( void* data );
 #else
 void            timeout_remove                  ( struct work_struct* ws );
 #endif
 
-
+/*****************************************************************************
+definitions of global module varialbes
+*****************************************************************************/
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+static struct class* tcp862_class;
+#endif
 
 /*****************************************************************************
- File operations supported by the TPMC862 driver
- *****************************************************************************/
+File operations supported by the TPMC862 driver
+*****************************************************************************/
 struct file_operations tp862_fops = {
 
     owner:      THIS_MODULE,
@@ -175,11 +181,11 @@ struct file_operations tp862_fops = {
 
 
 /*****************************************************************************
- some global variable definitions used for device management
- *****************************************************************************/
+some global variable definitions used for device management
+*****************************************************************************/
 static struct list_head tp862_board_root;
 static int              modules_found = 0;
-static int              tp862_major = TDRV001_MAJOR;
+static int              tcp862_major = TDRV001_MAJOR;
 static int              minor_count = 0;
 
 
@@ -379,25 +385,25 @@ static ssize_t tp862_read (struct file *filp, char *buff, size_t count, loff_t *
             add_wait_queue(&pCCB->rx_waitqueue, &wait);
 
             while(1) {
-	            set_current_state(TASK_INTERRUPTIBLE);
+              set_current_state(TASK_INTERRUPTIBLE);
 
-	            if (pCCB->pInternalRingBuffer->entry[pCCB->pInternalRingBuffer->get_idx].Valid) break;
+              if (pCCB->pInternalRingBuffer->entry[pCCB->pInternalRingBuffer->get_idx].Valid) break;
 
-	            if (timeout) {
-		            timeout = schedule_timeout(timeout);
-		            if (timeout == 0) {
-			            result = -ETIME;    /* value is not returned because it is no error here.*/
-			            break;
-		            }
-	            }
-	            else {
-		            schedule();
-	            }
-	            /* check for received signals */
-	            if (signal_pending(current)) {
-		            result = -ERESTARTSYS;
-		            break;
-	            }
+              if (timeout) {
+                timeout = schedule_timeout(timeout);
+                if (timeout == 0) {
+                  result = -ETIME;    /* value is not returned because it is no error here.*/
+                  break;
+                }
+              }
+              else {
+                schedule();
+              }
+              /* check for received signals */
+              if (signal_pending(current)) {
+                result = -ERESTARTSYS;
+                break;
+              }
             }
             set_current_state(TASK_RUNNING);
             remove_wait_queue(&pCCB->rx_waitqueue, &wait);
@@ -503,26 +509,26 @@ static ssize_t tp862_write (struct file *filp, const char *buff, size_t count, l
         add_wait_queue(&pCCB->tx_waitqueue, &wait);
 
         while(1) {
-	        set_current_state(TASK_INTERRUPTIBLE);
+          set_current_state(TASK_INTERRUPTIBLE);
 
-	        if (pCCB->tx_free > 1) break;
+          if (pCCB->tx_free > 1) break;
 
-	        if (timeout) {
-		        timeout = schedule_timeout(timeout);
-		        if (timeout == 0) {
-			        result = -ETIME;
-			        break;
-		        }
-	        }
-	        else {
-		        schedule();
-	        }
+          if (timeout) {
+            timeout = schedule_timeout(timeout);
+            if (timeout == 0) {
+              result = -ETIME;
+              break;
+            }
+          }
+          else {
+            schedule();
+          }
 
-	        /* check for received signals */
-	        if (signal_pending(current)) {
-		        result = -ERESTARTSYS;
-		        break;
-	        }
+          /* check for received signals */
+          if (signal_pending(current)) {
+            result = -ERESTARTSYS;
+            break;
+          }
         }
 
         set_current_state(TASK_RUNNING);
@@ -627,9 +633,9 @@ static int tp862_ioctl (struct inode *inode, struct file *filp, unsigned int cmd
     printk("%s IOCTL called (0x%X)\n", DEBUG_NAME, cmd);
 
     /*
-     * extract the type and number bitfields, and don't decode
-     * wrong cmds: return EINVAL before verify_area()
-     */
+    * extract the type and number bitfields, and don't decode
+    * wrong cmds: return EINVAL before verify_area()
+    */
     if (_IOC_TYPE(cmd) != TP862_IOC_MAGIC) return -EINVAL;
 
 
@@ -1311,7 +1317,7 @@ void ChannelIsrTx( TP862_CCB* pCCB )
 #endif
             }
 
-             /* mark vector as served */
+            /* mark vector as served */
             pCCB->tx_irq[pCCB->tx_irq_index] = 0x00000000;
             /* set index to next space */
             pCCB->tx_irq_index = (pCCB->tx_irq_index+1) % IRQ_RING_SIZE;
@@ -1339,7 +1345,7 @@ static TP_IRQ_RETURN_T tp862_isr(int irq, void *token)
     unsigned long state = 0;
     TP862_DCB* pDCB = (TP862_DCB*)token;
     int channel;
-	int					retval = IRQ_NONE;
+  int					retval = IRQ_NONE;
 
 
     /* read interrupt status */
@@ -1347,7 +1353,7 @@ static TP_IRQ_RETURN_T tp862_isr(int irq, void *token)
 
     if (state != 0)
     {
-		retval = IRQ_HANDLED;
+    retval = IRQ_HANDLED;
 
         /* clear interrupt status */
         WRITE_REGISTER_ULONG( (unsigned long*)(pDCB->dscc4_space + GSTAR), state );
@@ -1363,7 +1369,7 @@ static TP_IRQ_RETURN_T tp862_isr(int irq, void *token)
             tp862_cfg_irq( pDCB );
         }
         /* rx interrupt?    */
-	    if (state & RxEvt) {
+      if (state & RxEvt) {
             /* we have received a "Receive" interrupt */
             /*printk("%s isr: Rx-Int\n", DEBUG_NAME); */
             for (channel=0; channel<TP862_NUM_CHANS; channel++)
@@ -1373,7 +1379,7 @@ static TP_IRQ_RETURN_T tp862_isr(int irq, void *token)
         }
 
         /* tx interrupt? */
-	    if (state & TxEvt) {
+      if (state & TxEvt) {
             /* we have received a "Transmit" interrupt */
             /*printk("%s isr: Tx-Int\n", DEBUG_NAME);*/
             for (channel=0; channel<TP862_NUM_CHANS; channel++)
@@ -1382,7 +1388,7 @@ static TP_IRQ_RETURN_T tp862_isr(int irq, void *token)
             }
         }
     }
-	TP_IRQ_RETURN(retval);
+  TP_IRQ_RETURN(retval);
 }
 
 
@@ -1559,7 +1565,7 @@ int set_clock_inversion( TP862_CCB* pCCB, unsigned long option )
 int set_baudrate( TP862_CCB* pCCB, unsigned long bps )
 {
     unsigned long xtal;
-	unsigned long n = 0;
+  unsigned long n = 0;
     unsigned long m = 0;
     unsigned long divider;
     unsigned long brr;
@@ -1611,26 +1617,26 @@ int set_baudrate( TP862_CCB* pCCB, unsigned long bps )
             }
         }
 
-		divider = xtal / bps;
-		if (divider > BRR_DIVIDER_MAX) {
+    divider = xtal / bps;
+    if (divider > BRR_DIVIDER_MAX) {
             printk(KERN_WARNING "%s Bad Error! baudrate divider too big!\n", DEBUG_NAME);
             return TP862_ERROR_BAUDRATE;
         }
 
         if (divider >> 22) {
-			n = 63;
-			m = 15;
-		} else if (divider) {
-			/* Extraction of the 6 highest weighted bits */
-			m = 0;
-			while (0xffffffc0 & divider) {
-				m++;
-				divider >>= 1;
-			}
-			n = divider-1;
-		}
-		brr = (m << 8) | n;
-		divider = (n+1) << m;
+      n = 63;
+      m = 15;
+    } else if (divider) {
+      /* Extraction of the 6 highest weighted bits */
+      m = 0;
+      while (0xffffffc0 & divider) {
+        m++;
+        divider >>= 1;
+      }
+      n = divider-1;
+    }
+    brr = (m << 8) | n;
+    divider = (n+1) << m;
 
         /*
         ** check if desired baudrate can be set properly
@@ -2596,9 +2602,9 @@ static int tp862_init_one(struct pci_dev *dev, const struct pci_device_id  *id)
         }
     }
 
-	/* Cf errata DS5 p.2 */
-	pci_write_config_byte(dev, PCI_LATENCY_TIMER, 0xf8);
-	pci_set_master(dev);
+  /* Cf errata DS5 p.2 */
+  pci_write_config_byte(dev, PCI_LATENCY_TIMER, 0xf8);
+  pci_set_master(dev);
 
     /* get physical addresses of used base address registers */
     dscc4_base = pci_resource_start(dev, 0);
@@ -2641,8 +2647,8 @@ static int tp862_init_one(struct pci_dev *dev, const struct pci_device_id  *id)
         ** create channel device (devfs or character device)
         */
 #if defined CONFIG_DEVFS_FS
-		sprintf(dev_name, "tdrv001_%i_%i", pDCB->BoardNumber, channel);
-		pCCB->devfs_handle = devfs_register(NULL, dev_name, DEVFS_FL_AUTO_DEVNUM, 0, 0,
+    sprintf(dev_name, "tdrv001_%i_%i", pDCB->BoardNumber, channel);
+    pCCB->devfs_handle = devfs_register(NULL, dev_name, DEVFS_FL_AUTO_DEVNUM, 0, 0,
                                                   S_IFCHR | S_IRUGO | S_IWUGO, &tp862_fops,
                                                   (void *)pCCB);
         if (!pCCB->devfs_handle)
@@ -2852,10 +2858,10 @@ static void tp862_remove_one(struct pci_dev *dev)
 
 
 /*****************************************************************************
- *
- *  cleanup_device - release resources allocated by the specified carrier board
- *
- *****************************************************************************/
+*
+*  cleanup_device - release resources allocated by the specified carrier board
+*
+*****************************************************************************/
 static void cleanup_device(  TP862_DCB* pDCB )
 
 {
@@ -2876,7 +2882,7 @@ static void cleanup_device(  TP862_DCB* pDCB )
         if (pDCB->bar[i]) release_mem_region(pci_resource_start(pDCB->dev, i), pci_resource_len(pDCB->dev, i));
     }
 
-  	free_irq( pDCB->dev->irq, pDCB );
+    free_irq( pDCB->dev->irq, pDCB );
     free_board_memory( pDCB );
 
     if (pDCB->cpld_space) iounmap((unsigned char*)pDCB->cpld_space);
@@ -2898,7 +2904,7 @@ static void cleanup_device(  TP862_DCB* pDCB )
 
 
 #ifdef CONFIG_DEVFS_FS
-   		devfs_unregister(pDCB->pCCB[channel]->devfs_handle);
+      devfs_unregister(pDCB->pCCB[channel]->devfs_handle);
 #endif
         kfree( pDCB->pCCB[channel] );
     }
@@ -2943,22 +2949,21 @@ static struct pci_driver tp862_driver = {
 
 
 /*****************************************************************************
- *
- *  driver_init - module initialization function
- *
- *  This module will be called during module initialization. The init function
- *  allocates necessary resources and initializes internal data structures.
- *
- *****************************************************************************/
+*
+*  driver_init - module initialization function
+*
+*  This module will be called during module initialization. The init function
+*  allocates necessary resources and initializes internal data structures.
+*
+*****************************************************************************/
 static int __init tcp862_init(void)
 {
-    int result;
+    int result, tcp862_minor;
     struct pci_dev *dev;
 
-    printk(KERN_INFO "\n%s version %s (%s)\n", DRIVER_NAME, DRIVER_VERSION, DRIVER_REVDATE);
+    printk(KERN_INFO "%s version %s (%s)\n", DRIVER_NAME, DRIVER_VERSION, DRIVER_REVDATE);
 
 
-    printk("fpont HCAK()\n");
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
     dev = pci_find_device(TPMC862_VENDOR_ID,TPMC862_DEVICE_ID,NULL);
 #else
@@ -2972,15 +2977,25 @@ static int __init tcp862_init(void)
 
 
     /*
-     * Register the major device
-     */
-    result = register_chrdev(tp862_major, "tcp862", &tp862_fops);
+    * Register the major device
+    */
+    result = register_chrdev(tcp862_major, "tcp862", &tp862_fops);
 
     if (result < 0) {
-        printk(KERN_WARNING "%s can't get major %d\n", DEBUG_NAME, tp862_major);
+        printk(KERN_WARNING "%s can't get major %d\n", DEBUG_NAME,
+          tcp862_major);
+
         return result;
     }
-    if (tp862_major == 0) tp862_major = result; /* dynamic */
+    if (tcp862_major == 0) tcp862_major = result; /* dynamic */
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+    tcp862_class = class_create(THIS_MODULE, TCP862_DEVCLASS);
+    for(tcp862_minor = 0; tcp862_minor < TP862_NUM_CHANS; tcp862_minor++) {
+      device_create(tcp862_class, NULL, MKDEV(tcp862_major, tcp862_minor),
+        "%s%d", TCP862_DEVNAME, tcp862_minor);
+    }
+#endif
 
     INIT_LIST_HEAD(&tp862_board_root);
 
@@ -2992,17 +3007,18 @@ static int __init tcp862_init(void)
 }
 
 /*****************************************************************************
- *
- *  driver_cleanup - module cleanup
- *
- *  This module will be called before module removal. The cleanup function
- *  free all allocated resources.
- *
- *****************************************************************************/
+*
+*  driver_cleanup - module cleanup
+*
+*  This module will be called before module removal. The cleanup function
+*  free all allocated resources.
+*
+*****************************************************************************/
 static void __exit tcp862_exit(void)
 {
     struct list_head  *ptr, *next;
     TP862_DCB* pDCB = NULL;
+    int tcp862_minor;
 
     for (ptr=tp862_board_root.next; ptr != &tp862_board_root; ) {
 
@@ -3018,10 +3034,17 @@ static void __exit tcp862_exit(void)
         ptr = next;
     }
 
-    printk(KERN_INFO "\n%s TCP862 driver removed\n", DEBUG_NAME);
+    //printk(KERN_INFO "%s TCP862 driver removed\n", DEBUG_NAME);
     pci_unregister_driver(&tp862_driver);
 
-    unregister_chrdev(tp862_major, "tcp862");
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+    for(tcp862_minor = 0; tcp862_minor < TP862_NUM_CHANS; tcp862_minor++)
+      device_destroy(tcp862_class, MKDEV(tcp862_major, tcp862_minor));
+    class_unregister(tcp862_class);
+    class_destroy(tcp862_class);
+#endif
+
+    unregister_chrdev(tcp862_major, "tcp862");
     return;
 }
 

@@ -1,4 +1,4 @@
-# This file creates device nodes of TCP862 serial interface devices according
-# to Ubuntu policy.  See udev(7) for syntax.
+# This file establishes permissions and ownership of TCP862 serial interface
+# devices according to Ubuntu policy.  See udev(7) for syntax.
 
-KERNEL=="tcp862", GROUP="plugdev"
+KERNEL=="ttySTCP862[0-9]*", GROUP="dialout"

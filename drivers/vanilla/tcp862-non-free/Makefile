@@ -12,7 +12,6 @@ install: tcp862.ko
 	depmod -ae
 	install -c -o root -g root -m 644 udev.rules \
 	/etc/udev/rules.d/42-tcp862.rules
-	udevadm control --reload-rules
 
 clean:
 	rm -rf *.o *.ko *.mod.c .*.cmd .tmp_versions *~
