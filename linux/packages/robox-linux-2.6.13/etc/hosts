@@ -1,4 +1,4 @@
-127.0.0.1	localhost.localdomain	localhost
+127.0.0.1  localhost.localdomain localhost shantippc
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     ip6-localhost ip6-loopback
@@ -12,5 +12,5 @@ ff02::3 ip6-allhosts
 129.132.39.190  shantipc0e
 129.132.39.164  shantippc0e
 
-172.30.50.240   shantipc0g
-172.30.50.241   shantippc0g
+172.30.50.241   shantipc0g shantipc0
+172.30.50.242   shantippc0g shantippc0

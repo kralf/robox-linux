@@ -8,6 +8,6 @@ iface lo inet loopback
 # The default network interface
 auto eth0
 iface eth0 inet static
-    address 172.30.50.241
+    address 172.30.50.242
     netmask 255.255.252.0
     gateway 172.30.48.1
