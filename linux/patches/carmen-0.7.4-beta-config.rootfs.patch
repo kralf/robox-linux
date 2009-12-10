@@ -1,0 +1,18 @@
+diff -Naur carmen-0.7.4-beta/src/configure carmen-0.7.4-beta-config/src/configure
+--- carmen-0.7.4-beta/src/configure	2008-07-28 11:34:58.000000000 +0200
++++ carmen-0.7.4-beta-config/src/configure	2009-12-10 10:37:48.000000000 +0100
+@@ -155,11 +155,12 @@
+ $nopython = !$python;
+ 
+ 
+-$oldlaser = ask_oldlaser() unless ($arg_oldlaser);
++# $oldlaser = ask_oldlaser() unless ($arg_oldlaser);
+ set_laser_link();
+ 
+ my $install_path = get_install_path() unless ($install_path);
+-my @robots = get_robot_types($os_type, $kernel, $canlib);
++# my @robots = get_robot_types($os_type, $kernel, $canlib);
++my @robots;
+ 
+ open OUTPUT, "> Makefile.vars";
+ 
