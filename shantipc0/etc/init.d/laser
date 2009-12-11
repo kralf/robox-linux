@@ -14,7 +14,7 @@ CARMEN="/etc/init.d/carmen.sh"
 [ "$CARMEN_START_LASER" == 1 ] || exit 0
 
 MODULE_NAME="laser"
-MODULE_BIN="/usr/bin/laser"
+MODULE_BIN="/usr/bin/carmen-tcp862_laser"
 MODULE_OPTS=""
 
 export LD_LIBRARY_PATH=/usr/local/lib

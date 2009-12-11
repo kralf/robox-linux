@@ -14,7 +14,7 @@ CARMEN="/etc/init.d/carmen.sh"
 [ "$CARMEN_START_CENTRAL" == 1 ] || exit 0
 
 MODULE_NAME="central"
-MODULE_BIN="/usr/bin/central"
+MODULE_BIN="/usr/bin/carmen-central"
 MODULE_OPTS=""
 
 [ -e "$MODULE_BIN" ] || exit 0

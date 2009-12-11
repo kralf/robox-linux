@@ -4,10 +4,10 @@ else
     PROC="$TARGET"
 fi
 CONFIGURE=""
-MAKEBUILD="make -C base $MAKEOPTS -j1 CARMEN_HOME=$BUILDROOT/carmen PROCESSOR=$PROC ROBOT_TYPES=robox"
+MAKEBUILD="make $MAKEOPTS -j1 CARMEN_HOME=$BUILDROOT/carmen PROCESSOR=$PROC ROBOT_TYPES=robox"
 MAKEINSTALL=("mkdir -p $EPREFIX/etc/init.d"
              "cp -ua $CONFDIR/robox-carmen.$TARGET $EPREFIX/etc/carmen.conf"
              "cp -a carmen.sh $EPREFIX/etc/init.d"
              "mkdir -p $PREFIX/bin"
-             "cp -a base/robox $PREFIX/bin")
+             "cp -a robox $PREFIX/bin")
 COMMENT="takes less than a minute"

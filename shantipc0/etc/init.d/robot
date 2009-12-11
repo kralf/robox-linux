@@ -14,7 +14,7 @@ CARMEN="/etc/init.d/carmen.sh"
 [ "$CARMEN_START_LASER" == 1 ] || exit 0
 
 MODULE_NAME="robot"
-MODULE_BIN="/usr/bin/robot"
+MODULE_BIN="/usr/bin/carmen-robot"
 MODULE_OPTS=""
 
 export LD_LIBRARY_PATH=/usr/local/lib

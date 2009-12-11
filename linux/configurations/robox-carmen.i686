@@ -1,6 +1,6 @@
-CARMEN_CENTRAL_HOST=shantipc0g
+CARMEN_CENTRAL_HOST=shantipc0
 CARMEN_ROBOT=robox
-CARMEN_ROBOT_INI=/home/kralf/svn/robox/carmen/robox.ini
+CARMEN_ROBOT_INI=/etc/carmen/robox.ini
 CARMEN_ERA_INI=/home/kralf/svn/era/trunk/carmen/era.ini
 
 CARMEN_START_CENTRAL=1
