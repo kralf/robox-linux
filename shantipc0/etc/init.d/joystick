@@ -1,6 +1,7 @@
 #! /bin/sh -e
 ### BEGIN INIT INFO
-# Provides:          era
+# Provides:          joystick
+# Required-Start:    param_daemon
 # Default-Start:     2 3 4 5
 # Default-Stop:      1
 # Short-Description: Start the CARMEN joystick module
