@@ -4,10 +4,16 @@ else
     PROC="$TARGET"
 fi
 CONFIGURE=""
-MAKEBUILD="make $MAKEOPTS -j1 CARMEN_HOME=$BUILDROOT/carmen PROCESSOR=$PROC ROBOT_TYPES=robox"
+MAKEOPTS="$MAKEOPTS IFLAGS=\"-I$BUILDROOT/carmen/include -I$PREFIX/include\""
+MAKEBUILD=("mkdir -p $PREFIX/include/tulibs"
+           "cp -a ../posix/config/*.h $PREFIX/include/tulibs"
+           "cp -a ../posix/timer/*.h $PREFIX/include/tulibs"
+           "cp -a ../posix/thread/*.h $PREFIX/include/tulibs"
+           "make $MAKEOPTS -C src/lib/base -j1 CARMEN_HOME=$BUILDROOT/carmen PROCESSOR=$PROC"
+           "make $MAKEOPTS -C src/bin/base -j1 CARMEN_HOME=$BUILDROOT/carmen PROCESSOR=$PROC")
 MAKEINSTALL=("mkdir -p $EPREFIX/etc/init.d"
              "cp -ua $CONFDIR/robox-carmen.$TARGET $EPREFIX/etc/carmen.conf"
-             "cp -a carmen.sh $EPREFIX/etc/init.d"
+             "cp -a tpl/carmen.sh $EPREFIX/etc/init.d"
              "mkdir -p $PREFIX/bin"
-             "cp -a robox $PREFIX/bin")
+             "cp -a src/bin/base/robox $PREFIX/bin")
 COMMENT="takes less than a minute"
