@@ -86,8 +86,7 @@ diff -Naur openssh-5.1p1/Makefile.in openssh-5.1p1-shared/Makefile.in
  	$(srcdir)/mkinstalldirs $(DESTDIR)$(mandir)/$(mansubdir)5
  	$(srcdir)/mkinstalldirs $(DESTDIR)$(mandir)/$(mansubdir)8
  	$(srcdir)/mkinstalldirs $(DESTDIR)$(libexecdir)
--	(umask 022 ; $(srcdir)/mkinstalldirs $(DESTDIR)$(PRIVSEP_PATH))
-+	(umask 022 ; $(srcdir)/mkinstalldirs $(exec_prefix)$(PRIVSEP_PATH))
+ 	(umask 022 ; $(srcdir)/mkinstalldirs $(DESTDIR)$(PRIVSEP_PATH))
 +	$(INSTALL) -m 0755 $(STRIP_OPT) libssh.so $(DESTDIR)$(libdir)/libssh.so
  	$(INSTALL) -m 0755 $(STRIP_OPT) ssh $(DESTDIR)$(bindir)/ssh
  	$(INSTALL) -m 0755 $(STRIP_OPT) scp $(DESTDIR)$(bindir)/scp

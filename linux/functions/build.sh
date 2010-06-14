@@ -85,7 +85,7 @@ function build_patchdir
   while [ -n "$1" ]; do
     message_start "applying $1"
 
-    execute "patch -d $ROOT -p0 < $1"
+    execute "patch -d $ROOT -p1 < $1"
 
     message_end
     shift
@@ -165,16 +165,16 @@ function build_packages
         install_archives $BUILDROOT $PKG
         message_end
 
-        fs_getfiles "$PATCHDIR/$PKGNAME-$PKGVERSION*.$SUFFIX.patch" PATCHES
-        if [ -n "$PATCHES" ]; then
-          message_start "patching package sources"
-          build_patchdir $BUILDROOT ${PATCHES[@]}
-          message_end
-        fi
-
         if ! [ -d "$PKGBUILDROOT" ]; then
           fs_getdirs "$BUILDROOT/$PKGFULLNAME" PKGEXTRACTROOT
           execute "mv $PKGEXTRACTROOT $PKGBUILDROOT"
+        fi
+
+        fs_getfiles "$PATCHDIR/$PKGNAME-$PKGVERSION*.$SUFFIX.patch" PATCHES
+        if [ -n "$PATCHES" ]; then
+          message_start "patching package sources"
+          build_patchdir $PKGBUILDROOT ${PATCHES[@]}
+          message_end
         fi
       else
         message_start "linking $PKG to $PKGBUILDROOT"

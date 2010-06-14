@@ -1,6 +1,6 @@
-diff -ruN sysvinit-2.86/debian/changelog sysvinit-2.86-robox-linux/debian/changelog
+diff -Naur sysvinit-2.86/debian/changelog sysvinit-2.86-robox-linux/debian/changelog
 --- sysvinit-2.86/debian/changelog	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/changelog	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/changelog	2010-06-14 14:07:20.649484647 +0200
 @@ -0,0 +1,986 @@
 +sysvinit (2.86.ds1-1) unstable; urgency=low
 +
@@ -988,9 +988,9 @@ diff -ruN sysvinit-2.86/debian/changelog sysvinit-2.86-robox-linux/debian/change
 +    /var/log and /etc itself.
 +
 + -- Miquel van Smoorenburg <miquels@cistron.nl>  Tue, 29 Oct 1996 13:46:54 +0100
-diff -ruN sysvinit-2.86/debian/control sysvinit-2.86-robox-linux/debian/control
+diff -Naur sysvinit-2.86/debian/control sysvinit-2.86-robox-linux/debian/control
 --- sysvinit-2.86/debian/control	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/control	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/control	2010-06-14 14:07:20.649484647 +0200
 @@ -0,0 +1,39 @@
 +Source: sysvinit
 +Section: base
@@ -1031,9 +1031,9 @@ diff -ruN sysvinit-2.86/debian/control sysvinit-2.86-robox-linux/debian/control
 +Description: Standard scripts needed for booting and shutting down
 + These scripts are meant for standard Debian/GNU/Linux installations.
 +
-diff -ruN sysvinit-2.86/debian/deps-glibc sysvinit-2.86-robox-linux/debian/deps-glibc
+diff -Naur sysvinit-2.86/debian/deps-glibc sysvinit-2.86-robox-linux/debian/deps-glibc
 --- sysvinit-2.86/debian/deps-glibc	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/deps-glibc	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/deps-glibc	2010-06-14 14:07:20.649484647 +0200
 @@ -0,0 +1,31 @@
 +#
 +# deps-glibc	Figure out on which glibc version we need to depend.
@@ -1066,9 +1066,9 @@ diff -ruN sysvinit-2.86/debian/deps-glibc sysvinit-2.86-robox-linux/debian/deps-
 +esac
 +
 +
-diff -ruN sysvinit-2.86/debian/deps-mount sysvinit-2.86-robox-linux/debian/deps-mount
+diff -Naur sysvinit-2.86/debian/deps-mount sysvinit-2.86-robox-linux/debian/deps-mount
 --- sysvinit-2.86/debian/deps-mount	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/deps-mount	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/deps-mount	2010-06-14 14:07:20.649484647 +0200
 @@ -0,0 +1,13 @@
 +#
 +# deps-mount	Output a dependency on the package that contains
@@ -1083,9 +1083,9 @@ diff -ruN sysvinit-2.86/debian/deps-mount sysvinit-2.86-robox-linux/debian/deps-
 +		;;
 +esac
 +
-diff -ruN sysvinit-2.86/debian/initscripts/conffiles sysvinit-2.86-robox-linux/debian/initscripts/conffiles
+diff -Naur sysvinit-2.86/debian/initscripts/conffiles sysvinit-2.86-robox-linux/debian/initscripts/conffiles
 --- sysvinit-2.86/debian/initscripts/conffiles	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/conffiles	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/conffiles	2010-06-14 14:07:20.649484647 +0200
 @@ -0,0 +1,21 @@
 +/etc/init.d/bootclean.sh
 +/etc/init.d/bootlogd
@@ -1108,9 +1108,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/conffiles sysvinit-2.86-robox-linux/d
 +/etc/default/devpts
 +/etc/default/halt
 +/etc/default/tmpfs
-diff -ruN sysvinit-2.86/debian/initscripts/copyright sysvinit-2.86-robox-linux/debian/initscripts/copyright
+diff -Naur sysvinit-2.86/debian/initscripts/copyright sysvinit-2.86-robox-linux/debian/initscripts/copyright
 --- sysvinit-2.86/debian/initscripts/copyright	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/copyright	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/copyright	2010-06-14 14:07:20.649484647 +0200
 @@ -0,0 +1,25 @@
 +
 +This package contains the scripts that are executed at start
@@ -1137,37 +1137,37 @@ diff -ruN sysvinit-2.86/debian/initscripts/copyright sysvinit-2.86-robox-linux/d
 +On Debian GNU/Linux systems, the complete text of the GNU General
 +Public License can be found in `/usr/share/common-licenses/GPL'.
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/default/bootlogd sysvinit-2.86-robox-linux/debian/initscripts/etc/default/bootlogd
+diff -Naur sysvinit-2.86/debian/initscripts/etc/default/bootlogd sysvinit-2.86-robox-linux/debian/initscripts/etc/default/bootlogd
 --- sysvinit-2.86/debian/initscripts/etc/default/bootlogd	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/default/bootlogd	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/default/bootlogd	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,2 @@
 +# Run bootlogd at startup ?
 +BOOTLOGD_ENABLE=No
-diff -ruN sysvinit-2.86/debian/initscripts/etc/default/devpts sysvinit-2.86-robox-linux/debian/initscripts/etc/default/devpts
+diff -Naur sysvinit-2.86/debian/initscripts/etc/default/devpts sysvinit-2.86-robox-linux/debian/initscripts/etc/default/devpts
 --- sysvinit-2.86/debian/initscripts/etc/default/devpts	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/default/devpts	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/default/devpts	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,5 @@
 +# GID of the `tty' group
 +TTYGRP=5
 +
 +# Set to 600 to have `mesg n' be the default
 +TTYMODE=620
-diff -ruN sysvinit-2.86/debian/initscripts/etc/default/halt sysvinit-2.86-robox-linux/debian/initscripts/etc/default/halt
+diff -Naur sysvinit-2.86/debian/initscripts/etc/default/halt sysvinit-2.86-robox-linux/debian/initscripts/etc/default/halt
 --- sysvinit-2.86/debian/initscripts/etc/default/halt	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/default/halt	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/default/halt	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,2 @@
 +# Default behaviour of shutdown -h / halt. Set to "halt" or "poweroff".
 +HALT=poweroff
-diff -ruN sysvinit-2.86/debian/initscripts/etc/default/tmpfs sysvinit-2.86-robox-linux/debian/initscripts/etc/default/tmpfs
+diff -Naur sysvinit-2.86/debian/initscripts/etc/default/tmpfs sysvinit-2.86-robox-linux/debian/initscripts/etc/default/tmpfs
 --- sysvinit-2.86/debian/initscripts/etc/default/tmpfs	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/default/tmpfs	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/default/tmpfs	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,3 @@
 +# TMPFS_SIZE sets the max size that /dev/shm can use.  By default, the
 +# kernel sets this upper limit to half of available memory.
 +TMPFS_SIZE=
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/bootclean.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootclean.sh
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/bootclean.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootclean.sh
 --- sysvinit-2.86/debian/initscripts/etc/init.d/bootclean.sh	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootclean.sh	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootclean.sh	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,125 @@
 +#
 +# bootclean.sh	Functions to clean /tmp, /var/run and /var/lock.
@@ -1294,9 +1294,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/bootclean.sh sysvinit-2.86
 +	[ "$VERBOSE" != no ] && echo "."
 +}
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/bootlogd sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootlogd
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/bootlogd sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootlogd
 --- sysvinit-2.86/debian/initscripts/etc/init.d/bootlogd	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootlogd	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootlogd	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,85 @@
 +#! /bin/sh
 +#
@@ -1383,9 +1383,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/bootlogd sysvinit-2.86-rob
 +
 +exit 0
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/bootmisc.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootmisc.sh
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/bootmisc.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootmisc.sh
 --- sysvinit-2.86/debian/initscripts/etc/init.d/bootmisc.sh	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootmisc.sh	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/bootmisc.sh	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,76 @@
 +#
 +# bootmisc.sh	Miscellaneous things to be done during bootup.
@@ -1463,9 +1463,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/bootmisc.sh sysvinit-2.86-
 +
 +: exit 0
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/checkfs.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/checkfs.sh
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/checkfs.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/checkfs.sh
 --- sysvinit-2.86/debian/initscripts/etc/init.d/checkfs.sh	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/checkfs.sh	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/checkfs.sh	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,47 @@
 +#
 +# checkfs.sh	Check all filesystems.
@@ -1514,9 +1514,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/checkfs.sh sysvinit-2.86-r
 +rm -f /fastboot /forcefsck
 +
 +: exit 0
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/checkroot.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/checkroot.sh
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/checkroot.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/checkroot.sh
 --- sysvinit-2.86/debian/initscripts/etc/init.d/checkroot.sh	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/checkroot.sh	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/checkroot.sh	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,336 @@
 +#
 +# checkroot.sh	Check to root file system.
@@ -1854,9 +1854,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/checkroot.sh sysvinit-2.86
 +
 +: exit 0
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/halt sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/halt
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/halt sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/halt
 --- sysvinit-2.86/debian/initscripts/etc/init.d/halt	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/halt	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/halt	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,50 @@
 +#! /bin/sh
 +#
@@ -1908,9 +1908,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/halt sysvinit-2.86-robox-l
 +halt -d -f -i $poweroff $hddown
 +
 +: exit 0
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/hostname.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/hostname.sh
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/hostname.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/hostname.sh
 --- sysvinit-2.86/debian/initscripts/etc/init.d/hostname.sh	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/hostname.sh	2007-06-08 15:20:36.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/hostname.sh	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,11 @@
 +#
 +# hostname.sh	Set hostname.
@@ -1923,9 +1923,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/hostname.sh sysvinit-2.86-
 +	hostname --file /etc/hostname
 +fi
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/mountall.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountall.sh
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/mountall.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountall.sh
 --- sysvinit-2.86/debian/initscripts/etc/init.d/mountall.sh	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountall.sh	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountall.sh	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,62 @@
 +#
 +# mountall.sh	Mount all filesystems.
@@ -1989,9 +1989,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/mountall.sh sysvinit-2.86-
 +
 +: exit 0
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/mountnfs.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountnfs.sh
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/mountnfs.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountnfs.sh
 --- sysvinit-2.86/debian/initscripts/etc/init.d/mountnfs.sh	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountnfs.sh	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountnfs.sh	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,97 @@
 +#
 +# mountnfs.sh	Now that TCP/IP is configured, mount the NFS file
@@ -2090,9 +2090,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/mountnfs.sh sysvinit-2.86-
 +
 +: exit 0
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/mountvirtfs sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountvirtfs
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/mountvirtfs sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountvirtfs
 --- sysvinit-2.86/debian/initscripts/etc/init.d/mountvirtfs	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountvirtfs	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/mountvirtfs	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,229 @@
 +#! /bin/sh
 +#
@@ -2323,9 +2323,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/mountvirtfs sysvinit-2.86-
 +	domount usbfs usbdevfs /proc/bus/usb
 +fi
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/reboot sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/reboot
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/reboot sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/reboot
 --- sysvinit-2.86/debian/initscripts/etc/init.d/reboot	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/reboot	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/reboot	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,11 @@
 +#! /bin/sh
 +#
@@ -2338,9 +2338,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/reboot sysvinit-2.86-robox
 +
 +echo -n "Rebooting... "
 +reboot -d -f -i
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/rmnologin sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/rmnologin
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/rmnologin sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/rmnologin
 --- sysvinit-2.86/debian/initscripts/etc/init.d/rmnologin	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/rmnologin	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/rmnologin	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,24 @@
 +#! /bin/sh
 +#
@@ -2366,9 +2366,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/rmnologin sysvinit-2.86-ro
 +esac
 +
 +: exit 0
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/sendsigs sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/sendsigs
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/sendsigs sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/sendsigs
 --- sysvinit-2.86/debian/initscripts/etc/init.d/sendsigs	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/sendsigs	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/sendsigs	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,19 @@
 +#! /bin/sh
 +#
@@ -2389,9 +2389,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/sendsigs sysvinit-2.86-rob
 +echo "done."
 +
 +: exit 0
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/single sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/single
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/single sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/single
 --- sysvinit-2.86/debian/initscripts/etc/init.d/single	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/single	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/single	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,31 @@
 +#! /bin/sh
 +#
@@ -2424,9 +2424,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/single sysvinit-2.86-robox
 +echo "Entering single-user mode..."
 +exec init -t1 S
 +
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/skeleton sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/skeleton
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/skeleton sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/skeleton
 --- sysvinit-2.86/debian/initscripts/etc/init.d/skeleton	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/skeleton	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/skeleton	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,101 @@
 +#! /bin/sh
 +#
@@ -2529,9 +2529,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/skeleton sysvinit-2.86-rob
 +esac
 +
 +exit 0
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/umountfs sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/umountfs
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/umountfs sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/umountfs
 --- sysvinit-2.86/debian/initscripts/etc/init.d/umountfs	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/umountfs	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/umountfs	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,25 @@
 +#! /bin/sh
 +#
@@ -2558,9 +2558,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/umountfs sysvinit-2.86-rob
 +mount -n -o remount,ro /
 +
 +: exit 0
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/umountnfs.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/umountnfs.sh
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/umountnfs.sh sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/umountnfs.sh
 --- sysvinit-2.86/debian/initscripts/etc/init.d/umountnfs.sh	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/umountnfs.sh	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/umountnfs.sh	2010-06-14 14:07:20.659519162 +0200
 @@ -0,0 +1,68 @@
 +#! /bin/sh
 +#
@@ -2630,9 +2630,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/umountnfs.sh sysvinit-2.86
 +echo "done."
 +
 +: exit 0
-diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/urandom sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/urandom
+diff -Naur sysvinit-2.86/debian/initscripts/etc/init.d/urandom sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/urandom
 --- sysvinit-2.86/debian/initscripts/etc/init.d/urandom	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/urandom	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/etc/init.d/urandom	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,57 @@
 +#! /bin/sh
 +#
@@ -2691,9 +2691,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/etc/init.d/urandom sysvinit-2.86-robo
 +
 +exit 0
 +
-diff -ruN sysvinit-2.86/debian/initscripts/man/fsck.nfs.8 sysvinit-2.86-robox-linux/debian/initscripts/man/fsck.nfs.8
+diff -Naur sysvinit-2.86/debian/initscripts/man/fsck.nfs.8 sysvinit-2.86-robox-linux/debian/initscripts/man/fsck.nfs.8
 --- sysvinit-2.86/debian/initscripts/man/fsck.nfs.8	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/man/fsck.nfs.8	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/man/fsck.nfs.8	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,16 @@
 +.TH FSCK.NFS 8 "May 2004" "Initscripts"
 +.SH NAME
@@ -2711,9 +2711,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/man/fsck.nfs.8 sysvinit-2.86-robox-li
 +.SH SEE ALSO
 +.BR fsck (8),
 +.BR fstab (5).
-diff -ruN sysvinit-2.86/debian/initscripts/postinst sysvinit-2.86-robox-linux/debian/initscripts/postinst
+diff -Naur sysvinit-2.86/debian/initscripts/postinst sysvinit-2.86-robox-linux/debian/initscripts/postinst
 --- sysvinit-2.86/debian/initscripts/postinst	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/postinst	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/postinst	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,195 @@
 +#! /bin/sh
 +#
@@ -2910,9 +2910,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/postinst sysvinit-2.86-robox-linux/de
 +
 +exit 0
 +
-diff -ruN sysvinit-2.86/debian/initscripts/preinst sysvinit-2.86-robox-linux/debian/initscripts/preinst
+diff -Naur sysvinit-2.86/debian/initscripts/preinst sysvinit-2.86-robox-linux/debian/initscripts/preinst
 --- sysvinit-2.86/debian/initscripts/preinst	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/preinst	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/preinst	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,57 @@
 +#! /bin/sh
 +#
@@ -2971,9 +2971,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/preinst sysvinit-2.86-robox-linux/deb
 +#EOF
 +
 +exit 0
-diff -ruN sysvinit-2.86/debian/initscripts/rcS.5 sysvinit-2.86-robox-linux/debian/initscripts/rcS.5
+diff -Naur sysvinit-2.86/debian/initscripts/rcS.5 sysvinit-2.86-robox-linux/debian/initscripts/rcS.5
 --- sysvinit-2.86/debian/initscripts/rcS.5	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/rcS.5	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/rcS.5	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,64 @@
 +.TH rcS 5 "03 Nov 2003" "" "Debian Administrator's Manual"
 +.SH NAME
@@ -3039,9 +3039,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/rcS.5 sysvinit-2.86-robox-linux/debia
 +Miquel van Smoorenburg <miquels@cistron.nl>
 +.SH SEE ALSO
 +init(8), inittab(5).
-diff -ruN sysvinit-2.86/debian/initscripts/sbin/fsck.nfs sysvinit-2.86-robox-linux/debian/initscripts/sbin/fsck.nfs
+diff -Naur sysvinit-2.86/debian/initscripts/sbin/fsck.nfs sysvinit-2.86-robox-linux/debian/initscripts/sbin/fsck.nfs
 --- sysvinit-2.86/debian/initscripts/sbin/fsck.nfs	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/sbin/fsck.nfs	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/sbin/fsck.nfs	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,25 @@
 +#! /bin/sh
 +#
@@ -3068,9 +3068,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/sbin/fsck.nfs sysvinit-2.86-robox-lin
 +echo "$1: NFS file system."
 +
 +exit 0
-diff -ruN sysvinit-2.86/debian/initscripts/share/default.rcS sysvinit-2.86-robox-linux/debian/initscripts/share/default.rcS
+diff -Naur sysvinit-2.86/debian/initscripts/share/default.rcS sysvinit-2.86-robox-linux/debian/initscripts/share/default.rcS
 --- sysvinit-2.86/debian/initscripts/share/default.rcS	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/initscripts/share/default.rcS	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/initscripts/share/default.rcS	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,19 @@
 +#
 +#	Defaults for the boot scripts in /etc/rcS.d
@@ -3091,9 +3091,9 @@ diff -ruN sysvinit-2.86/debian/initscripts/share/default.rcS sysvinit-2.86-robox
 +EDITMOTD=yes
 +# Set FSCKFIX to "yes" if you want to add "-y" to the fsck at startup.
 +FSCKFIX=no
-diff -ruN sysvinit-2.86/debian/postinst sysvinit-2.86-robox-linux/debian/postinst
+diff -Naur sysvinit-2.86/debian/postinst sysvinit-2.86-robox-linux/debian/postinst
 --- sysvinit-2.86/debian/postinst	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/postinst	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/postinst	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,50 @@
 +#! /bin/sh
 +#
@@ -3145,9 +3145,9 @@ diff -ruN sysvinit-2.86/debian/postinst sysvinit-2.86-robox-linux/debian/postins
 +init u ||:
 +
 +exit 0
-diff -ruN sysvinit-2.86/debian/readlink.c sysvinit-2.86-robox-linux/debian/readlink.c
+diff -Naur sysvinit-2.86/debian/readlink.c sysvinit-2.86-robox-linux/debian/readlink.c
 --- sysvinit-2.86/debian/readlink.c	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/readlink.c	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/readlink.c	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,463 @@
 +/*
 + * readlink	Implementation of the readlink program that has a
@@ -3612,9 +3612,9 @@ diff -ruN sysvinit-2.86/debian/readlink.c sysvinit-2.86-robox-linux/debian/readl
 +	return cmd_readlink(argc, argv, "readlink");
 +}
 +
-diff -ruN sysvinit-2.86/debian/README sysvinit-2.86-robox-linux/debian/README
+diff -Naur sysvinit-2.86/debian/README sysvinit-2.86-robox-linux/debian/README
 --- sysvinit-2.86/debian/README	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/README	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/README	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,20 @@
 +This is the Debian GNU/Linux prepackaged version of System V Init.  Init
 +was written by Miquel van Smoorenburg <miquels@cistron.nl>.
@@ -3636,18 +3636,18 @@ diff -ruN sysvinit-2.86/debian/README sysvinit-2.86-robox-linux/debian/README
 +Alternate-Site: sunsite.unc.edu /pub/Linux/system/daemons/init
 +                92K sysvinit-2.86.tar.gz
 +
-diff -ruN sysvinit-2.86/debian/README.runlevels sysvinit-2.86-robox-linux/debian/README.runlevels
+diff -Naur sysvinit-2.86/debian/README.runlevels sysvinit-2.86-robox-linux/debian/README.runlevels
 --- sysvinit-2.86/debian/README.runlevels	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/README.runlevels	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/README.runlevels	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,5 @@
 +
 +This information is now available in /usr/share/doc/sysv-rc if you're
 +running a standard installation, or in /usr/share/doc/file-rc if you
 +have installed the `file-rc' package.
 +
-diff -ruN sysvinit-2.86/debian/rules sysvinit-2.86-robox-linux/debian/rules
+diff -Naur sysvinit-2.86/debian/rules sysvinit-2.86-robox-linux/debian/rules
 --- sysvinit-2.86/debian/rules	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/rules	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/rules	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,204 @@
 +#! /usr/bin/make -f
 +#
@@ -3853,9 +3853,9 @@ diff -ruN sysvinit-2.86/debian/rules sysvinit-2.86-robox-linux/debian/rules
 +	test root = "`whoami`"
 +
 +.PHONY: binary binary-arch binary-indep clean checkroot
-diff -ruN sysvinit-2.86/debian/share/inittab sysvinit-2.86-robox-linux/debian/share/inittab
+diff -Naur sysvinit-2.86/debian/share/inittab sysvinit-2.86-robox-linux/debian/share/inittab
 --- sysvinit-2.86/debian/share/inittab	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/share/inittab	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/share/inittab	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,69 @@
 +# /etc/inittab: init(8) configuration.
 +# $Id: inittab,v 1.91 2002/01/25 13:35:21 miquels Exp $
@@ -3926,9 +3926,9 @@ diff -ruN sysvinit-2.86/debian/share/inittab sysvinit-2.86-robox-linux/debian/sh
 +#
 +#T3:23:respawn:/sbin/mgetty -x0 -s 57600 ttyS3
 +
-diff -ruN sysvinit-2.86/debian/share/inittab.gnu sysvinit-2.86-robox-linux/debian/share/inittab.gnu
+diff -Naur sysvinit-2.86/debian/share/inittab.gnu sysvinit-2.86-robox-linux/debian/share/inittab.gnu
 --- sysvinit-2.86/debian/share/inittab.gnu	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/share/inittab.gnu	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/share/inittab.gnu	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,69 @@
 +# /etc/inittab: init(8) configuration.
 +# $Id: inittab,v 1.91 2002/01/25 13:35:21 miquels Exp $
@@ -3999,9 +3999,9 @@ diff -ruN sysvinit-2.86/debian/share/inittab.gnu sysvinit-2.86-robox-linux/debia
 +#
 +#T3:23:respawn:/sbin/mgetty -x0 -s 57600 ttyS3
 +
-diff -ruN sysvinit-2.86/debian/share/inittab.kfreebsd-gnu sysvinit-2.86-robox-linux/debian/share/inittab.kfreebsd-gnu
+diff -Naur sysvinit-2.86/debian/share/inittab.kfreebsd-gnu sysvinit-2.86-robox-linux/debian/share/inittab.kfreebsd-gnu
 --- sysvinit-2.86/debian/share/inittab.kfreebsd-gnu	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/share/inittab.kfreebsd-gnu	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/share/inittab.kfreebsd-gnu	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,69 @@
 +# /etc/inittab: init(8) configuration.
 +# $Id: inittab,v 1.91 2002/01/25 13:35:21 miquels Exp $
@@ -4072,9 +4072,9 @@ diff -ruN sysvinit-2.86/debian/share/inittab.kfreebsd-gnu sysvinit-2.86-robox-li
 +#
 +#T3:23:respawn:/sbin/mgetty -x0 -s 57600 ttyS3
 +
-diff -ruN sysvinit-2.86/debian/share/inittab.knetbsd-gnu sysvinit-2.86-robox-linux/debian/share/inittab.knetbsd-gnu
+diff -Naur sysvinit-2.86/debian/share/inittab.knetbsd-gnu sysvinit-2.86-robox-linux/debian/share/inittab.knetbsd-gnu
 --- sysvinit-2.86/debian/share/inittab.knetbsd-gnu	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/share/inittab.knetbsd-gnu	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/share/inittab.knetbsd-gnu	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,67 @@
 +# /etc/inittab: init(8) configuration.
 +# $Id: inittab,v 1.91 2002/01/25 13:35:21 miquels Exp $
@@ -4143,9 +4143,9 @@ diff -ruN sysvinit-2.86/debian/share/inittab.knetbsd-gnu sysvinit-2.86-robox-lin
 +#
 +#T3:23:respawn:/sbin/mgetty -x0 -s 57600 ttyS3
 +
-diff -ruN sysvinit-2.86/debian/share/inittab.s390-linux sysvinit-2.86-robox-linux/debian/share/inittab.s390-linux
+diff -Naur sysvinit-2.86/debian/share/inittab.s390-linux sysvinit-2.86-robox-linux/debian/share/inittab.s390-linux
 --- sysvinit-2.86/debian/share/inittab.s390-linux	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/share/inittab.s390-linux	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/share/inittab.s390-linux	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,63 @@
 +# /etc/inittab: init(8) configuration.
 +# $Id: inittab.s390,v 1.9 2000/01/10 10:15:30 miquels Exp $
@@ -4210,9 +4210,9 @@ diff -ruN sysvinit-2.86/debian/share/inittab.s390-linux sysvinit-2.86-robox-linu
 +#
 +#T3:23:respawn:/sbin/mgetty -x0 -s 57600 ttyS3
 +
-diff -ruN sysvinit-2.86/debian/share/update-rc.d sysvinit-2.86-robox-linux/debian/share/update-rc.d
+diff -Naur sysvinit-2.86/debian/share/update-rc.d sysvinit-2.86-robox-linux/debian/share/update-rc.d
 --- sysvinit-2.86/debian/share/update-rc.d	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/share/update-rc.d	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/share/update-rc.d	2010-06-14 14:07:20.669398909 +0200
 @@ -0,0 +1,25 @@
 +#! /bin/sh
 +#
@@ -4239,9 +4239,9 @@ diff -ruN sysvinit-2.86/debian/share/update-rc.d sysvinit-2.86-robox-linux/debia
 +EOF
 +
 +exit 1
-diff -ruN sysvinit-2.86/debian/sysv-rc/copyright sysvinit-2.86-robox-linux/debian/sysv-rc/copyright
+diff -Naur sysvinit-2.86/debian/sysv-rc/copyright sysvinit-2.86-robox-linux/debian/sysv-rc/copyright
 --- sysvinit-2.86/debian/sysv-rc/copyright	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/copyright	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/copyright	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,27 @@
 +
 +This package contains the mechanism for executing the right scripts
@@ -4270,9 +4270,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/copyright sysvinit-2.86-robox-linux/debia
 +On Debian GNU/Linux systems, the complete text of the GNU General
 +Public License can be found in `/usr/share/common-licenses/GPL'.
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/doc/README.invoke-rc.d sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.invoke-rc.d
+diff -Naur sysvinit-2.86/debian/sysv-rc/doc/README.invoke-rc.d sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.invoke-rc.d
 --- sysvinit-2.86/debian/sysv-rc/doc/README.invoke-rc.d	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.invoke-rc.d	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.invoke-rc.d	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,138 @@
 +
 +
@@ -4412,9 +4412,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/doc/README.invoke-rc.d sysvinit-2.86-robo
 +
 +
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/doc/README.policy-rc.d sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.policy-rc.d
+diff -Naur sysvinit-2.86/debian/sysv-rc/doc/README.policy-rc.d sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.policy-rc.d
 --- sysvinit-2.86/debian/sysv-rc/doc/README.policy-rc.d	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.policy-rc.d	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.policy-rc.d	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,104 @@
 +
 +
@@ -4520,9 +4520,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/doc/README.policy-rc.d sysvinit-2.86-robo
 +Rule 3 is absolute, policy-rc.d cannot override it.
 +
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/doc/README.runlevels sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.runlevels
+diff -Naur sysvinit-2.86/debian/sysv-rc/doc/README.runlevels sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.runlevels
 --- sysvinit-2.86/debian/sysv-rc/doc/README.runlevels	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.runlevels	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/doc/README.runlevels	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,104 @@
 +
 +		Order of scripts run in /etc/rc?.d
@@ -4628,9 +4628,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/doc/README.runlevels sysvinit-2.86-robox-
 +   In the future, the /etc/rc6.d/SXXxxxx scripts MIGHT be moved to
 +   /etc/rc6.d/K1XXxxxx for clarity.
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/etc/init.d/rc sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/rc
+diff -Naur sysvinit-2.86/debian/sysv-rc/etc/init.d/rc sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/rc
 --- sysvinit-2.86/debian/sysv-rc/etc/init.d/rc	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/rc	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/rc	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,102 @@
 +#! /bin/sh
 +#
@@ -4734,9 +4734,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/etc/init.d/rc sysvinit-2.86-robox-linux/d
 +	done
 +  fi
 +# eof /etc/init.d/rc
-diff -ruN sysvinit-2.86/debian/sysv-rc/etc/init.d/rcS sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/rcS
+diff -Naur sysvinit-2.86/debian/sysv-rc/etc/init.d/rcS sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/rcS
 --- sysvinit-2.86/debian/sysv-rc/etc/init.d/rcS	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/rcS	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/rcS	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,72 @@
 +#! /bin/sh
 +#
@@ -4810,9 +4810,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/etc/init.d/rcS sysvinit-2.86-robox-linux/
 +  /sbin/setup.sh
 +fi
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/etc/init.d/README sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/README
+diff -Naur sysvinit-2.86/debian/sysv-rc/etc/init.d/README sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/README
 --- sysvinit-2.86/debian/sysv-rc/etc/init.d/README	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/README	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/etc/init.d/README	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,21 @@
 +
 +	Configuration of Init under Debian GNU/Linux
@@ -4835,9 +4835,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/etc/init.d/README sysvinit-2.86-robox-lin
 +Make sure you have at least version 3.5.4.0 of the policy manual.
 +
 +Some more detailed info can also be found in /usr/share/doc/sysvinit.
-diff -ruN sysvinit-2.86/debian/sysv-rc/etc/rcS.d/README sysvinit-2.86-robox-linux/debian/sysv-rc/etc/rcS.d/README
+diff -Naur sysvinit-2.86/debian/sysv-rc/etc/rcS.d/README sysvinit-2.86-robox-linux/debian/sysv-rc/etc/rcS.d/README
 --- sysvinit-2.86/debian/sysv-rc/etc/rcS.d/README	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/etc/rcS.d/README	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/etc/rcS.d/README	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,15 @@
 +
 +The scripts in this directory are executed once when booting the system,
@@ -4854,9 +4854,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/etc/rcS.d/README sysvinit-2.86-robox-linu
 +  filesystems have been mounted (unless the system depends on the automounter,
 +  which is started later) and the filesystems have been cleaned.
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/man5/rc.boot.5 sysvinit-2.86-robox-linux/debian/sysv-rc/man5/rc.boot.5
+diff -Naur sysvinit-2.86/debian/sysv-rc/man5/rc.boot.5 sysvinit-2.86-robox-linux/debian/sysv-rc/man5/rc.boot.5
 --- sysvinit-2.86/debian/sysv-rc/man5/rc.boot.5	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/man5/rc.boot.5	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/man5/rc.boot.5	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,15 @@
 +.TH RC.BOOT 5 "December 26, 1997" "" "Debian GNU/Linux Manual"
 +.SH NAME
@@ -4873,9 +4873,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/man5/rc.boot.5 sysvinit-2.86-robox-linux/
 +.SH "SEE ALSO"
 +run-parts(8), init(1).
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/man8/es/update-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/es/update-rc.d.8
+diff -Naur sysvinit-2.86/debian/sysv-rc/man8/es/update-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/es/update-rc.d.8
 --- sysvinit-2.86/debian/sysv-rc/man8/es/update-rc.d.8	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/es/update-rc.d.8	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/es/update-rc.d.8	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,206 @@
 +.\" Hey, Emacs!  This is an -*- nroff -*- source file.
 +.\" Authors: Ian Jackson
@@ -5083,9 +5083,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/man8/es/update-rc.d.8 sysvinit-2.86-robox
 +
 +.SH TRADUCTOR
 +Traducción de Rubén Porras Campo <debian-l10n-spanish@lists.debian.org>
-diff -ruN sysvinit-2.86/debian/sysv-rc/man8/fr/update-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/fr/update-rc.d.8
+diff -Naur sysvinit-2.86/debian/sysv-rc/man8/fr/update-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/fr/update-rc.d.8
 --- sysvinit-2.86/debian/sysv-rc/man8/fr/update-rc.d.8	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/fr/update-rc.d.8	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/fr/update-rc.d.8	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,192 @@
 +.\" Hey, Emacs!  This is an -*- nroff -*- source file.
 +.\" Authors: Ian Jackson
@@ -5279,9 +5279,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/man8/fr/update-rc.d.8 sysvinit-2.86-robox
 +.BR init (8).
 +.SH TRADUCTION
 +Philippe Batailler. Dec 2000.
-diff -ruN sysvinit-2.86/debian/sysv-rc/man8/invoke-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/invoke-rc.d.8
+diff -Naur sysvinit-2.86/debian/sysv-rc/man8/invoke-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/invoke-rc.d.8
 --- sysvinit-2.86/debian/sysv-rc/man8/invoke-rc.d.8	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/invoke-rc.d.8	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/invoke-rc.d.8	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,225 @@
 +.\" Hey, Emacs!  This is an -*- nroff -*- source file.
 +.\" Authors: Henrique Holschuh
@@ -5508,9 +5508,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/man8/invoke-rc.d.8 sysvinit-2.86-robox-li
 +.BR init (8),
 +.br
 +.BR /usr/share/doc/sysv-rc/README.policy-rc.d
-diff -ruN sysvinit-2.86/debian/sysv-rc/man8/ja/update-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/ja/update-rc.d.8
+diff -Naur sysvinit-2.86/debian/sysv-rc/man8/ja/update-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/ja/update-rc.d.8
 --- sysvinit-2.86/debian/sysv-rc/man8/ja/update-rc.d.8	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/ja/update-rc.d.8	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/ja/update-rc.d.8	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,193 @@
 +.\" Hey, Emacs!  This is an -*- nroff -*- source file.
 +.\" Authors: Ian Jackson
@@ -5705,9 +5705,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/man8/ja/update-rc.d.8 sysvinit-2.86-robox
 +.BR init (8).
 +.SH ËÝÌõ¼Ô
 +ÆéÃ« ±ÉÅ¸ <nabetani@kern.phys.sci.osaka-u.ac.jp>
-diff -ruN sysvinit-2.86/debian/sysv-rc/man8/update-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/update-rc.d.8
+diff -Naur sysvinit-2.86/debian/sysv-rc/man8/update-rc.d.8 sysvinit-2.86-robox-linux/debian/sysv-rc/man8/update-rc.d.8
 --- sysvinit-2.86/debian/sysv-rc/man8/update-rc.d.8	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/update-rc.d.8	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/man8/update-rc.d.8	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,182 @@
 +.\" Hey, Emacs!  This is an -*- nroff -*- source file.
 +.\" Authors: Ian Jackson, Miquel van Smoorenburg
@@ -5891,9 +5891,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/man8/update-rc.d.8 sysvinit-2.86-robox-li
 +.BR /etc/init.d/skeleton ,
 +.br
 +.BR init (8).
-diff -ruN sysvinit-2.86/debian/sysv-rc/postinst sysvinit-2.86-robox-linux/debian/sysv-rc/postinst
+diff -Naur sysvinit-2.86/debian/sysv-rc/postinst sysvinit-2.86-robox-linux/debian/sysv-rc/postinst
 --- sysvinit-2.86/debian/sysv-rc/postinst	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/postinst	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/postinst	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,20 @@
 +#! /bin/sh
 +#
@@ -5915,9 +5915,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/postinst sysvinit-2.86-robox-linux/debian
 +
 +exit 0
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/postrm sysvinit-2.86-robox-linux/debian/sysv-rc/postrm
+diff -Naur sysvinit-2.86/debian/sysv-rc/postrm sysvinit-2.86-robox-linux/debian/sysv-rc/postrm
 --- sysvinit-2.86/debian/sysv-rc/postrm	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/postrm	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/postrm	2010-06-14 14:07:20.679397945 +0200
 @@ -0,0 +1,21 @@
 +#! /bin/sh
 +#
@@ -5940,9 +5940,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/postrm sysvinit-2.86-robox-linux/debian/s
 +ln -sf /usr/share/sysvinit/update-rc.d /usr/sbin/update-rc.d
 +ln -sf /usr/share/sysvinit/update-rc.d /usr/sbin/invoke-rc.d
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/saveconfig sysvinit-2.86-robox-linux/debian/sysv-rc/saveconfig
+diff -Naur sysvinit-2.86/debian/sysv-rc/saveconfig sysvinit-2.86-robox-linux/debian/sysv-rc/saveconfig
 --- sysvinit-2.86/debian/sysv-rc/saveconfig	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/saveconfig	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/saveconfig	2010-06-14 14:07:20.689409133 +0200
 @@ -0,0 +1,64 @@
 +#! /usr/bin/perl
 +#
@@ -6008,9 +6008,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/saveconfig sysvinit-2.86-robox-linux/debi
 +	print "\n" if ($start || $stop);
 +}
 +
-diff -ruN sysvinit-2.86/debian/sysv-rc/sbin/invoke-rc.d sysvinit-2.86-robox-linux/debian/sysv-rc/sbin/invoke-rc.d
+diff -Naur sysvinit-2.86/debian/sysv-rc/sbin/invoke-rc.d sysvinit-2.86-robox-linux/debian/sysv-rc/sbin/invoke-rc.d
 --- sysvinit-2.86/debian/sysv-rc/sbin/invoke-rc.d	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/sbin/invoke-rc.d	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/sbin/invoke-rc.d	2010-06-14 14:07:20.689409133 +0200
 @@ -0,0 +1,449 @@
 +#!/bin/sh  
 +#
@@ -6461,9 +6461,9 @@ diff -ruN sysvinit-2.86/debian/sysv-rc/sbin/invoke-rc.d sysvinit-2.86-robox-linu
 +fi
 +
 +exit ${RC}
-diff -ruN sysvinit-2.86/debian/sysv-rc/sbin/update-rc.d sysvinit-2.86-robox-linux/debian/sysv-rc/sbin/update-rc.d
+diff -Naur sysvinit-2.86/debian/sysv-rc/sbin/update-rc.d sysvinit-2.86-robox-linux/debian/sysv-rc/sbin/update-rc.d
 --- sysvinit-2.86/debian/sysv-rc/sbin/update-rc.d	1970-01-01 01:00:00.000000000 +0100
-+++ sysvinit-2.86-robox-linux/debian/sysv-rc/sbin/update-rc.d	2007-06-08 15:20:07.000000000 +0200
++++ sysvinit-2.86-robox-linux/debian/sysv-rc/sbin/update-rc.d	2010-06-14 14:07:20.689409133 +0200
 @@ -0,0 +1,207 @@
 +#! /usr/bin/perl
 +#

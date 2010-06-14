@@ -1,15 +1,5 @@
-Common subdirectories: coreutils-6.7/build-aux and corutils-6.7.df/build-aux
-diff -Nu coreutils-6.7/config.cache corutils-6.7.df/config.cache
+diff -Naur coreutils-6.7/config.cache coreutils-6.7-df/config.cache
 --- coreutils-6.7/config.cache	1970-01-01 01:00:00.000000000 +0100
-+++ corutils-6.7.df/config.cache	2007-02-02 19:26:34.000000000 +0100
++++ coreutils-6.7-df/config.cache	2010-06-14 14:04:24.637217934 +0200
 @@ -0,0 +1 @@
 +fu_cv_sys_stat_statfs2_bsize=yes
-Common subdirectories: coreutils-6.7/doc and corutils-6.7.df/doc
-Common subdirectories: coreutils-6.7/gl and corutils-6.7.df/gl
-Common subdirectories: coreutils-6.7/lib and corutils-6.7.df/lib
-Common subdirectories: coreutils-6.7/m4 and corutils-6.7.df/m4
-Common subdirectories: coreutils-6.7/man and corutils-6.7.df/man
-Common subdirectories: coreutils-6.7/old and corutils-6.7.df/old
-Common subdirectories: coreutils-6.7/po and corutils-6.7.df/po
-Common subdirectories: coreutils-6.7/src and corutils-6.7.df/src
-Common subdirectories: coreutils-6.7/tests and corutils-6.7.df/tests
