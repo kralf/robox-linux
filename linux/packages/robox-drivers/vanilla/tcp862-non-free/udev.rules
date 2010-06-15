@@ -1,4 +1,0 @@
-# This file establishes permissions and ownership of TCP862 serial interface
-# devices according to Ubuntu policy.  See udev(7) for syntax.
-
-KERNEL=="tcp862S[0-9]*", GROUP="dialout"
