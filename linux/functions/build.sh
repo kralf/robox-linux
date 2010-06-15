@@ -48,14 +48,14 @@ function build_setenv
 
   message_start "setting up the $TARGET build environment"
 
-  CPP="$TARGET-linux-cpp"
-  CC="$TARGET-linux-gcc"
-  CXX="$TARGET-linux-g++"
-  AR="$TARGET-linux-ar"
-  AS="$TARGET-linux-as"
-  RANLIB="$TARGET-linux-ranlib"
-  LD="$TARGET-linux-ld"
-  STRIP="$TARGET-linux-strip"
+  CPP="$ROOT/bin/$TARGET-linux-cpp"
+  CC="$ROOT/bin/$TARGET-linux-gcc"
+  CXX="$ROOT/bin/$TARGET-linux-g++"
+  AR="$ROOT/bin/$TARGET-linux-ar"
+  AS="$ROOT/bin/$TARGET-linux-as"
+  RANLIB="$ROOT/bin/$TARGET-linux-ranlib"
+  LD="$ROOT/bin/$TARGET-linux-ld"
+  STRIP="$ROOT/bin/$TARGET-linux-strip"
   export CC CXX AR AS RANLIB LD STRIP
 
   CFLAGS="-I$ROOT/include -I$ROOT/usr/include"
@@ -108,7 +108,8 @@ function build_packages
 
   BUILDROOT=$1
   shift
-  fs_abspath $1 EPREFIX
+  INSTALLROOT=$1
+  fs_abspath $INSTALLROOT EPREFIX
   PREFIX="$EPREFIX/usr"
   shift
 
@@ -125,7 +126,6 @@ function build_packages
 
   while [ -n "$1" ]; do
     keyval "$1" ALIAS VERSION
-    [ -z "$VERSION" ] && VERSION="[0-9]*"
     message_boldstart "building package $ALIAS"
 
     ADDONS=""
@@ -135,10 +135,17 @@ function build_packages
 
     [ -r "$PKGCONFFILE" ] && include "$PKGCONFFILE"
     if [ -z "$PKG" ] || [ ! -r "$PKG" ]; then
-      fs_getdirs "$PKGDIR/$ALIAS-$VERSION" PKG
-    fi
-    if [ -z "$PKG" ] || [ ! -r "$PKG" ]; then
-      fs_getfiles "$PKGDIR/$ALIAS-$VERSION.{tar,tar.gz,tar.bz2}" PKG
+      if [ -z "$VERSION" ]; then
+        fs_getdirs "$PKGDIR/$ALIAS" PKG_UDIR
+        fs_getdirs "$PKGDIR/$ALIAS-[0-9]*" PKG_VDIR
+        fs_getfiles "$PKGDIR/$ALIAS.{tar,tar.gz,tar.bz2}" PKG_UARCH
+        fs_getfiles "$PKGDIR/$ALIAS-[0-9]*.{tar,tar.gz,tar.bz2}" PKG_VARCH
+        PKG=($PKG_UDIR $PKG_VDIR $PKG_UARCH $PKG_VARCH)
+      else
+        fs_getdirs "$PKGDIR/$ALIAS-$VERSION" PKG_DIR
+        fs_getfiles "$PKGDIR/$ALIAS-$VERSION.{tar,tar.gz,tar.bz2}" PKG_ARCH
+        PKG=($PKG_DIR $PKG_ARCH)
+      fi
     fi
     [ ${#PKG[@]} -gt 1 ] && message_exit "package $ALIAS has ambigius versions"
     [ -r "$PKG" ] || message_exit "package $ALIAS not found"
@@ -147,6 +154,20 @@ function build_packages
     PKGFULLNAME=${PKGBASENAME%.tar*}
     PKGNAME=${PKGFULLNAME%%-[0-9]*}
     PKGVERSION=${PKGFULLNAME#$PKGNAME-}
+
+    CMAKEFLAGS="-DCMAKE_SYSTEM_NAME=Linux"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH=$INSTALLROOT"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX"
+    CMAKEFLAGS="$CMAKEFLAGS -DCMAKE_INSTALL_RPATH=$INSTALLROOT/lib"
+    CFLAGS="$CFLAGS -I$INSTALLROOT/include -I$INSTALLROOT/usr/include"
+    LDFLAGS="$LDFLAGS -L$INSTALLROOT/lib -L$INSTALLROOT/usr/lib"
+    export LD_LIBRARY_PATH="$INSTALLROOT/lib"
+#     LDFLAGS="$LDFLAGS -rpath=$INSTALLROOT/lib"
+#     LDFLAGS="$LDFLAGS -rpath=$INSTALLROOT/usr/lib"
 
     BUILDDIR="."
     ARCH="$TARGET"

@@ -32,6 +32,11 @@ BRDCPDEVS="console initctl kmsg mem null ram[0-6] rtc tty[0-6] ttyS[0-3]"
 BRDRFSCHOWN="/=root:root"
 BRDRFSCHMOD=""
 
+BRDEXDIRS="/man /share /usr/man /usr/info /usr/share/man /usr/share/info"
+BRDEXDIRS="$BRDEXDIRS /usr/share/doc /usr/share/i18n /usr/share/locale"
+BRDEXDIRS="$BRDEXDIRS /usr/include"
+BRDEXFILES="*.a *.o *.old"
+
 script_init "create a boot ramdisk from scratch" "PKGn" "$BRDPKGS" \
   "list of packages to be added to the boot ramdisk"
 
@@ -70,6 +75,8 @@ script_setopt "--patch-dir" "DIR" "BRDPATCHDIR" "patches" \
 
 script_setopt "--no-build" "" "BRDNOBUILD" "false" \
   "do not build and install any packages"
+script_setopt "--no-excludes" "" "BRDNOEXCLUDES" "false" \
+  "do not exclude any files from filesystem"
 script_setopt "--install" "" "BRDINSTALL" "false" "perform install stage only"
 script_setopt "--clean" "" "BRDCLEAN" "false" "remove working directories"
 
@@ -97,9 +104,14 @@ fs_abspath $BRDIMGROOT BRDIMGROOT
 BRDIMG="$BRDIMGROOT/bootrd.img"
 BRDRFSIMG="$BRDIMGROOT/rootfs.img"
 
+if true BRDNOEXCLUDES; then
+  unset BRDEXDIRS
+  unset BRDEXFILES
+fi
+
 if [ -d "$BRDRFSROOT" ]; then
   fs_mkimg $BRDRFSIMG $BRDRFSROOT $BRDRFSMOUNTPOINT $BRDRFSTYPE \
-    $BRDRFSBLOCKSIZE $BRDRFSSPACE
+    $BRDRFSBLOCKSIZE $BRDRFSSPACE $BRDEXDIRS $BRDEXFILES
 
   fs_mountimg $BRDRFSIMG $BRDRFSMOUNTPOINT
   fs_chowndirs $BRDRFSMOUNTPOINT "$BRDRFSCHOWN"

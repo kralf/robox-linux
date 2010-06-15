@@ -6,14 +6,14 @@
 # Short-Description: Start the CARMEN laser module
 ### END INIT INFO
 
-CARMEN="/etc/init.d/carmen.sh"
+CARMEN="/usr/lib/carmen_robox/carmen.sh"
 
 [ -e "$CARMEN" ] || exit 0
 . $CARMEN
 [ "$CARMEN_START_LASER" == 1 ] || exit 0
 
 MODULE_NAME="laser"
-MODULE_BIN="/usr/bin/laser"
+MODULE_BIN="/usr/bin/carmen-laser"
 MODULE_OPTS=""
 
 [ -e "$MODULE_BIN" ] || exit 0

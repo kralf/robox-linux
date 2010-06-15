@@ -1,0 +1,8 @@
+if [[ "$TARGET" =~ i[3-6]86 ]]; then
+    PROC="x86"
+else
+    PROC="$TARGET"
+fi
+BUILDDIR="./build.$TARGET"
+CONFIGURE=("cmake $CMAKEFLAGS ..")
+COMMENT="this will not take long"

@@ -1,0 +1,11 @@
+if [[ "$TARGET" =~ i[3-6]86 ]]; then
+    PROC="x86"
+else
+    PROC="$TARGET"
+fi
+CARMENROBOXFLAGS="-DCARMEN_ROBOX_CONFIGURATION_DESTINATION=$INSTALLROOT/etc/carmen_robox"
+BUILDDIR="./build.$TARGET"
+CONFIGURE=("cmake $CMAKEFLAGS $CARMENROBOXFLAGS ..")
+MAKEINSTALL=("make install"
+             "cp -a $CONFDIR/carmen-robox.$TARGET $INSTALLROOT/etc/carmen.conf")
+COMMENT="takes less than a minute"

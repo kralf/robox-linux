@@ -29,16 +29,11 @@ RFSPKGS="coreutils glibc-min ncurses readline bash pcre grep sed"
 RFSPKGS="$RFSPKGS zlib sysvinit e2fsprogs util-linux module-init-tools nano"
 RFSPKGS="$RFSPKGS udev procps hostname sysklogd shadow dpkg linux-modules"
 RFSPKGS="$RFSPKGS net-tools iputils ifupdown debianutils openssl openssh"
-RFSPKGS="$RFSPKGS carmen robox-drivers robox-linux robox-posix robox-carmen"
+RFSPKGS="$RFSPKGS carmen robox-drivers robox-linux tulibs librobox carmen-robox"
 
 RFSMKDIRS="/proc /sys /dev /mnt /etc /boot /home /root /tmp /usr"
 RFSMKDIRS="$RFSMKDIRS /var/lock /var/log /var/mail /var/run /var/spool"
 RFSMKFILES="/var/run/utmp /var/log/lastlog /var/log/wtmp /var/log/btmp"
-
-RFSEXDIRS="/man /share /usr/man /usr/info /usr/share/man /usr/share/info"
-RFSEXDIRS="$RFSEXDIRS /usr/share/doc /usr/share/i18n /usr/share/locale"
-RFSEXDIRS="$RFSEXDIRS /usr/include"
-RFSEXFILES="*.a *.o *.old"
 
 script_init "create a root filesystem from scratch" "PKGn" "$RFSPKGS" \
   "list of packages to be added to the root filesytem"
@@ -71,8 +66,6 @@ script_setopt "--debug" "" "RFSDEBUG" "false" \
   "emit debugging information for all symbols"
 script_setopt "--no-strip" "" "RFSNOSTRIP" "false" \
   "do not strip symbols from binary objects"
-script_setopt "--no-excludes" "" "RFSNOEXCLUDES" "false" \
-  "do not exclude any files from filesystem"
 script_setopt "--install" "" "RFSINSTALL" "false" "perform install stage only"
 script_setopt "--clean" "" "RFSCLEAN" "false" "remove working directories"
 
@@ -105,10 +98,6 @@ fi
 
 if false RFSNOSTRIP; then
   build_stripsyms $RFSROOT
-fi
-if false RFSNOEXCLUDES; then
-  fs_rmdirs $RFSROOT $RFSEXDIRS
-  fs_rmfiles $RFSROOT $RFSEXFILES
 fi
 
 if true RFSCLEAN; then

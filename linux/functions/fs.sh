@@ -73,7 +73,7 @@ function fs_getfiles
     DIRNAME=`dirname $PATTERN`
     BASENAME=`basename $PATTERN`
 
-    FILES[${#FILES[*]}]="`find $DIRNAME -name "$BASENAME" -xtype f`"
+    FILES[${#FILES[*]}]="`find $DIRNAME -maxdepth 1 -name "$BASENAME" -xtype f`"
   done 
 
   define $2 ${FILES[@]}
@@ -94,7 +94,7 @@ function fs_getdirs
     DIRNAME=`dirname $PATTERN`
     BASENAME=`basename $PATTERN`
 
-    DIRS[${#DIRS[*]}]="`find $DIRNAME -name "$BASENAME" -xtype d`"
+    DIRS[${#DIRS[*]}]="`find $DIRNAME -maxdepth 1 -name "$BASENAME" -xtype d`"
   done 
 
   define $2 ${DIRS[@]}
@@ -102,9 +102,19 @@ function fs_getdirs
 
 function fs_getdirsize
 {
-  DIRSIZE=(`du -hks $1 2> $NULL`)
+  ROOT=$1
+  shift
+  VAR=$1
+  shift
+
+  unset EXCLUDES
+  for EXCLUDE in $*; do
+    EXCLUDES="$EXCLUDES --exclude=$EXCLUDE"
+  done
+
+  DIRSIZE=(`du -hks $EXCLUDES $ROOT 2> $NULL`)
   [ -z "$DIRSIZE" ] && DIRSIZE="0"
-  define $2 ${DIRSIZE[0]}
+  define $VAR ${DIRSIZE[0]}
 }
 
 function fs_abspath
@@ -381,7 +391,7 @@ function fs_umountimg
 
   message_start "unmounting filesystem image from $UMNTPOINT"
 
-  execute "umount $UMNTIMG"
+  execute "umount $UMNTPOINT"
   execute "rm -rf $UMNTPOINT"
 
   message_end
@@ -390,16 +400,28 @@ function fs_umountimg
 function fs_mkimg
 {
   FSIMAGE=$1
-  FSROOT=$2
-  FSMOUNTPOINT=$3
-  FSTYPE=$4
-  FSBLOCKSIZE=$5
-  FSSPACE=$6
+  shift
+  FSROOT=$1
+  shift
+  FSMOUNTPOINT=$1
+  shift
+  FSTYPE=$1
+  shift
+  FSBLOCKSIZE=$1
+  shift
+  FSSPACE=$1
+  shift
 
   message_start "making filesystem image $FSIMAGE"
 
+  unset FSEXCLUDES
+  for FSEXCLUDE in $*; do
+    [[ "$FSEXCLUDE" =~ ^/ ]] && FSEXCLUDE="$FSROOT$FSEXCLUDE"
+    FSEXCLUDES="$FSEXCLUDES $FSEXCLUDE"
+  done
+
   message_start "evaluating image size"
-  fs_getdirsize $FSROOT FSSIZE
+  fs_getdirsize $FSROOT FSSIZE $FSEXCLUDES
   math_calc "$FSSIZE*1.05+$FSSPACE" FSSIZE
   message_end
 
@@ -413,8 +435,13 @@ function fs_mkimg
 
   fs_mountimg $FSIMAGE $FSMOUNTPOINT
 
+  unset FSRSYNCOPTS
+  for FSEXCLUDE in $*; do
+    FSRSYNCOPTS="$FSRSYNCOPTS --exclude=$FSEXCLUDE"
+  done
+
   message_start "copying filesystem content to image"
-  execute "cp -a $FSROOT/* $FSMOUNTPOINT"
+  execute "rsync -av $FSRSYNCOPTS $FSROOT/* $FSMOUNTPOINT"
   message_end
 
   fs_umountimg $FSIMAGE $FSMOUNTPOINT
