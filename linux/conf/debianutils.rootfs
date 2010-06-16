@@ -1,2 +1,0 @@
-CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux"
-COMMENT="this will not take long"

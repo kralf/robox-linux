@@ -1,7 +1,0 @@
-CONFIGURE=("cd lib"
-           "./configure /usr/share 0.0 $ARCH"
-           "cd ..")
-MAKEBUILD=("make -C lib $MAKEOPTS"
-           "make $MAKEOPTS")
-MAKEINSTALL="make DESTDIR=$ROOT install"
-COMMENT="yet another quick build"

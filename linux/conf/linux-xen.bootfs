@@ -1,7 +1,0 @@
-CONFIGURE="cp -ua $CONFDIR/linux-xen-$PKGVERSION.$TARGET .config"
-MAKEBUILD="make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- vmlinuz"
-MAKEINSTALL=("chmod a-x vmlinux"
-             "cp -a vmlinux $ROOT/vmlinux-$VERSION"
-             "cp -a System.map $ROOT/System.map-$VERSION"
-             "cp -a .config $ROOT/config-$VERSION")
-COMMENT="this may take a while"

@@ -1,3 +1,0 @@
-CONFIGURE=""
-MAKEINSTALL="make prefix=$ROOT install"
-COMMENT="yet another quick build"

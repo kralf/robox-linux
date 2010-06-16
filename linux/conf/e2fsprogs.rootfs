@@ -1,3 +1,0 @@
-BUILDDIR="./build"
-CONFIGURE="../configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux --enable-elf-shlibs --disable-evms"
-COMMENT="no need to run"

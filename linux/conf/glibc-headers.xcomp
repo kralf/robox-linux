@@ -1,8 +1,0 @@
-ALIAS="glibc"
-PATH="$PATH:$EPREFIX/bin"
-BUILDDIR="./build"
-CONFIGURE="../configure --prefix=/usr --target=$TARGET-linux --with-headers=$PREFIX/include --with-elf --without-gd --disable-profile --disable-debug"
-MAKEBUILD=""
-MAKEINSTALL=("make $MAKEOPTS install_root=$EPREFIX install-headers"
-             "cp -a ../include/gnu/stubs.h $PREFIX/include/gnu"
-             "cp -a bits/stdio_lim.h $PREFIX/include/bits")

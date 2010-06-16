@@ -1,2 +1,0 @@
-CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --target=$TARGET-linux --with-sysroot=$EPREFIX --enable-shared --disable-nls --disable-werror"
-COMMENT="this usually takes two minutes"

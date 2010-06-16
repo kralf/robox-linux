@@ -1,4 +1,0 @@
-CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux CC_FOR_BUILD=cc CFLAGS_FOR_BUILD=-L$EPREFIX/lib --disable-nls"
-MAKEINSTALL=("make $MAKEOPTS install"
-             "rm -rf $EPREFIX/lib/pkgconfig")
-COMMENT="a quick build"

@@ -1,3 +1,0 @@
-CFLAGS="$CFLAGS -I$BUILDROOT/zlib"
-CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux --enable-zlib"
-COMMENT="hang on for a while"

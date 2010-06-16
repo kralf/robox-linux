@@ -1,6 +1,0 @@
-CFLAGS="$CFLAGS -I$BUILDROOT/zlib -I$BUILDROOT/ncurses/include"
-LDFLAGS="$LDFLAGS -L$BUILDROOT/zlib -L$BUILDROOT/ncurses/lib"
-CONFIGURE="./configure --prefix=$EPREFIX --host=$TARGET-linux --disable-nls"
-MAKEINSTALL=("fakeroot make $MAKEOPTS install"
-             "ln -sf agetty $EPREFIX/sbin/getty")
-COMMENT="should not take long"

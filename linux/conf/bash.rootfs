@@ -1,4 +1,0 @@
-CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux --infodir=$PREFIX/share/info --without-bash-malloc --disable-nls"
-MAKEINSTALL=("make $MAKEOPTS install"
-             "ln -sf bash $EPREFIX/bin/sh")
-COMMENT="another two minutes"
