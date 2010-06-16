@@ -15,8 +15,8 @@ function carmen_ini_update()
   cat $CARMEN_ERA_INI >> $CARMEN_INI
 }
 
-CARMEN="/etc/init.d/carmen.sh"
-CARMEN_INI="/etc/carmen/robox-era.ini"
+CARMEN="/usr/lib/carmen_robox/carmen.sh"
+CARMEN_INI="/etc/carmen_robox/robox.ini"
 
 [ -e "$CARMEN" ] || exit 0
 . $CARMEN

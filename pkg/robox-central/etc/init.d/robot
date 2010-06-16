@@ -7,7 +7,7 @@
 # Short-Description: Start the CARMEN joystick module
 ### END INIT INFO
 
-CARMEN="/etc/init.d/carmen.sh"
+CARMEN="/usr/lib/carmen_robox/carmen.sh"
 
 [ -e "$CARMEN" ] || exit 0
 . $CARMEN
