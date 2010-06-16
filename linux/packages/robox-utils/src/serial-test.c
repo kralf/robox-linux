@@ -65,9 +65,9 @@ int main( int argc, char * argv[] ) {
       double trans_rate = 0.0;
       struct timeval start_time, current_time;
       gettimeofday(&start_time, 0);
-      
+
       signal(SIGINT, signaled);
-      
+
       while (!quit) {
         ssize_t num;
         unsigned char data[64];
@@ -86,7 +86,7 @@ int main( int argc, char * argv[] ) {
           }
 
           fprintf(stderr, "\rreceived %6d kB at %6d kBit/s", 
-            num_trans/1024, (int)trans_rate);
+            (int)num_trans/1024, (int)trans_rate);
         }
         else {
           fprintf(stderr, "read error\n");
