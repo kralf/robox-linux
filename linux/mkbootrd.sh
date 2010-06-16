@@ -91,7 +91,7 @@ BRDMAKEOPTS="$BRDMAKEOPTS -j$BRDCORES"
 
 PATH="$PATH:$BRDXCROOT/bin"
 
-message_boldstart "making boot ramdisk in $BRDROOT"
+message_boldstart "making boot ramdisk in $BRDIMGROOT"
 
 build_checktools $BRDTARGET gcc g++ ar as ranlib ld strip
 build_setenv $BRDXCROOT $BRDTARGET $BRDDEBUG

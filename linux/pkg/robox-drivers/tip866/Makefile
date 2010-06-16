@@ -1,6 +1,6 @@
 PWD := $(shell pwd)
 KERNEL_SRC ?= /usr/src/linux-source-`uname -r`
-IPAC_SRC ?= $(PWD)/../cpci100a-non-free
+IPAC_SRC ?= $(PWD)/../cpci100a
 
 CFLAGS = -I$(IPAC_SRC)
 
