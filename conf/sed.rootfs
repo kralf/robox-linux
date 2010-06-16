@@ -1,0 +1,2 @@
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux --infodir=$PREFIX/share/info --disable-nls"
+COMMENT="also a quick build"

@@ -1,0 +1,7 @@
+ALIAS="linux"
+CONFIGURE="cp -ua $CONFDIR/linux-$PKGVERSION.$TARGET .config"
+MAKEBUILD="make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- modules"
+MAKEINSTALL=("make $MAKEOPTS ARCH=$ARCH CROSS_COMPILE=$TARGET-linux- INSTALL_MOD_PATH=$EPREFIX modules_install"
+             "rm -rf $ROOT/lib/modules/$VERSION/build"
+             "rm -rf $ROOT/lib/modules/$VERSION/source")
+COMMENT="this depends on your kernel configuration"

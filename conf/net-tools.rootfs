@@ -1,0 +1,4 @@
+CONFIGURE="cp -ua $CONFDIR/net-tools.$TARGET config.h"
+MAKEBUILD="make $MAKEOPTS -j1 all"
+MAKEINSTALL="fakeroot make $MAKEOPTS -j1 BASEDIR=$EPREFIX install"
+COMMENT="this will not take long"

@@ -1,0 +1,2 @@
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --build=$HOST-linux --host=$TARGET-linux --cache-file=config.cache --disable-nls"
+COMMENT="this usually takes two minutes"

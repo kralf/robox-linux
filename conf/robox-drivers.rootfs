@@ -1,0 +1,15 @@
+MODULEROOT=$(echo $RFSROOT/lib/modules/*)
+MODULEMAKEOPTS="$MAKEOPTS ARCH=$ARCH CC=$CC LD=$LD KERNEL_SRC=$BUILDROOT/linux-modules"
+CONFIGURE=""
+MAKEBUILD=("make -C userled $MODULEMAKEOPTS"
+           "make -C icpmulti $MODULEMAKEOPTS"
+           "make -C cpci100a $MODULEMAKEOPTS"
+           "make -C tip866 $MODULEMAKEOPTS"
+           "make -C ipquad $MODULEMAKEOPTS")
+MAKEINSTALL=("mkdir -p $MODULEROOT/extra"
+             "cp -a userled/*.ko $MODULEROOT/extra"
+             "cp -a icpmulti/*.ko $MODULEROOT/extra"
+             "cp -a cpci100a/*.ko $MODULEROOT/extra"
+             "cp -a tip866/*.ko $MODULEROOT/extra"
+             "cp -a ipquad/*.ko $MODULEROOT/extra")
+COMMENT="this will not take long"

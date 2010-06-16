@@ -1,0 +1,5 @@
+ALIAS="glibc"
+BUILDDIR="./build"
+CONFIGURE="../configure --prefix=/usr --host=$TARGET-linux --target=$TARGET-linux --build=$HOST-linux --with-headers=$RFSXCROOT/usr/include --with-elf --without-gd --disable-profile --disable-debug"
+MAKEINSTALL="make $MAKEOPTS install_root=$EPREFIX install"
+COMMENT="consider leaving for lunch"

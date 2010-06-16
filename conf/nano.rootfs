@@ -1,0 +1,3 @@
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --build=$HOST-linux --host=$TARGET-linux"
+MAKEBUILD="make $MAKEOPTS CFLAGS=-I$BUILDROOT/ncurses/include \"LDFLAGS=-L$BUILDROOT/ncurses/lib -lncurses\""
+COMMENT="yet another quick build"

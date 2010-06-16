@@ -1,0 +1,4 @@
+CONFIGURE=""
+MAKEBUILD="make $MAKEOPTS CC=$CC"
+MAKEINSTALL="fakeroot make $MAKEOPTS BASEDIR=$EPREFIX CC=$CC install"
+COMMENT="won't take long"

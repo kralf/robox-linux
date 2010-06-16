@@ -1,0 +1,2 @@
+CONFIGURE="./configure --prefix=$EPREFIX --host=$TARGET-linux --disable-nls"
+COMMENT="about a minute"

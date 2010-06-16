@@ -1,0 +1,3 @@
+PATH="$PATH:$EPREFIX/bin"
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$HOST-linux --target=$TARGET-linux --host=$HOST-linux --with-sysroot=$EPREFIX --with-build-sysroot=$EPREFIX --with-local-prefix=$EPREFIX --enable-languages=c,c++ --enable-shared --enable-threads=posix --enable-multilib --disable-nls"
+COMMENT="go grab another coffee"

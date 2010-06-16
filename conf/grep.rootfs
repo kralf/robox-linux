@@ -1,0 +1,5 @@
+CFLAGS="$CFLAGS -I$BUILDROOT/pcre"
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --host=$TARGET-linux --infodir=$PREFIX/share/info --disable-nls"
+MAKEINSTALL=("rm -f $EPREFIX/bin/?grep"
+             "make $MAKEOPTS install")
+COMMENT="another quick build"

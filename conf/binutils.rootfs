@@ -1,0 +1,4 @@
+CONFIGURE="$CONFIGURE --disable-nls"
+MAKEINSTALL=("make install"
+             "rm -rf $USRROOT/$TARGET-linux")
+COMMENT="this usually takes two minutes"
