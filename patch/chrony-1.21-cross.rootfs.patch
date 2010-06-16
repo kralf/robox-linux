@@ -1,0 +1,23 @@
+diff -Naur chrony-1.21/configure chrony-1.21-cross/configure
+--- chrony-1.21/configure	2005-08-11 22:32:54.000000000 +0200
++++ chrony-1.21-cross/configure	2010-06-16 14:07:28.806498775 +0200
+@@ -342,6 +342,7 @@
+ sed -e "s%@EXTRA_OBJECTS@%${EXTRA_OBJECTS}%;\
+ 	s%@CC@%${MYCC}%;\
+ 	s%@CFLAGS@%${MYCFLAGS}%;\
++	s%@LDFLAGS@%${LDFLAGS}%;\
+ 	s%@CCWARNFLAGS@%${CCWARNFLAGS}%;\
+ 	s%@LIBS@%${LIBS}%;\
+ 	s%@EXTRA_LIBS@%${EXTRA_LIBS}%;\
+diff -Naur chrony-1.21/Makefile.in chrony-1.21-cross/Makefile.in
+--- chrony-1.21/Makefile.in	2010-06-16 13:54:31.000000000 +0200
++++ chrony-1.21-cross/Makefile.in	2010-06-16 14:02:14.936474511 +0200
+@@ -31,7 +31,7 @@
+ 
+ CC = @CC@
+ CCWARNFLAGS = @CCWARNFLAGS@
+-OPTFLAGS = @CFLAGS@ @EXTRA_DEFS@
++OPTFLAGS = @CFLAGS@ @LDFLAGS@ @EXTRA_DEFS@
+ 
+ DESTDIR=
+ 

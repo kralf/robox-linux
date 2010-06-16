@@ -1,0 +1,2 @@
+CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --build=$HOST-linux --host=$TARGET-linux"
+COMMENT="yet another quick build"

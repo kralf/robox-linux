@@ -27,7 +27,7 @@
 
 BRDPKGS="linux"
 
-BRDCPDEVS="console initctl kmsg mem null ram[0-6] rtc tty[0-6] ttyS[0-3]"
+BRDCPDEVS="console kmsg mem null ram[0-6] rtc rtc0 tty[0-6] ttyS[0-3]"
 
 BRDRFSCHOWN="/=root:root"
 BRDRFSCHMOD=""

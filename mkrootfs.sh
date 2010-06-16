@@ -25,8 +25,8 @@
 
 . ubash
 
-RFSPKGS="coreutils glibc-min ncurses readline bash pcre grep sed"
-RFSPKGS="$RFSPKGS zlib sysvinit e2fsprogs util-linux module-init-tools nano"
+RFSPKGS="coreutils glibc-min ncurses readline bash pcre grep sed zlib"
+RFSPKGS="$RFSPKGS sysvinit e2fsprogs util-linux module-init-tools chrony nano"
 RFSPKGS="$RFSPKGS udev procps hostname sysklogd shadow dpkg linux-modules"
 RFSPKGS="$RFSPKGS net-tools iputils ifupdown debianutils openssl openssh"
 RFSPKGS="$RFSPKGS carmen robox-drivers robox-linux tulibs librobox carmen-robox"
