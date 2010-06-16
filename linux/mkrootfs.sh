@@ -23,7 +23,7 @@
 # This script requires a cross compiling environment to be created first
 # See usage for a description of the arguments
 
-. functions/global.sh
+. ubash
 
 RFSPKGS="coreutils glibc-min ncurses readline bash pcre grep sed"
 RFSPKGS="$RFSPKGS zlib sysvinit e2fsprogs util-linux module-init-tools nano"
@@ -35,8 +35,8 @@ RFSMKDIRS="/proc /sys /dev /mnt /etc /boot /home /root /tmp /usr"
 RFSMKDIRS="$RFSMKDIRS /var/lock /var/log /var/mail /var/run /var/spool"
 RFSMKFILES="/var/run/utmp /var/log/lastlog /var/log/wtmp /var/log/btmp"
 
-script_init "create a root filesystem from scratch" "PKGn" "$RFSPKGS" \
-  "list of packages to be added to the root filesytem"
+script_init_array "Create a root filesystem from scratch" \
+  "PKG" RFSPKGS "$RFSPKGS" "list of packages to be added to the root filesytem"
 
 script_setopt "--root" "DIR" "RFSROOT" ".rootfs.root" \
   "temporary root of filesystem"
@@ -53,11 +53,11 @@ script_setopt "--cores" "NUM" "RFSCORES" "1" "number of cores to compile on"
 script_setopt "--make-args|-m" "ARGS" "RFSMAKEARGS" "" \
   "additional arguments to be passed to make"
 
-script_setopt "--package-dir" "DIR" "RFSPKGDIR" "packages" \
+script_setopt "--package-dir" "DIR" "RFSPKGDIR" "pkg" \
   "directory containing packages"
-script_setopt "--config-dir" "DIR" "RFSCONFDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "RFSCONFDIR" "conf" \
   "directory containing build configurations"
-script_setopt "--patch-dir" "DIR" "RFSPATCHDIR" "patches" \
+script_setopt "--patch-dir" "DIR" "RFSPATCHDIR" "patch" \
   "directory containing patches"
 
 script_setopt "--no-build" "" "RFSNOBUILD" "false" \
@@ -93,7 +93,7 @@ fs_abspath $RFSBUILDROOT RFSBUILDROOT
 
 if false RFSNOBUILD; then
   build_packages "rootfs" $RFSPKGDIR $RFSCONFDIR $RFSPATCHDIR $RFSBUILDROOT \
-    $RFSROOT $RFSHOST $RFSTARGET "$RFSMAKEOPTS" $RFSINSTALL ${PKGn[@]}
+    $RFSROOT $RFSHOST $RFSTARGET "$RFSMAKEOPTS" $RFSINSTALL ${RFSPKGS[*]}
 fi
 
 if false RFSNOSTRIP; then

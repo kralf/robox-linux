@@ -22,12 +22,12 @@
 # Create a cross compile environment
 # See usage for a description of the arguments
 
-. functions/global.sh
+. ubash
 
 XCPKGS="linux-headers binutils glibc-headers gcc-min glibc gcc"
 
-script_init "make a cross compiling environment" "PKGn" "$XCPKGS" \
-  "list of packages to be added to the environment"
+script_init_array "Make a cross compiling environment" \
+  "PKG" XCPKGS "$XCPKGS" "list of packages to be added to the environment"
 
 script_setopt "--root" "DIR" "XCROOT" ".xcomp.root" \
   "root of cross compiling environment"
@@ -37,15 +37,18 @@ script_setopt "--host" "i686|powerpc|..." "XCHOST" "`uname -m`" \
   "override host architecture"
 script_setopt "--target" "i686|powerpc|..." "XCTARGET" "`uname -m`" \
   "target architecture"
+
 script_setopt "--cores" "NUM" "XCCORES" "1" "number of cores to compile on"
 script_setopt "--make-args|-m" "ARGS" "XCMAKEARGS" "" \
   "additional arguments to be passed to make"
-script_setopt "--package-dir" "DIR" "XCPKGDIR" "packages" \
+
+script_setopt "--package-dir" "DIR" "XCPKGDIR" "pkg" \
   "directory containing packages"
-script_setopt "--config-dir" "DIR" "XCCONFDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "XCCONFDIR" "conf" \
   "directory containing build configurations"
-script_setopt "--patch-dir" "DIR" "XCPATCHDIR" "patches" \
+script_setopt "--patch-dir" "DIR" "XCPATCHDIR" "patch" \
   "directory containing patches"
+
 script_setopt "--no-build" "" "XCNOBUILD" "false" \
   "do not build and install any packages"
 script_setopt "--install" "" "XCINSTALL" "false" "perform install stage only"
@@ -66,7 +69,7 @@ fs_abspath $XCROOT XCROOT
 
 if false XCNOBUILD; then
   build_packages "xcomp" $XCPKGDIR $XCCONFDIR $XCPATCHDIR $XCBUILDROOT $XCROOT \
-    $XCHOST $XCTARGET "$XCMAKEOPTS" $XCINSTALL ${PKGn[@]}
+    $XCHOST $XCTARGET "$XCMAKEOPTS" $XCINSTALL ${XCPKGS[*]}
 fi
 
 if true XCCLEAN; then

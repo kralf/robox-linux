@@ -1,3 +1,4 @@
+#!/bin/bash
 ############################################################################
 #    Copyright (C) 2007 by Ralf 'Decan' Kaestner                           #
 #    ralf.kaestner@gmail.com                                               #
@@ -18,56 +19,57 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-#!/bin/bash
-
 # Create a Debian root filesystem from scratch
 # See usage for a description of the arguments
 
-. ./functions.sh
+. ubash
 
-init "create a Debian root filesystem from scratch" "PKG" "" \
-  "list of packages to be added to the image"
+script_init_array "Create a Debian root filesystem from scratch" \
+  "PKG" DEBPKGS "$DEBPKGS" "list of packages to be added to the Debian image"
 
-set_arg "--image|-i" "FILE" "IMAGE" "rootfs.debian.img" \
+script_setopt "--image|-i" "FILE" "DEBIMAGE" "rootfs.debian.img" \
   "root filesystem image to be created"
-set_arg "--size" "SIZE" "SIZE" "128" \
+script_setopt "--size" "SIZE" "DEBSIZE" "128" \
   "size of the root filesystem in MB"
-set_arg "--target" "i686|powerpc|..." "TARGET" "powerpc" \
+script_setopt "--target" "i686|powerpc|..." "DEBTARGET" "powerpc" \
   "target architecture"
-set_arg "--dist" "woody|sarge|..." "DIST" "sarge" \
+script_setopt "--dist" "woody|sarge|..." "DEBDIST" "sarge" \
   "Debian distribution"
-set_arg "--mirror" "us|de|..." "MIRROR" "de" \
+script_setopt "--mirror" "us|de|..." "DEBMIRROR" "de" \
   "package download mirror"
-set_arg "--mount-point" "DIR" "MNT" ".rootfs.debian.mount" \
+script_setopt "--mount-point" "DIR" "DEBMNT" ".rootfs.debian.mount" \
   "temporary mount point of root filesystem"
 
-check_args $*
-check_uid
+script_checkopts $*
+script_checkroot
 
-SERVER="http://ftp.$MIRROR.debian.org/debian"
-if [ ${#PKG[@]} != 0 ]; then
-  PKGS=${PKG[@]}
-  PKGS=${PKGS//" "/","}
-  INCPKGS="--include=$PKGS"
+SERVER="http://ftp.$DEBMIRROR.debian.org/debian"
+if [ ${#DEBPKGS[*]} != 0 ]; then
+  DEBPKGS=${DEBPKGS[*]}
+  DEBPKGS=${DEBPKGS//" "/","}
+  DEBINCLUDES="--include=$DEBPKGS"
 fi
 
-message "making Debian root filesystem image $IMAGE"
-stage_up
+message_boldstart "making Debian root filesystem image $DEBIMAGE"
 
-message "creating zeroed root filesystem image $IMAGE"
-execute "dd if=/dev/zero of=$IMAGE bs=1M count=$SIZE"
-execute "/sbin/mkfs -F $IMAGE"
+message_start "creating zeroed root filesystem image $DEBIMAGE"
+execute "dd if=/dev/zero of=$DEBIMAGE bs=1M count=$DEBSIZE"
+execute "/sbin/mkfs -F $DEBIMAGE"
+message_end
 
-message "mounting root filesystem image to $MNT"
-execute "mkdir $MNT"
-execute "mount -o loop $IMAGE $MNT"
+message_start "mounting root filesystem image to $DEBMNT"
+execute "mkdir $DEBMNT"
+execute "mount -o loop $DEBIMAGE $DEBMNT"
+message_end
 
-message "processing package list"
-execute "debootstrap --verbose --arch $TARGET $INCPKGS $DIST $MNT $SERVER"
+message_start "processing package list"
+DEBOPTS="$DEBTARGET $DEBINCLUDES $DEBDIST $DEBMNT $DEBSERVER"
+execute "debootstrap --verbose --arch $DEBOPTS"
+message_end
 
-message "unmounting root filesystem image"
-execute "umount $MNT"
-execute "rm -r $MNT"
+message_start "unmounting root filesystem image"
+execute "umount $DEBMNT"
+execute "rm -r $DEBMNT"
+message_end
 
-stage_down
-message "success"
+message_boldend "success"

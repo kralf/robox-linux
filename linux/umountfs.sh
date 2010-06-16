@@ -22,23 +22,23 @@
 # Unmount filesystem image
 # See usage for a description of the arguments
 
-. functions/global.sh
+. ubash
 
-UMNTFS="root"
-
-script_init "unmount filesystem image" "FS" "$UMNTFS" \
+script_init "Unmount filesystem image" "FS" UMNTFS "root" \
   "the filesystem to be unmounted root|boot|..."
 
-script_setopt "--image" "FILE" "UMNTIMG" "" \
-  "filesystem image to be unmounted"
-script_setopt "--mount-point" "DIR" "UMNTPOINT" "" \
+script_setopt "--image" "FILE" UMNTIMG "" "filesystem image to be unmounted"
+script_setopt "--mount-point" "DIR" UMNTPOINT "" \
   "mount point of the filesystem"
+
+script_setopt "--target" "i686|powerpc|..." "UMNTTARGET" "`uname -m`" \
+  "filesystem image target architecture"
 
 script_checkopts $*
 script_checkroot
 
-[ -z "$UMNTIMG" ] && UMNTIMG=".bootrd.images/*/${FS}fs.img"
-[ -z "$UMNTPOINT" ] && UMNTPOINT=".${FS}fs.mount"
+[ -z "$UMNTIMG" ] && UMNTIMG=".bootrd.images/$UMNTTARGET/${UMNTFS}fs.img"
+[ -z "$UMNTPOINT" ] && UMNTPOINT=".${UMNTFS}fs.mount"
 
 fs_umountimg $UMNTIMG $UMNTPOINT
 

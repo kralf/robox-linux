@@ -23,7 +23,7 @@
 # This script requires a cross compiling environment to be created first
 # See usage for a description of the arguments
 
-. functions/global.sh
+. ubash
 
 BRDPKGS="linux"
 
@@ -37,8 +37,8 @@ BRDEXDIRS="$BRDEXDIRS /usr/share/doc /usr/share/i18n /usr/share/locale"
 BRDEXDIRS="$BRDEXDIRS /usr/include"
 BRDEXFILES="*.a *.o *.old"
 
-script_init "create a boot ramdisk from scratch" "PKGn" "$BRDPKGS" \
-  "list of packages to be added to the boot ramdisk"
+script_init_array "Create a boot ramdisk from scratch" \
+  "PKG" BRDPKGS "$BRDPKGS" "list of packages to be added to the boot ramdisk"
 
 script_setopt "--build-root" "DIR" "BRDBUILDROOT" ".bootrd.build" \
   "temporary build root"
@@ -66,11 +66,11 @@ script_setopt "--cores" "NUM" "BRDCORES" "1" "number of cores to compile on"
 script_setopt "--make-args|-m" "ARGS" "BRDMAKEARGS" "" \
   "additional arguments to be passed to make"
 
-script_setopt "--package-dir" "DIR" "BRDPKGDIR" "packages" \
+script_setopt "--package-dir" "DIR" "BRDPKGDIR" "pkg" \
   "directory containing packages"
-script_setopt "--config-dir" "DIR" "BRDCONFDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "BRDCONFDIR" "conf" \
   "directory containing build configurations"
-script_setopt "--patch-dir" "DIR" "BRDPATCHDIR" "patches" \
+script_setopt "--patch-dir" "DIR" "BRDPATCHDIR" "patch" \
   "directory containing patches"
 
 script_setopt "--no-build" "" "BRDNOBUILD" "false" \
@@ -124,7 +124,7 @@ fi
 
 if false BRDNOBUILD; then
   build_packages "bootrd" $BRDPKGDIR $BRDCONFDIR $BRDPATCHDIR $BRDBUILDROOT \
-    $BRDBUILDROOT $BRDHOST $BRDTARGET "$BRDMAKEOPTS" $BRDINSTALL ${PKGn[@]}
+    $BRDBUILDROOT $BRDHOST $BRDTARGET "$BRDMAKEOPTS" $BRDINSTALL ${BRDPKGS[*]}
 fi
 
 if true BRDCLEAN; then

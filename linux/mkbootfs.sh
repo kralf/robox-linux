@@ -23,12 +23,12 @@
 # This script requires a cross compiling environment to be created first
 # See usage for a description of the arguments
 
-. functions/global.sh
+. ubash
 
 BFSPKGS="linux"
 
-script_init "create a boot filesystem from scratch" "PKGn" "$BFSPKGS" \
-  "list of packages to be added to the boot filesystem"
+script_init_array "Create a boot filesystem from scratch" "PKG" BFSPKGS \
+  "$BFSPKGS" "list of packages to be added to the boot filesystem"
 
 script_setopt "--root" "DIR" "BFSROOT" ".bootfs.root" \
   "temporary root of filesystem"
@@ -45,11 +45,11 @@ script_setopt "--cores" "NUM" "BFSCORES" "1" "number of cores to compile on"
 script_setopt "--make-args|-m" "ARGS" "BFSMAKEARGS" "" \
   "additional arguments to be passed to make"
 
-script_setopt "--package-dir" "DIR" "BFSPKGDIR" "packages" \
+script_setopt "--package-dir" "DIR" "BFSPKGDIR" "pkg" \
   "directory containing packages"
-script_setopt "--config-dir" "DIR" "BFSCONFDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "BFSCONFDIR" "conf" \
   "directory containing build configurations"
-script_setopt "--patch-dir" "DIR" "BFSPATCHDIR" "patches" \
+script_setopt "--patch-dir" "DIR" "BFSPATCHDIR" "patch" \
   "directory containing patches"
 
 script_setopt "--no-build" "" "BFSNOBUILD" "false" \
@@ -78,7 +78,7 @@ fs_abspath $BFSBUILDROOT BFSBUILDROOT
 
 if false BFSNOBUILD; then
   build_packages "bootfs" $BFSPKGDIR $BFSCONFDIR $BFSPATCHDIR $BFSBUILDROOT \
-    $BFSROOT $BFSHOST $BFSTARGET "$BFSMAKEOPTS" $BFSINSTALL ${PKGn[@]}
+    $BFSROOT $BFSHOST $BFSTARGET "$BFSMAKEOPTS" $BFSINSTALL ${BFSPKGS[*]}
 fi
 
 if true BFSCLEAN; then

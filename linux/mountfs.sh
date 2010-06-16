@@ -22,23 +22,22 @@
 # Mount filesystem image
 # See usage for a description of the arguments
 
-. functions/global.sh
+. ubash
 
-MNTFS="root"
-
-script_init "mount filesystem image" "FS" "$MNTFS" \
+script_init "Mount filesystem image" "FS" MNTFS "root" \
   "the filesystem to be mounted root|boot|..."
 
-script_setopt "--image" "FILE" "MNTIMG" "" \
-  "filesystem image to be mounted"
-script_setopt "--mount-point" "DIR" "MNTPOINT" "" \
-  "mount point of the filesystem"
+script_setopt "--image" "FILE" MNTIMG "" "filesystem image to be mounted"
+script_setopt "--mount-point" "DIR" MNTPOINT "" "mount point of the filesystem"
+
+script_setopt "--target" "i686|powerpc|..." "MNTTARGET" "`uname -m`" \
+  "filesystem image target architecture"
 
 script_checkopts $*
 script_checkroot
 
-[ -z "$MNTIMG" ] && MNTIMG=".bootrd.images/*/${FS}fs.img"
-[ -z "$MNTPOINT" ] && MNTPOINT=".${FS}fs.mount"
+[ -z "$MNTIMG" ] && MNTIMG=".bootrd.images/$MNTTARGET/${MNTFS}fs.img"
+[ -z "$MNTPOINT" ] && MNTPOINT=".${MNTFS}fs.mount"
 
 fs_mountimg $MNTIMG $MNTPOINT
 

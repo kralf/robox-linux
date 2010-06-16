@@ -22,9 +22,9 @@
 # Create robox-linux cross compiling environment and boot image
 # See usage for a description of the arguments
 
-. functions/global.sh
+. ubash
 
-script_init "create robox-linux cross compiling environment and boot ramdisk"
+script_init "Create robox-linux cross compiling environment and boot ramdisk"
 
 script_setopt "--host" "i686|powerpc|..." "RLHOST" "`uname -m`" \
   "override host architecture"
@@ -34,11 +34,11 @@ script_setopt "--cores" "NUM" "RLCORES" "1" "number of cores to compile on"
 script_setopt "--make-args|-m" "ARGS" "RLMAKEARGS" "" \
   "additional arguments to be passed to make"
 
-script_setopt "--package-dir" "DIR" "RLPKGDIR" "packages" \
+script_setopt "--package-dir" "DIR" "RLPKGDIR" "pkg" \
   "directory containing packages"
-script_setopt "--config-dir" "DIR" "RLCONFDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "RLCONFDIR" "conf" \
   "directory containing build configurations"
-script_setopt "--patch-dir" "DIR" "RLPATCHDIR" "patches" \
+script_setopt "--patch-dir" "DIR" "RLPATCHDIR" "patch" \
   "directory containing patches"
 
 script_setopt "--tftp-host" "ADDRESS" "RLTFTPHOST" "shantipc0" \

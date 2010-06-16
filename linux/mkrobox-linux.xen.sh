@@ -1,3 +1,4 @@
+#!/bin/bash
 ############################################################################
 #    Copyright (C) 2007 by Ralf 'Decan' Kaestner                           #
 #    ralf.kaestner@gmail.com                                               #
@@ -18,111 +19,86 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
-#!/bin/bash
-
 # Create robox-linux image  and boot it in a Xen virtual machine
 # See usage for a description of the arguments
 
-. ./functions.sh
+. ubash
 
-XCOMPPKGS="linux-xen-headers binutils gcc-min glibc gcc"
-ROOTPKGS="coreutils glibc-min ncurses readline bash pcre grep sed zlib"
-ROOTPKGS="$ROOTPKGS sysvinit e2fsprogs util-linux module-init-tools udev"
-ROOTPKGS="$ROOTPKGS procps hostname sysklogd shadow linux-xen-modules"
-BOOTPKGS="linux-xen"
+XCPKGS="linux-xen-headers binutils gcc-min glibc gcc"
+RFSPKGS="coreutils glibc-min ncurses readline bash pcre grep sed zlib"
+RFSPKGS="$RFSPKGS sysvinit e2fsprogs util-linux module-init-tools udev"
+RFSPKGS="$RFSPKGS procps hostname sysklogd shadow linux-xen-modules"
+BRDPKGS="linux-xen"
 
-init "create robox-linux image and boot it in a Xen virtual machine"
+script_init "Create robox-linux image and boot it in a Xen virtual machine"
 
-set_arg "--image-root" "DIR" "IMGROOT" "images" \
+script_setopt "--image-root" "DIR" "XENIMGROOT" "images" \
   "root directory of the images to be created"
-set_arg "--host" "i686|powerpc|..." "HOST" "`uname -m`" \
+script_setopt "--host" "i686|powerpc|..." "XENHOST" "`uname -m`" \
   "override host architecture"
-set_arg "--target" "i686|powerpc|..." "TARGET" "i686" \
+script_setopt "--target" "i686|powerpc|..." "XENTARGET" "i686" \
   "target architecture"
-set_arg "--package-dir" "DIR" "PKGDIR" "packages" \
+
+script_setopt "--package-dir" "DIR" "XENPKGDIR" "pkg" \
   "directory containing packages"
-set_arg "--config-dir" "DIR" "CFGDIR" "configurations" \
+script_setopt "--config-dir" "DIR" "XENCFGDIR" "conf" \
   "directory containing build configurations"
-set_arg "--no-xcomp" "" "NOXCOMP" "false" \
+
+script_setopt "--no-xcomp" "" "XENNOXCOMP" "false" \
   "do not build and install cross compiler packages"
-set_arg "--no-rootfs" "" "NOROOT" "false" \
+script_setopt "--no-rootfs" "" "XENNOROOT" "false" \
   "do not build and install root filesystem packages"
-set_arg "--no-bootfs" "" "NOBOOT" "false" \
+script_setopt "--no-bootfs" "" "XENNOBOOT" "false" \
   "do not build and install boot filesystem packages"
-set_arg "--no-build" "" "NOBUILD" "false" \
+script_setopt "--no-build" "" "XENNOBUILD" "false" \
   "do not build and install any packages"
-set_arg "--install" "" "INSTALL" "false" \
+script_setopt "--install" "" "XENINSTALL" "false" \
   "perform install stage only"
-set_arg "--clean" "" "CLEAN" "false" \
-  "remove working directories"
-set_arg "--mount-point" "DIR" "MNT" ".bootfs.mount" \
-  "mount point of boot filesystem"
-set_arg "--xen-config" "FILE" "XENCFG" "robox-linux.xen" \
-  "Xen virtual machine configuration"
-set_arg "--boot" "" "BOOT" "false" \
+script_setopt "--boot" "" "XENBOOT" "false" \
   "just boot into the image"
 
-check_args $*
-check_uid
+script_setopt "--mount-point" "DIR" "XENMNT" ".bootfs.mount" \
+  "mount point of boot filesystem"
+script_setopt "--xen-config" "FILE" "XENCFG" "robox-linux.xen" \
+  "Xen virtual machine configuration"
+script_setopt "--clean" "" "XENCLEAN" "false" \
+  "remove working directories"
 
-abs_path $IMGROOT
-IMGROOT="$ABSPATH/$TARGET"
+script_checkopts $*
+script_checkroot
 
-STAGE=0
-export STAGE
+fs_abspath $XENIMGROOT XENIMGROOT
 
-if [ "$VERBOSE" = "true" ]; then
-  CALLARGS="--verbose"
+true VERBOSE && XENARGS="--verbose"
+XENARGS="$XENARGS --host $XENHOST --target $XENTARGET"
+XENARGS="$XENARGS --package-dir $XENPKGDIR --config-dir $XENCFGDIR"
+
+true XENNOBUILD && XENARGS="$XENARGS --no-build"
+true XENINSTALL && XENARGS="$XENARGS --install"
+true XENCLEAN && XENARGS="$XENARGS --clean"
+
+true XENNOXCOMP && XCARGS="--no-build"
+
+RFSARGS="--image-root $XENIMGROOT --no-exclusions"
+true XENNOROOT && RFSARGS="$RFSARGS --no-build"
+
+BRDARGS="--image-root $XENIMGROOT"
+true XENNOBOOT && BRDARGS="$BRDARGS --no-build"
+
+message_start "making robox-linux"
+
+if false XENBOOT; then
+  ./mkxcomp.sh $XENARGS $XCARGS $XCPKGS && \
+  ./mkrootfs.sh $XENARGS $RFSARGS $RFSPKGS && \
+  ./mkbootfs.sh $XENARGS $BRDARGS $BRDPKGS
 fi
 
-CALLARGS="$CALLARGS --host $HOST --target $TARGET"
-CALLARGS="$CALLARGS --package-dir $PKGDIR --config-dir $CFGDIR"
+if [ $? == 0 ]; then
+  fs_abspath $XENMNT XENMNT
 
-if [ "$NOBUILD" == "true" ]; then
-  CALLARGS="$CALLARGS --no-build"
-fi
-if [ "$INSTALL" == "true" ]; then
-  CALLARGS="$CALLARGS --install"
-fi
-if [ "$CLEAN" == "true" ]; then
-  CALLARGS="$CALLARGS --clean"
-fi
+  ./mountfs.sh --image $XENIMGROOT/bootfs.img --mount-point $XENMNT boot
+  xen_bootimg "robox-linux" $XENCFG $XENMNTPATH "$XENIMGROOT/rootfs.img"
+  ./umountfs.sh --mount-point $XENMNTPATH boot
 
-if [ "$NOXCOMP" = "true" ]; then
-  XCOMPARGS="--no-build"
-fi
-ROOTARGS="--image-root $IMGROOT --no-exclusions"
-if [ "$NOROOT" = "true" ]; then
-  ROOTARGS="$ROOTARGS --no-build"
-fi
-BOOTARGS="--image-root $IMGROOT"
-if [ "$NOBOOT" = "true" ]; then
-  BOOTARGS="$BOOTARGS --no-build"
-fi
-
-message "making robox-linux"
-stage_up
-
-if [ "$BOOT" != "true" ]; then
-  ./mkxcomp.sh $CALLARGS $XCOMPARGS $XCOMPPKGS && \
-  ./mkrootfs.sh $CALLARGS $ROOTARGS $ROOTPKGS && \
-  ./mkbootfs.sh $CALLARGS $BOOTARGS $BOOTPKGS
-fi
-
-if [ $? = 0 ]; then
-  abs_path $MNT
-  MNTPATH="$ABSPATH"
-  ./mountbootfs.sh --image $IMGROOT/bootfs.img --mount-point $MNTPATH
-
-  FAILEXIT="false"
-  boot_image "robox-linux" $XENCFG $MNTPATH "$IMGROOT/rootfs.img"
-  FAILEXIT="true"
-
-  ./umountbootfs.sh --mount-point $MNTPATH
-  stage_down
-
-  if [ "$EXITVAL" = 0 ]; then
-    clean $LOGFILE
-    message "success"
-  fi
+  log_clean
 fi
