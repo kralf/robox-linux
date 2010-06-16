@@ -15,7 +15,10 @@ CARMEN="/usr/lib/carmen_robox/carmen.sh"
 
 MODULE_NAME="param_daemon"
 MODULE_BIN="/usr/bin/carmen-multiparam_daemon"
-MODULE_OPTS="-r $CARMEN_ROBOT $CARMEN_ROBOT_INI $CARMEN_ERA_INI"
+
+CARMEN_INI="$CARMEN_ROBOT_INI"
+[ -r "$CARMEN_ERA_INI" ] && CARMEN_INI="$CARMEN_INI $CARMEN_ERA_INI"
+MODULE_OPTS="-r $CARMEN_ROBOT $CARMEN_INI"
 
 [ -e "$MODULE_BIN" ] || exit 0
 
