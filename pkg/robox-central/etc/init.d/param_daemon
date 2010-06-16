@@ -7,31 +7,21 @@
 # Short-Description: Start the CARMEN parameter daemon module
 ### END INIT INFO
 
-function carmen_ini_update()
-{
-  cat $CARMEN_ROBOT_INI > $CARMEN_INI
-  echo >> $CARMEN_INI
-  echo >> $CARMEN_INI
-  cat $CARMEN_ERA_INI >> $CARMEN_INI
-}
-
 CARMEN="/usr/lib/carmen_robox/carmen.sh"
-CARMEN_INI="/etc/carmen_robox/robox.ini"
 
 [ -e "$CARMEN" ] || exit 0
 . $CARMEN
 [ "$CARMEN_START_PARAM" == 1 ] || exit 0
 
 MODULE_NAME="param_daemon"
-MODULE_BIN="/usr/bin/carmen-param_daemon"
-MODULE_OPTS="-r $CARMEN_ROBOT $CARMEN_INI"
+MODULE_BIN="/usr/bin/carmen-multiparam_daemon"
+MODULE_OPTS="-r $CARMEN_ROBOT $CARMEN_ROBOT_INI $CARMEN_ERA_INI"
 
 [ -e "$MODULE_BIN" ] || exit 0
 
 case "$1" in
   start)
     echo -n "Starting $MODULE_NAME module"
-    carmen_ini_update
     carmen_start_module "$MODULE_BIN" "$MODULE_OPTS"
     echo "."
 	;;
@@ -42,7 +32,6 @@ case "$1" in
 	;;
   restart)
     echo -n "Restarting $MODULE_NAME module"
-    carmen_ini_update
     carmen_restart_module "$MODULE_BIN" "$MODULE_OPTS"
     echo "."
   ;;
