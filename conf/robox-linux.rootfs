@@ -1,5 +1,5 @@
 CONFIGURE=""
 MAKEBUILD=""
-MAKEINSTALL=("install_svn $EPREFIX etc"
-             "chmod 0600 $EPREFIX/etc/ssh/ssh_host_dsa_key"
-             "chmod 0600 $EPREFIX/etc/ssh/ssh_host_rsa_key")
+MAKEINSTALL=("install_svn $INSTALLROOT etc"
+             "chmod 0600 $INSTALLROOT/etc/ssh/ssh_host_dsa_key"
+             "chmod 0600 $INSTALLROOT/etc/ssh/ssh_host_rsa_key")

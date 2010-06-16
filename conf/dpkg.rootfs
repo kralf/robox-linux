@@ -1,11 +1,6 @@
 CFLAGS="$CFLAGS -I$BUILDROOT/zlib"
 CONFIGURE="./configure --prefix=$EPREFIX --build=$HOST-linux --host=$TARGET-linux --disable-nls"
-MAKEBUILD=("cd getopt"
-           "make $MAKEOPTS"
-           "cd ../utils"
-	   "make $MAKEOPTS"
-	   "cd ..")
-MAKEINSTALL=("cd utils"
-             "make $MAKEOPTS install"
-	     "cd ..")
+MAKEBUILD=("make -C getopt $MAKEOPTS"
+           "make -C utils $MAKEOPTS")
+MAKEINSTALL=("make -C utils $MAKEOPTS install")
 COMMENT="this will not take long"
