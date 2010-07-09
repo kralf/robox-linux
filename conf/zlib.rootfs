@@ -1,4 +1,4 @@
 CONFIGURE="./configure --prefix=$PREFIX --exec-prefix=$EPREFIX --shared"
 MAKEINSTALL=("make install"
-              "ln -sf $EPREFIX/lib/libz.so $PREFIX/lib/libz.so.1")
+             "ln -sf $EPREFIX/lib/libz.so $PREFIX/lib/libz.so.1")
 COMMENT="just a moment"
