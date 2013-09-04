@@ -1,0 +1,12 @@
+[submodule "pkg/carmen"]
+	path = pkg/carmen
+	url = https://github.com/kralf/carmen.git
+[submodule "pkg/carmen-robox"]
+	path = pkg/carmen-robox
+	url = https://github.com/kralf/carmen-robox.git
+[submodule "pkg/librobox"]
+	path = pkg/librobox
+	url = https://github.com/kralf/librobox.git
+[submodule "pkg/tulibs"]
+	path = pkg/tulibs
+	url = https://github.com/kralf/tulibs.git

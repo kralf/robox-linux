@@ -1,3 +1,9 @@
+robox-linux (0.1-107) unstable; urgency=low
+
+  * Added external dependencies as git submodules
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 04 Sep 2010 15:25:00 +0100
+
 robox-linux (0.1-106) unstable; urgency=low
 
   * Changelog fixes

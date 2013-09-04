@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 include(ReMake)
 
 remake_project(
-  "RoboX Utils"
+  robox-utils
   VERSION 0.1
   RELEASE alpha
   SUMMARY "Utility binaries for the RoboX platform."
@@ -15,4 +15,4 @@ remake_project(
   PREFIX robox-
 )
 
-remake_pack_deb(tulibs)
+remake_pack_deb(DEPENDS tulibs)
