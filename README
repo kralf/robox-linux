@@ -1,18 +1,18 @@
 BUILDING ROBOX LINUX
 
 What is RoboX Linux? 
-------------
+--------------------
 
 RoboX Linux is a Debian-based Linux distro which cross-compiles for the
 PowerPC onboard computer of the RoboX platform. It has been designed for
 maximum compatibility at a minimum memory footprint.
 
 How to build this distro? 
---------------------------
+-------------------------
 
-First, install ubash from the respective github project or the launchpad
-package repository. Then, you may use the following shell scripts located
-under the project root:
+First, install ubash and remake from the respective github projects or the
+launchpad package repository. Then, you may use the following shell scripts
+located under the project root:
 
   mkxcomp.sh - Make a cross compiling environment
   mkrootfs.sh - Create a root filesystem from scratch
