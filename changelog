@@ -1,3 +1,9 @@
+robox-linux (0.1-106) unstable; urgency=low
+
+  * Changelog fixes
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 04 Sep 2010 15:16:00 +0100
+
 robox-linux (0.1-104) unstable; urgency=low
 
   * Added changelog
@@ -610,25 +616,25 @@ robox-linux (0.1) unstable; urgency=low
 
   * minor cleanups
 
- -- root <root@unknown>  Thu, 10 Apr 2008 08:00:26 +0200
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 10 Apr 2008 08:00:26 +0200
 
 robox-linux (0.1) unstable; urgency=low
 
   * working Xen image
 
- -- root <root@unknown>  Fri, 08 Jun 2007 20:15:45 +0200
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Fri, 08 Jun 2007 20:15:45 +0200
 
 robox-linux (0.1) unstable; urgency=low
 
   * added configuration files for linux-xen
 
- -- root <root@unknown>  Thu, 07 Jun 2007 14:04:51 +0200
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 07 Jun 2007 14:04:51 +0200
 
 robox-linux (0.1) unstable; urgency=low
 
   * added script for testing images in a Xen domain
 
- -- root <root@unknown>  Thu, 07 Jun 2007 14:04:11 +0200
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 07 Jun 2007 14:04:11 +0200
 
 robox-linux (0.1) unstable; urgency=low
 
